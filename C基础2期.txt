@@ -1,0 +1,1554 @@
+指令是对计算机进行程序控制的最小单位
+所有的指令的集合成为计算机的指令系统。电脑是X86，手机是ARM
+
+机器指令格式
+操作码|操作数
+
+操作码就是机器执行什么操作，操作数就是执行的对象（具体数，存储位置）
+
+程序是为完成一项特定任务而是用某种语言编写的一组指令序列
+
+每种CPU，都有自己的指令系统
+
+C语言的应用开发环境
+Windows Visual Studio
+Mac	Xcode
+Linux	VI VIM
+跨平台	Code Blocks/Eclipse C/C++ QT
+
+DOS指令
+echo hello world //输出hello world
+exit //退出DOS窗口
+
+新建一个文本文件，保存为bat格式，在该文件中写入notepad，再双击这个bat文件的时候就会打开记事本
+
+//开发工具VS的使用
+新建项目->模板->常规->空项目
+
+在解决方案中，会发现	'解决方案"Hello World"(1个项目)'
+C语言的源文件就是由头文件、外部依赖项、源文件、资源文件四部分组成的
+
+资源文件放置图片等资源
+源文件放置源代码
+外部依赖项是外部依赖某个东西，放在这里
+
+现在生成一下HelloWorld这个解决方案，生成成功(生成在菜单栏中)
+
+在源文件中添加一个新建项，添加一个cpp文件(c plus plus)c++文件
+
+此时在源文件下就有了一个文件 源.cpp，我们需要把它重命名为HelloWorld.c文件
+
+这时我们编译一下，编译是不能通过的，因为没有指示从哪里执行，单击视图就会发现报了一个错，'必须定义入口点'
+
+我们在HelloWorld.c中加入如下代码
+int main()
+{
+
+}
+现在再编译就会成功
+
+没有指示从哪里执行就是因为没有main函数，入口点必须是main函数
+这里的int是返回值的类型
+
+没有块语句，没有大括号包含函数体就会报发现意外的文件尾的错
+
+printf中的f是format的意思
+
+#include<stdio.h>//std是stantard的意思，io是输入输出的意思(input output)，#是一个预处理的指令，.h的h是head的意思
+这个时候程序虽然跑起来了，但是黑窗口闪了一下就消失了，我们希望看下里面的内容，这时要加上一句getchar();
+
+如果不加#include那么会报未定义的标识符printf的错，也就是调用了一个函数但是不知道这个函数在哪里的错误
+
+双引号包含的是字符串
+
+为什么加一个getchar呢？因为main函数执行完了就回退出，所以需要加上一个getchar中断一下操作
+
+getchar即等待用户输入一个字符
+
+这时我们看到外部依赖项里多出来很多项，这时由于stdio又依赖很多很多文件
+
+头文件就像目录，指示函数在哪里
+源文件就是函数实体
+
+本地Windows调试器就是编译按钮，VS2013中打断点可以用F9
+
+右击解决方案->添加/新建一个项目可以在该解决方案下新建一个项目，选择空项目，单击确定
+
+在源文件中新建一个echo.cpp文件
+
+#include<stdlib.h>
+void main()
+{
+	system("echo china");//在控制台上打出echo China
+}
+现在有两个项目，我们需要在echo helloworld这个项目下右键，设置为启动项目就可以在编译的时候编译这个项目了
+
+#include<stdlib.h>
+void main()
+{
+	system("calc");//系统会打开计算器，system的含义是执行操作系统的命令行
+}
+
+CodeBlock也可以开发
+文件->新建->Project
+
+如果想要打开三个计算器，很自然就会想到
+#include<stdlib.h>
+void main()
+{
+	system("calc");
+	system("calc");
+	system("calc");
+}
+
+但是运行之后会发现只打开了一个计算器，点击关闭再打开一个，点击关闭再打开一个，如果想要并行的同时打开三个，那么需要这样写
+
+#include<stdlib.h>
+void main()
+{
+	system("start calc");
+	system("start calc");
+	system("start calc");
+}
+
+cl hello.c//将会把hello.c编译成二进制文件，得到hello.exe文件
+执行hello.exe文件就可以执行c程序了
+
+VS2013开发人员命令提示，操作DOS指令：
+cd c程序源代码路径
+cl 123.c//编译123.c
+123.exe
+
+人机交互的三种方式
+命令行、图形化界面、自然（触屏）
+
+Linux环境下我们编译.c源文件的时候(例如要编译a.c这个文件)需要输入gcc a.c，随后会生成一个a.out文件，这个文件就相当于DOS下的a.exe文件，直接运行该文件，就会执行里面的指令
+
+#include<stdio.h>
+#include<stdlib.h>
+
+int main()
+{
+	system("date");//打印当前日期对象
+	system("gedit");//Linux下gedit就表示记事本，类似于windows下的notepad
+}
+
+rm a.out//将a.out文件删除
+
+如果在windows的DOS窗口中输入gedit指令，或者在Linux环境中输入notepad指令都是不会被识别的，不同的平台有不同的规定，但是system是可以被任何平台识别的
+
+
+windows下输入tasklist会打开当前所有正在运行的进程
+
+taskkill /f /im notepad.exe//将notepad关闭，/f是force的意思，/im是进程的名字
+
+//考虑命令行下notepad和start notepad的区别，后者是不等待模式，所谓不等待模式就是打开记事本以后不等待，直接执行下面的代码，而非等待模式就是打开了之后等待你关闭了再执行下一步
+
+想要打开一个notepad，然后再关闭它，我们可以这样写
+#include<stdlib.h> 
+int main()
+{
+	system("start notepad");//加上start就是不等待模式，打开一个程序，直接往后执行，也即异步模式，需要并行执行的时候要用异步模式，如果不加start，就是等待模式，等待一个程序执行完成，也就是同步模式，需要挨个执行的时候要用同步模式
+	system("pause");//打开之后停一下，按任意键继续
+	system("taskkill /f /im notepad.exe");
+}
+
+其实，我们的c源代码还可以写在外部头文件里面，例如
+#include<stdlib.h>
+
+void main()
+{
+	#include"main.h"//include引入文件是否加分号都可以进行编译，但不加分号没有警告
+}
+
+在main.h中，我们可以写入
+system("start notepad");
+system("start notepad");
+system("start notepad");
+
+值得注意的是#include"main.h";中main文件的后缀名.h必须和头文件文件夹里面的文件后缀名一致，而且不一定非得写成.h结尾的，可以以任何后缀结尾，换言之，include可以包含任何类型的文件
+
+数据声明和函数调用后面必须加引号，否则会报错
+
+.c/.h编译后生成.obj链接后成为.exe
+
+int x=10;
+printf("%d",x);
+printf("\n%x",&x);//得到变量x的地址，十六进制输出
+
+x=8;
+//断点 &x不变，但是x的值变了
+x=6;
+//断点 &x不变，但是x的值变了
+x=3;
+
+
+
+void main()
+{
+	int x=11;
+	printf("%x",&x);//以16进制输出变量x的地址
+}
+
+深入研究加法在内存中的实现形式
+void main()
+{
+	int a;
+	int b;
+	int c;
+	b=1;
+	c=2;
+	printf("%x",&b);
+	printf("\n%x",&c);
+	printf("\n%x",&c);
+	printf("\n%x",&a);
+	a=b+c;
+}
+
+在VS中可以用汉字定义变量名，因为VS可以将Unicode字符集当成字符，而中文、日文、韩文都属于Unicode编码里面的内容
+
+new是C++的关键字，不是C的关键字
+
+注意:printf可以用作变量名，而且即使引入了include<stdio.h>也没有什么问题
+
+在一个块语句内部，变量不可以重复初始化，例如下面的代码是要报错的
+
+void main()
+{
+	int a=10;
+	int a=9;
+}
+如果作以下修改
+void main()
+{
+	int a=10;
+	{
+		int a=9;
+	}
+}
+就没有问题了
+
+块语句外部，变量也不可以重名
+int a=10;
+int a=9;//这样也是不可以的，也要报错
+void main()
+{
+	int a=9;
+}
+
+
+变量使用之前不仅仅只是要先定义，必须初始化，否则的话，在VS2013中会报错，但是在一些语法检查不严格的IDE中，例如VS2010 VS2008 CodeBlock里面最多也就给个警告，不会报错
+
+定义常量
+1、const int a=15;
+给常量赋值是不允许的
+常量定义的时候必须初始化，以下代码为非法的
+const int a;
+a=3;
+
+如果只写一句
+const int a;
+而接下来没有用这个常量，这样不会报错，一旦用这个常量的时候就会报错
+2、#define
+#include<stdio.h>
+#define X 10
+void main()
+{
+	printf("%d",X);
+	X=3;//这样做是非法的，常量不可以作为左值
+	getchar();
+}
+
+以下代码也是可以运行的
+#include<stdio.h>
+#define X 10
+#define 主函数 main
+#define 空类型 void
+#define 打印 printf
+#define 等待 getchar
+
+空类型 主函数()
+{
+	打印("%d",X);
+	等待();
+}
+
+变量的定义必须在printf输出语句之前
+
+带空格的路径必须使用双引号引起来
+
+
+32位操作系统可用内存最大是4G
+
+sizeof不是一个函数，而是一个C的标准关键字，是一个操作符，可以不引用任何外部文件用sizeof
+
+printf("%d",sizeof(int));//4
+printf("%d",sizeof(char));//1
+printf("%d",sizeof(double));//8
+printf("%d",sizeof(short));//2
+
+sizeof括号中可以是类型名，常量，变量
+
+signed int num=-10;//signed是有符号整型，一般可以省略
+unsigned int num=10;//unsigned是无符号整型
+printf("\n%u",numA);//无符号十进制
+
+
+signed char
+unsigned char
+signed short
+unsigned short
+signed long
+unsigned long
+float
+double
+
+#include<stdio.h>
+#include<limits.h>
+void main()
+{
+	int max;
+	int min;
+	max=INT_MAX;
+	max=INT_MIN;
+	printf("%d,%d",INT_MAX,INT_MIN);
+	getchar();
+
+	unsigned int umax;
+	unsigned int umin;
+	umax=UINT_MAX;
+	umin=0;
+	printf("%u,%u",UINT_MAX,0);
+}
+
+100l//长整数
+
+32位操作系统以上，long与int等价
+嵌入式的场合，int和short等价
+处理极大的数据需要long long类型
+
+#include<Windows.h>
+void main()
+{
+	MessageBox(0,L"你好，天朝",L"Fuck",0);
+	四个参数中，
+	第一个代表从系统启动
+	第二个是对话框的内容
+	第三个是对话框的标题
+	第四个是对话框的类型 类型是无符号整型
+	关于第四个参数
+	0代表纯粹提示，只有一个确定按钮
+	1代表是否，有确定和取消两个按钮
+	2代表忽略、继续，有终止、重复、忽略三个按钮
+	3代表是、否、取消，有是、否、取消三个按钮
+	最大到3，如果到4就会回到0
+}
+
+Unicode处理世界语言，字符串之前必须加上L
+多字节可以正常使用字符串，可以显示中文、俄文、棒子文，字符串之前也没有必要加L
+
+字符集->使用多字节字符集
+平台工具集->Visual Studio 2013
+
+如果需要版本控制的话，在VS中可以进入配置属性->链接器->清单文件->UAC执行级别->requireAdministrator来提升权限
+
+//用system打开一个网站，可以在任务管理器进程中找到IE这一进程，右击属性就可以找到其路径，然后配合system函数就可以打开
+#include<stdlib.h>
+void main()
+{
+	system("C:\\Program Files\\Internet Explorer\\iexplore.exe http://www.baidu.com");
+}
+注意，此时程序运行是不成功的，因为我们的路径当中有空格，所以需要做如下处理
+#include<stdlib.h>
+void main()
+{
+	system("\"C:\\Program Files\\Internet Explorer\\iexplore.exe\" http://www.baidu.com");
+}
+
+如果想要打开C盘，查看里面所有的文件，直接按照下面的方式写是不对的
+#include<stdlib.h>
+void main()
+{
+	system("C:\\");//这样写系统是不认的
+}
+
+//这样做就可以打开C盘目录，并查看里面的文件
+#include<stdlib.h>
+void main()
+{
+	system("C:\\Windows\\explorer.exe C:\\");
+	system("pause");
+}
+
+shellexecute.c
+#include<Windows.h>
+void main()
+{
+	ShellExecute(0,"open","http://www.qq.com",0,0,1);//打开腾讯官网
+}
+
+#include<Windows.h>
+#include<stdlib.h>
+void main()
+{
+	ShellExecute(0,"open","C:\\Users\\yincheng01\\Desktop\\1.c",0,0,1);//打开腾讯官网
+}
+第一个参数，窗口的编号，0代表系统打开的窗口
+第二个参数，操作
+第三个参数，路径
+第四个参数，默认参数，一般为0
+第五个参数，默认参数，一般为0
+第六个参数，窗口显示的方式，1是一般状态，3是最大化，6是最小化，0是隐藏窗口
+
+ShellExecute还可以支持打开声音、视频等。综上，当system不能满足我们的要求时可以用ShellExecute
+
+
+//每隔2秒钟打开一个记事本
+#include<stdlib.h>
+#include<windows.h>
+void main()
+{
+	system("start notepad");
+	Sleep(2000);//休眠
+	system("start notepad");
+	Sleep(2000);
+	system("start notepad");
+
+	system("pause");
+}
+
+#include<stdlib.h>
+#include<windows.h>
+
+void main
+{
+	system("C:\\1.mp3");
+	Sleep(3000);
+	SystemParametersInfo(20,0,L"C:\\1.jpg",3);//3代表即刻生效
+}
+
+
+字符常量和字符串
+#include<stdio.h>
+#include<stdlib.h>
+void main()
+{
+	char ch=getchar();//getchar是获取用户输入的字符
+	putchar(ch);//输出字符
+	system("pause");
+}
+
+#include<stdio.h>
+#include<stdlib.h>
+void main()
+{
+	putchar('h');
+	putchar('h');
+	putchar('h');
+	putchar('h');
+	putchar('h');
+	putchar('h');
+
+	putchar('h');
+	putchar('h');
+	putchar('h');
+	putchar('h');
+	putchar('h');
+
+	system("pause");
+}
+这样也可以输出hello World
+
+
+#include<stdio.h>
+#include<stdlib.h>
+void main()
+{
+	printf("%c",'\n');
+	printf("%c",'h');
+	printf("%c",'h');
+	printf("%c",'h');
+	printf("%c",'h');
+	printf("%c",'h');
+	printf("%c",'h');
+	printf("%c",'h');
+	printf("%c",'h');
+	system("pause");//这样也可以
+}
+
+C语言中没有字符串变量，有字符串常量，每个字符串的结尾会自动加一个结束符\0
+
+puts("hello.china");//输出一行字符串
+
+printf可以直接输出一行字符串，但是printf还有格式化字符串的作用
+
+printf("\d",sizeof("a"));//2
+printf("\d",sizeof("aa"));//3
+printf("\d",sizeof("aaa"));//4
+不要忘了结束符
+
+printf("\d",sizeof('a'));//4 C语言中存储常量用四个字节，因为常量除了存储值信息外还需要存储不可修改
+char ch='a';
+printf("\d",sizeof(ch));//1 字符类型只占一个字节
+
+char ch="A";//注意双引号
+//这样赋值是可以的不会报错，但是后面的字符会被舍弃，对于"A"来说也就是结尾符"\0"会被舍弃
+
+DOS窗口中并行打开5个记事本
+for /1 %i in (1,1,5) do notepad
+
+system("for /l %i in (1,1,5) do start notepad");
+
+
+void main()
+{
+	int num;
+	scanf_s("%d",&num);
+}
+
+#include<stdlib.h>
+#include<stdio.h>
+#include<windows.h>//wsprintf是一个字符串格式化函数
+void main()
+{
+	char str[40];//字符串的缓冲区，遇到一个'\0'就会自动结束
+	wsprintf(str,"%s","notepad");//将notepad对应到%s上格式化，然后再把该字符串赋给str
+	system(str);
+}
+
+//根据用户的输入的数量打开记事本
+#include<stdlib.h>
+#include<stdio.h>
+#include<windows.h>
+
+void main()
+{
+	int num;
+	scanf_s("%d",&num);
+	printf("%d",num);
+
+	char str[40];
+
+	wsprintf(str,"for /l %%i in (1,1,%d) do start notepad",num);//在这里/l代表loop(按照数学循环)，%%i两个百分号就会合并成一个%，%i代表整数变量
+	system(str);
+	system("pause");
+}
+
+cmd下输入help可以查看所有的指令
+
+for /l %%i in (1,1,%d) do @echo notepad//加上@可以省掉一行而只打印notepad，即有@不会打印命令执行过程，否则就会打印
+
+void main()
+{
+	char str[50];
+	gets_s(str,50);//gets相当于接收输入，最大长度是50
+	system(str);
+
+	system("pause");
+}
+
+void main()
+{
+	int num=5;
+	char str[50];
+	gets_s(str,50);
+
+	char strurl[100];
+	wsprintf(strurl,"for /l %%i in (1,1,%d) do %s",num,str);
+	system(strurl);
+}
+
+//如下方法也可以打开计算器
+#include<stdlib.h>
+#include<windows.h>
+
+void main()
+{
+	char str[50];
+	wsprintf(str,"%c%c%c%c",'c','a','l','c');
+	system(str);
+}
+
+getchar和putchar被包含在stdio.h里面
+
+puts和printf都可以输出字符串
+
+字符和某个整数是对应的
+char ch=65;
+printf("%c %d",ch,ch);//依然可以打印出A 65
+
+'1'和1的不同
+#include<stdio.h>
+void main()
+{
+	short num=1;
+	char c='1';
+	printf("%d,%d",sizeof(num),sizeof(c));
+	printf("\n");
+	printf("%x,%x",&num,&c);
+	//0000 0000 0000 0001 2字节16位
+	//0011 0001 1个字节8位
+}
+
+short num=1;
+char c='1';
+printf("\n%d,%c",c,c);//49 1
+printf("\n%d,%c",num,num);//1 垃圾数据
+printf("%d",c-num);//48
+
+48对应0
+
+大小写转换
+void main()
+{
+	char c=getchar();
+	putchar(c-32);
+	system("pause");
+}
+
+加密和解密
+#include<stdio.h>
+void main()
+{
+	char c1="l";
+	char c2="l";
+	char c3="l";
+	char c4="l";
+	printf("%c%c%c%c",c1,c2,c3,c4);
+	//加密过程
+	c1=c1+3;
+	c2=c2+3;
+	c3=c3+3;
+	c4=c4+3;
+	printf("\n加密结果%c%c%c%c",c1,c2,c3,c4);
+	getchar();
+}
+
+C语言中没有布尔型变量
+
+查看float类型的上下限，要引入float.h而不是limits.h
+
+看到1小时十分钟
+
+定义变量之后再内存中发生的事情
+1、建立变量表，是为了统一管理变量
+2、变量名前面的类型确定这个变量占用多少内存
+3、决定如何解析变量
+	1111 如果是无符号型 表示15
+	1111 如果是有符号型 表示-7
+4、变量的类型，确定变量的极限
+5、确定变量可以进行哪些动作
+2月21日下1小时21分
+printf("\n%f",1);//%f对应实数，如果是整数，转换失败就是0，所以输出是0.000000
+
+printf("%f",4+1.0);//得到5.0
+printf("%d",sizeof(4+1.0));//8
+
+char ch='a';
+printf("%d",sizeof('a'+1));
+getchar();
+
+---------------------------------------------------------
+void main()
+{
+	char ch='a';
+	short sh=100;
+	int num=1000;
+	double db=10.0;
+
+	printf("%d",sizeof(ch+sh));//char,short都转换成整数，4个字节，注意sh是两个字节
+	printf("%d",sizeof(sh+num));//short转换为整数
+	printf("%d",sizeof(ch+db));//8
+}
+
+---------------------------
+int x;
+x=10.0;//赋值时会自动进行数据类型转换
+printf("%d",x);//3
+printf("%d,%d",sizeof(x),sizeof(10.0));//4,8
+
+----------------------
+int num='a';
+double x=1;
+printf("%d,%d",sizeof(x),sizeof(1));//8,4低字节向高字节转换
+
+----------------------
+unsigned short num=65535;
+printf("%d",num);//65535
+----------------------
+unsigned short num=65536;
+printf("%d",num);//0 超过了数据的极限，不能保持数据完整性
+
+----------------------
+printf("%d",'a'+10.0);//0,细节分析：'a'会转换成浮点型，浮点型向整型解析就会出错，出来一个垃圾值0
+printf("%d",(int)'a'+10.0);//0
+printf("%d",(int)10.0+'a');//107
+printf("%d",(int)('a'+10.0));//107
+
+2月21日1小时54分
+#include<limits.h>
+#include<float.h>
+#include<stdio.h>
+void main()
+{
+	printf("%d,%d",INT_MAX,INT_MIN);
+	printf("\n%u,%u",UINT_MAX,UINT_MIN);//%u对应unsigned int
+	printf("\n%d",DBL_MAX);//double的最大值
+}
+溢出之后数据不正常工作，而且还会影响之后的数据的计算
+
+//编写程序65563转换成二进制、八进制、十六进制
+#include<stdio.h>
+#include<stdlib.h>
+void main()
+{
+	int num=65543;
+	char str[32];
+	_itoa_s(num,str,2);//转成二进制
+	printf("%s",str);
+	printf("\n%o,%u,%x",num,num,num);//分别按照八进制、无符号十进制、十六进制输出
+	getchar();
+}
+UAC设置--->msconfig->工具->更改UAC设置->从不通知
+
+//图形化编程
+新建项目->MFC应用程序
+
+多个顶级文件 项目类型选Office 视觉样式和颜色随便选择
+->文件扩展名随便写->高级框架窗格勾选 高级功能全勾选->
+基类选择CFormView ->完成
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<windows.h>
+
+void main()
+{
+	int num=1+3;
+	printf("%d",num);
+
+	char str[50];//字符串长度，设置50缓冲区
+	wsprintf(str,"for /l %%i in(1,1,%d) do start calc",num);//注意改成多字节字符集
+	printf("%s",str);//打印字符串
+
+	system(str);
+}
+
+printf("%d",1.0+9.0);//得到0，因为是按照%d输出的，printf不会进行自动类型转换，如果按照%f输出才可以得到10.000000
+
+c中函数式不能嵌套的
+
+VS2013中浮点不能求余
+
+#include<stdio.h>
+void main()
+{
+	//c和汇编是可以无缝相接的
+	int a=10;
+	//_asm就是要插入汇编语言
+	_asm
+	{
+		mov eax,a//移动，将a的值赋给eax
+		add eax,3//加法，eax的值加3
+		mov a,eax//寄存器的值赋给a
+	}
+	printf("%d",a);//得到13
+	getchar();
+}
+
+#include<stdio.h>
+void main()
+{
+	float numA=3/2;
+	printf("\n%f",numA);//1.000000，因为3/2得到1,1再转换为浮点型就是1.0000000，写成2/2.0才可以
+}
+
+//余数和被除数的符号相同
+printf("%d",3%-5);3
+printf("%d",5%-3);2
+printf("%d",-3%5);-3
+printf("%d",-5%3);-2
+
+#include<stdio.h>
+#include<stdlib.h>
+void main()
+{
+	printf("\n%d",rand());//如果想让所有的随机数都在0-100范围内，可以rand()%100
+	getchar();
+}
+
+//二位整数个位十位互换
+#include<stdio.h>
+#include<stdlib.h>
+void main()
+{
+	int input=rand()%90+10;//二位整数
+	int i=input/10;
+	int j=input%10;
+	printf("%d",j*10+i);
+}
+
+a+1=4;//这样赋值是不正确的，因为a+1是存放于CPU中的，而不是存放在内存中的
+//常量、表达式、数据是不能赋值的
+
+a=12;
+a+=a-=a*a;//a=-264
+
+int a=2;
+a%=4-1;
+a+=a*=a-=a*=3;//0
+
+int num=rand()%100;
+printf("%d",num);
+num>80?system("notepad"):system("calc");//随机打开记事本或者计算器
+
+(a=3*5,a*4),a+5 //15 由于逗号运算符的优先级最低，所以在第一个括号中先进行赋值运算，再进行逗号运算，而当我们做了a=3*5这个运算以后a的值就确定了，所以不再执行a*4这步，所以直接执行a+5，最后结果就成了15
+
+#include<stdio.h>
+#include<stdlib.h>
+
+void main()
+{
+	int num=rand()%100;
+	printf("%d",num);//这样一直运行程序会发现一直输出一个值
+	getchar();
+}
+
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+
+void main()
+{
+	time_t t;//时间的数据类型的变量t
+	srand((unsigned int)time(&t));//time函数的参数是变量t的地址
+
+	int num=rand()%100;
+	printf("%d",num);
+	getchar();
+}
+//进行上述修改后程序就变成根据时间确定随机数种子，每次的输出就不一样了
+
+int num;
+scanf_s("%d",&num);//很多函数名的后面加了s s的意思就是safe 即安全函数
+
+如果想要直接使用scanf，需要加
+#define _CRT_SECURE_NO_WARNING//关闭安全检查
+scanf和scanf_s用法是一样的
+
+int a=1;
+int b=1;
+a=b+1;//b+1是在寄存器中存储的
+
+
+鼠标操作
+#include<windows.h>
+void main(){
+	SetCursorPos(100,100);//运行时黑窗口中鼠标的位置就是100 100
+	sleep(2000);//休眠2秒钟
+
+	//自动执行单击
+	mouse_event(MOUSEEVENT_LEFTDOWN,0,0,0,0);//鼠标左键按下
+	mouse_event(MOUSEEVENT_LEFTUP,0,0,0,0);//鼠标左键抬起
+
+	//以上的代码重复两遍就是双击
+}
+
+#include<windows.h>
+
+void main(){
+	//显示桌面 模拟windows+d快捷键
+	keybd_event(0x5b,0,0,0);//第一个参数是徽标键的编码
+	keybd_event('D',0,0,0);
+	keybd_event('D',0,2,0);
+	keybd_event('0x5d',0,2,0);
+	Sleep(1000);
+	SetCursorPos(30,30);
+	Sleep(1000);
+	//自动执行双击，最后打开了桌面上第一个图标所对应的应用程序
+	mouse_event(MOUSEEVENT_LEFTDOWN,0,0,0,0);//鼠标左键按下
+	mouse_event(MOUSEEVENT_LEFTUP,0,0,0,0);//鼠标左键抬起
+	mouse_event(MOUSEEVENT_LEFTDOWN,0,0,0,0);//鼠标左键按下
+	mouse_event(MOUSEEVENT_LEFTUP,0,0,0,0);//鼠标左键抬起
+	
+}
+
+//模拟右键
+mouse_event(MOUSEEVENT_RIGHTDOWN,0,0,0);
+
+//CPU起运算和控制作用，寄存器起一个缓冲的作用
+
+int a=10;
+//我们可以给a赋值
+a=10;
+//但我们不可以给a+1赋值，a+1存储在寄存器当中，赋值了也没有用
+a+1=3;//报错
+
+程序实体是内存里面一块可标识的区域，寄存器里面的东西一定没有程序实体
+#include<stdio.h>
+{
+	int a=1;
+	int b=2;
+	a=b;
+	b+2=a;//生成时会提示b+2不是左值 b+2在寄存器中，是不可以直接赋值的
+}
+
+一直能被放在赋值号左边赋值的值才是左值
+
+const int num=10;
+num=10;//会报错，num不能一直放在赋值号左边，所以num不是左值
+
+验证优先级
+1+2*3	7//没有加括号的时候结果是7 结合下述输出结果 可得乘法优先级高
+1+(2*3)	7//先算乘法 结果是7
+(1+2)*3	9//先算加法 结果是9
+
+printf("%d",4>3>2);//0
+
+//每隔1s打开一个记事本
+while()1
+{
+	system("start notepad");
+	sleep(1000);
+}
+
+
+
+#define _CRT_SECURE_NO_WARNING//不进行安全检查
+#include<stdio.h>
+#include<stdlib.h>
+void main(){
+	while(1){
+		char str[100];
+		gets(str);
+		puts(str);
+		system(str);
+		system("pause");
+	}
+}
+
+
+#define _CRT_SECURE_NO_WARNING//不进行安全检查
+#include<stdio.h>
+#include<stdlib.h>
+
+void main(){
+	int num;
+	scanf("A%dB",&num);//输入的话必须写成A2B这种形式，否则扫描不成功
+	printf("%d",num);
+	system("pause");
+}
+
+%o %x都是无符号整型的八进制和十六进制
+
+%s打印字符串
+
+%g选用输出宽度较小的格式(比较%e和%f) 会去掉无意义的0
+
+printf("%15d",12345);//数据宽度为15 右边对齐
+printf("%3d",12345);//限定宽度小于实际宽度时 会输出实际宽度的值
+printf("%-10d",12345);//宽度为10 左对齐
+printf("%015d",12345);//不够的位都被填充0
+printf("%03d",12345);//不会补0
+
+对于32位操作系统来说 int和long等价 %d和%ld没什么区别
+
+
+linux平台下 右键 创建空文件 重命名printf.c
+
+打开终端 输入指令
+gcc printf.c//编译后默认生成a.out
+gcc printf.c -o x.out//编译后生成x.out
+./a.out//执行a.out
+
+
+rm a.out//删除文件 a.out
+
+--需要特别稳定的服务器系统要用UNIX 中小型企业一般用Linux
+
+hostname //显示机器名称 系统->关于计算机 可以查看机器的名称
+
+hostname yincheng.linux//改变机器名称为yincheng.linux 会提示需要有root权限
+
+su//键入后提示输入密码 然后就得到root权限
+
+#include<stdlib.h>
+int main()
+{
+	system("date");
+}
+
+gcc system.c
+./a.out //显示当前时间
+
+system(gedit);//启动gedit
+
+system(uname);//显示系统及版本信息Linux
+
+uname -a//输出系统的详细信息
+
+ifconfig//显示IP信息
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<windows.h>
+void main()
+{
+	printf("%c%c%c%c",'h','e','l','l','o');
+	char str[100];//注意改成多字节集 否则会失败
+	wsprintf(str,"%c%c%c%c",'c','a','l','c');
+	system(str);
+	printf("%s",str);//打印字符串
+	system("pause");
+}
+
+
+void main()
+{
+	char str1[10]="note";
+	char str2[10]="pad";
+	char str3[20];
+	//char str3[20]=str1+str2;是不可以的
+	wsprintf(str3,"%s%s",str1,str2);//或者用strcat也可以
+	system(str3);//会打开记事本
+}
+
+void main()
+{
+	char str[100]="ilovebeijing";
+	printf("%s",str);
+	printf("\n%20s",str);//输出的字符串宽度就是20
+	printf("\n%.5s",str);//输出前五个字符
+	printf("\n%20.5s",str);//宽度为20 仍然输出5个字符
+	printf("\n%-20.5s",str);//宽度为20 仍然输出5个字符 左对齐
+}
+
+char str1[100];
+wsprintf(str1,"%.7s","notepadgogogo");
+system(str1);//会打开记事本
+
+void main()
+{
+	printf("%f,%f",1,1,234567);//第一个%f输出一个垃圾值，而且由于第一个%f输出失败，第二个也会失败
+	printf("%f,%f",1.0,1.234567);//正常输出1.000000 1.234568
+	printf("%f",10.987654321);//%f默认整数会全部输出，小数点后输出6位
+	printf("%25f",10.987654321);//宽度为25
+	printf("%025f",10.987654321);//宽度为25 前面补0
+	printf("%025.2f",10.987654321);//小数点后保留2位
+}
+
+void main()
+{
+	printf("%e",1);//垃圾值 转换的时候一定转换失败
+	printf("%e",1.0);//正常显示
+	printf("%20e",1.0);//宽度为20位
+	printf("%020e",1.0);//左边补0 宽度为20
+	printf("%-20e",1.0);//减号代表左对齐
+	printf("%e",10000000000000000000000000000000000000000000000000.0);//描述大数据的时候用%e比较合适
+	printf("%.10e",1,2345678);
+}
+
+%g会把小数点后没有意义的0删掉
+
+printf("%d",1.0);//转换失败 输出垃圾值0 %d %o中的d和o都不能大写
+
+%x小写的话打印出的字母是小写的 %X大写的话打印出的字母是大写的
+
+%c %C 大小写输出的结果没有区别
+
+%s不能大写
+
+%f不能大写
+
+%e可以大写 大写的话会输出类似1*E15 即科学标识符的E也会大写
+
+%g g的大小写对应E的大小写
+
+printf("%d,%u",-1,-1);//数据类型打印的时候要对应 -1按照%u输出会转换失败 输出垃圾值
+
+printf("%%");//两个%会输出一个%
+
+printf("%d %d %d",1,1);//第三个%d会打印出垃圾值
+
+#define _CRT_SECURE_NO_WARNINGS 关闭scanf输入时的安全检查 需要放在最上方
+
+scanf不太适合字符的输入 因为scanf会把回车换行指标都算进去 为了解决这个问题出现了getchar和putchar gets和puts
+
+#include<iostream>
+
+void main()
+{
+	std::cout<<"gogogo"<<std::endl;
+}
+
+C++文件在Linux平台下后缀为.cc 在windows平台下后缀为.cpp
+
+在Linux平台下c++编译的指令是 g++ 1.cc 然后就会产生a.out文件
+
+六舍七入算法
+double data;
+scanf("%lf",&data);
+data=((double)(int)(data*10+0.3))/10;
+printf("%f",data);
+
+
+
+double num;
+scanf("%lf",&num);//注意不可以写成%f 对于%fdouble无效
+printf("%f",num);
+
+system(pause);//注意在这里不可以使用getchar 因为getchar是得到一个字符，当我们在输入数字完毕的时候 会敲一下回车 会被当做字符
+
+在Qt开发环境下
+printf("%%o=%o",num);//连续输入两个%可以转义成一个%
+
+double类型的必须加l 不论是e还是f 都要写成%le %lf
+
+int a=0,b=0,c=0;
+scanf("%d%*d%d",&a,&b,&c);//*是跳过运算符
+printf("%d,%d,%d",a,b,c);//c的值将会是垃圾值
+
+
+int a,b,c;
+scanf("%3d%3d%3d",&a,&b,&c);
+printf("%d,%d,%d",a,b,c);
+
+//当输入为
+123
+123
+1234的时候会输出
+123,123,123 
+即使给变量c赋了1234这个值也会将最后一位截掉保留3位
+
+当输入为
+12
+12345
+输出为
+12,123,45
+
+
+windows下用记事本编程 新建文件go.c
+void main()
+{
+	char str[100];
+	scanf("%s",str);
+	system(str);
+	printf("%s",str);
+}
+
+通过VS2013 兼容工具命令提示工具执行 go.c文件
+cl go.c 编译
+生成了go.exe文件
+/out:go.exe 执行go.exe文件
+go.exe<in.txt>out.txt 将in.txt里面的指令执行 并将执行结果显示到out.txt中
+
+scanf("%7.2f",&x);//会操作失败 scanf不可以指定小数点
+
+double data;
+scanf("%lf",&data);
+data= ((double)(int)((data*10)+0.3))/10;
+printf("%f",data);
+
+C语言没有布尔类型
+printf("%d",sizeof("小"));//得到3 一个汉字占两个字节 结束符占一个字节 所以得到3
+printf("%d",sizeof("小泉"));//得到5 
+
+
+C语言的语句有六种
+1、1+2+3;//运算符表达式语句
+2、int a=10;//赋值语句
+3、printf("hello,小泉纯一郎");//函数调用语句
+4、//空语句 只有一个分号
+5、//块语句
+6、流程控制语句 分结构化语句和非结构化语句
+
+结构化语句包括条件、循环
+非结构化语句包括break continue return goto
+
+scanf 不可以处理小数点
+
+while(1);//这里的;就是要循环的语句因为是个空语句所以看起来好像什么都没有输出
+{
+	printf("ggg");
+}
+
+
+
+#include<stdio.h>
+#include<windows.h>//使用printf
+void main()
+{
+	char str[50];
+	int num;
+	scanf("%d",&num);
+	wsprintf(str,"shutdown -s -t %d",num);
+	system(str);
+	system("pause");
+}
+
+解一元二次方程
+
+#define _CRT_SECURE_NO_WARNINGS
+#include<stdio.h>
+#include<stdlib.h>
+#inclued<math.h>
+void main()
+{
+	int a,b,c;
+	scanf("%d%d%d",&a,&b,&c);
+	printf("%d*x*x+%d*x+%d=0",a,b,c);
+	if(a==0)
+	{
+		printf("不是一元二次方程");
+		if(b==0)
+		{
+			if(c==0)
+			{
+				printf("解为任意实数");
+			}
+			else
+			{
+				printf("无解");
+			}
+		}
+		else
+		{
+			printf("一元一次方程x=%d",-1*c/b);
+		}
+	}
+	else
+	{
+		double M=b*b-4*a*c;
+		if(M==0)
+		{
+			printf("方程有两个相等的实数根");
+			printf("x1=%f,x2=%f",-1.0*b/2/a,-1.0*b/2/a);
+		}
+		else if(M>0)
+		{
+			printf("方程有两个不等实根");
+			printf("x1=%f,x2=%f",(-1.0*b+sqrt(M))/2.0/a,(-1.0*b-sqrt(M))/2.0/a);
+		}
+		else
+		{
+			printf("方程有两个不等虚根");
+			printf("x1=%f+%fi,x2=%f-%fi",-1.0*b/2/a,sqrt(M*-1)/2.0/a,-1.0*b/2/a,sqrt(M*-1)/2.0/a);
+		}
+	}
+}
+
+double类型的数据在scanf输入的时候必须是%lf 输出的话可以是%f 也可以是%lf
+
+//求100以内相邻奇偶数的积的和
+1*2+3*4+5*6+...
+int sum=0;
+for(int i=1;i<51;i++)
+{
+	sum+=((2*i-1)*(2*i));
+}
+
+------
+//另一种
+for(int i=1;i<100;i+=2)
+{
+	sum+=(i*(i+1));
+}
+
+
+for(int i=0,j=0;i<100&&j<100;i++,j++)
+
+for(int i=0,j=0;i<100&&j<100;i++,j+=2)//循环只执行50次
+
+Linux的代码大约有4亿行
+
+//九九乘法表
+void rightup()
+{
+	for(int i=0;i<10;i++)
+	{
+		for(int j=0;j<10;j++)
+		{
+			if(i<=j)
+			{
+				printf("%2d*%d=%2d",i,j,i*j);
+			}else
+			{
+				printf("%7s");
+			}
+		}
+		printf("\n");
+	}
+}
+
+void leftup()
+{
+	for(int i=0;i<10;i++)
+	{
+		for(int j=0;j<10;j++)
+		{
+			if(i<=9-j)
+			{
+				printf("%2d*%d=%2d",i,j,i*j);
+			}else
+			{
+				printf("%7s");
+			}
+		}
+		printf("\n");
+	}
+}
+
+//将632分为两个数的和，其中一个是13的倍数，一个是11的倍数
+632=13*x+11*y;
+y=(632-13*x)/11;
+
+for(int i=0;i<632;i++)
+{
+	if((632-13*i)%11==0&&i%13==0)
+	{
+		printf("%d",(632-13*i)/11);
+		printf("%d",i);
+		break;
+	}
+}
+
+
+2月28 注入算法上
+Unix系统下所有的变量必须放到最前面
+
+goto也可以造成死循环
+void main()
+{
+	aaaa:printf();
+	goto aaaa;
+}
+
+C语言中函数定义不可以嵌套
+
+如果在main函数的后面自定义函数，那么需要在头部引入
+#inclued<stdio.h>
+int add(int a,int b);
+void main()
+{
+	add(1,1);
+}
+
+int add(int i,int j)
+{
+	return i+j;
+}
+
+//如果只是引入而没有定义
+#inclued<stdio.h>
+int add(int a,int b);
+void main()
+{
+	add(1,1);
+}
+编译的时候不会报错，但是生成的时候就会报错
+
+C语言不允许定义两个名字一样的函数，一个函数引用两次是可以的
+
+声明的时候参数可以省略，但是参数类型需要写
+
+函数的定义和调用不一定在一个文件种，例如printf就在外部定义
+
+main函数如果不指定类型，默认为int
+
+void类型可以没有返回值
+main函数可以没有返回值
+其他的函数必须要用return返回
+
+return的返回值类型和函数的类型必须一致，如果不一致以函数类型为准
+
+
+3月2号 函数 递归
+
+//50个楼梯 一次走一步或者走两步 问多少种可能
+//最后迈到第50级台阶的时候有两种可能，一种是从第49级迈到第50级，还有一种是从第48级迈到第50级
+//迈到第50级的方法为迈到第49级和第48级之和
+main()
+{
+	goUpStair(50);
+}
+
+goUpStair(int stairNum)
+{
+	if(stairNum==1)
+	{
+		return 1;
+	}
+	else if(stairNum==2)
+	{
+		return 2;
+	}
+	else
+	{
+		return goUpStair(stairNum-1)+goUpStair(stairNum-2);
+	}
+}
+
+int weishu=0;
+for(;num;num/=10)
+{
+	weishu++;
+}
+
+AOGMI
+
+数组
+int num[10]={1,2,3,4};
+printf("\n%d",sizeof(num));//数组在块语句里面是显示数组的大小
+printf("\n%d",sizeof(num)/sizeof(int));//求出数组多少个元素
+
+数组中中括号里面的长度必须是常量，不能写成诸如int aaa[x]的代码，即使x这一变量在别的地方定义并且赋值了也不可以
+
+//关于走50级台阶一次可以走1步或者两步，计算有多少种走法的问题用数组和循环实现
+double num[50];
+num[0]=1;
+num[1]=2;
+for(int i=2;i<50;i++)
+{
+	num[i]=num[i-1]+num[i-2];
+	printf("\n%f",num[i]);
+}
+
+int num[]={1,2,3};和int num[3]={1,2,3};等价
+int num[]={};错误！！！
+int num[10]={};错误！！！初始化不可以为空
+//////////
+int a[3]={1,2,3};
+int b[3];
+a=b;//这样做错误，数组不可以直接赋值，即使二者的长度相等也不可以，数组只能对元素赋值
+
+数组也不可以比较大小，也就是说类似于a>b这样的表达式是没有任何意义的
+
+///////////
+char str[10]={'A','B','C'};
+printf("%s",str);//得到ABC 实际上只有字符串可以整体输出 别的类型只能单个单个的输出
+
+非字符串数组只能按照元素初始化
+
+//////////////////
+int num[5]={1,2,3,4,5};
+num+i 等价于 &num[i]
+
+int a[5]={1,2,3,4,5};
+
+a[7]也是可以修改的，如果a[7]=8; 那么中间的a[6]还是存储垃圾值，别的程序也可以访问到a[6]
+
+编写函数检测一个数组是否为递增
+int test(int a[10],int n)
+{
+	if(n==1)
+	{
+		return 1;
+	}
+	else if(n==2)
+	{
+		return a[n-1]>a[n-2]
+	}
+	return test(a[10],n-1)&&a[n]>a[n-1];
+}
+//1 2 3 4四个数字可以组成多少个三位数 数字不重复
+void main()
+{
+	for(int i=1,i<=4,i++)
+	{
+		for(int j=1;j<=4;j++)
+		{
+			for(int k=1;k<=4;k++)
+			{
+				if(i!=j&&j!=k&&i!=k)
+				{
+					printf("\n%d%d%d",i,j,k);
+				}
+			}
+		}
+	}
+}
+
+void go(int a[10])//数组作为参数不是副本，是传递地址，这时因为复制数组需要很费劲，所以计算机直接将数组的地址传了过去
+{
+	printf("go=%d",sizeof(a));//4
+	int b[10];
+	printf("go=%d",sizeof(b));//40
+}
+void main()
+{
+	int a[10];
+	printf("%d",sizeof(a));//40
+	go(a);
+	getchar();
+}
+
+//冒泡
+void main()
+{
+	int a[10]={2,3,4,5,5,2,6,2,4};
+	for(int i=0;i<9;i++)
+	{
+		for(int j=i+1;j<10;j++)
+		{
+			if(a[j]>a[j+1])
+			{
+				int temp=a[j];
+				a[j]=a[j+1];
+				a[j+1]=temp;
+			}
+		}
+	}
+}
+
+char str[26]="abcdefghijklmnopqrstuvwxyz";//输出abcdefghijklmnopqrstuvwxyz之后后面还会输出一些垃圾值，因为没有结束符\0，所以系统会自己寻找结束符从而出现垃圾值，避免这种情况可以进行如下修改
+char str[27]="abcdefghijklmnopqrstuvwxyz\0";或者
+char str[27]={'a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','\0'};
+
+//随机打印出一个字符串
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+char str[27]="abcdefghijklmnopqrstuvwxyz\0";
+main()
+{
+	time_t times;
+	srand(((unsigned int)time(&times)));//以时间作为随机数种子
+	int length=rand()%100;
+	printf("length=%d",length);
+
+	for(int i=0;i<length;i++)
+	{
+		int num=rand()%26;
+		printf("%c",str[num]);
+	}
+}
+
+char str[100]="我是小泉纯一郎";
+printf("%c,%c",str[0],str[1]);//打出了乱码
+printf("%c%c",str[0],str[1]);//打出了 "我是"
+
+
+二维数组初始化
+int a[3][4]={1,2,3,4,5,6,7,8,9,10,11,12};
+int a[3][4]={{1,2,3,4},{1,2,3,4},{1,2,3,4}};
+int a[3][4]={0};//所有的项将被赋予0
+int a[3][4]={};//报错
+int a[3][4]={1};//a[0][0]为1，其余全部为0，即初始化没有被赋值的都为0
+int a[][4]={1,2,3,4,5,6,6,7};//第一维可以省略 实际上所有的一维数组长度都可以省略
+
+对于二维数组 数组名a和&a[0][0]是等价的
+a[i]等价于二维数组的元素数组的首地址
+
+
+
+
+
+
+
+
+
+数组下2h24min
+
+
+

@@ -1,0 +1,59 @@
+俄罗斯方块
+var context=null;
+var blockBG=null;
+var block=null;
+var cW=200;
+var cH=300;
+var itemW=18;
+var itemH=18;
+//运动方块组的当前行列索引
+var currentRowIndex=0;
+var currentColIndex=5;
+var crtT=[
+	[0,0,0,0],
+	[1,1,1,0],
+	[0,1,0,0],
+	[0,0,0,0]
+];
+
+window.onload=function(){
+	var canvas=document.getElementById("gameCanvas");
+	context=canvas.getContext("2d");
+	blockBG=loadImage("res/blockbg2.png");
+	block=loadImage("res/block.png");
+	setInterval(gameTick,1000/60);
+};
+function drawBlocks(){
+	for(var rIndex=0;rIndex<crtT.length;rIndex++)
+	{
+		for(var cIndex=0;cIndex<crtT[0].length;cIndex++)
+		{
+			if(crtT[rIndex][cIndex]==1){
+				drawBlock(currentRowIndex+rIndex,currentColIndex+cIndex);
+			}
+		}
+	}
+}
+function drawBlock(rowIndex,colIndex){
+	context.drawImage(block,itemW*colIndex,itemH*rowIndex);
+}
+function gameTick(){
+	clearScreen();
+	drawBG();
+	drawBlocks();
+}
+function drawBG(){
+	//context.drawImage(blockBG,0,0);
+	var pattern=context.createPattern(blockBG,"repeat");
+	context.rect(0,0,cW,cH);
+	context.fillStyle=pattern;
+	context.fill();
+}
+function loadImg(src){
+	var img=new Image();
+	img.src=src;
+	return img;
+}
+function clearScreen(){
+	context.clearRect(0,0,cW,cH);
+}

@@ -1,0 +1,48 @@
+Js是由客户端而产生的，Node.js是为网络而产生的
+
+Node.js最大的特性就是采用异步式I/O与事件驱动的架构设计
+对于高并发的解决方案，传统架构是多线程
+Node.js使用的是单线程模型，在执行的过程中会维护一个事件队列，程序在执行时在进入事件循环等待下一个事件到来
+普通：	res=db.query("select * from user");
+	res.output();
+Node.js:res=db.query("select * from user",function(res){
+	res.output();
+});
+
+同步式I/O或阻塞式I/O
+线程在执行中如果遇到磁盘读写或网络通信，通常要耗费很长时间。这时操作系统会剥夺这个线程的CPU控制权，使其暂停执行，同时将资源让给其他的工作线程，这种线程调度方式称为阻塞，当I/O操作完毕时，操作系统将这个线程的阻塞状态解除，使其恢复对CPU的控制权，使其继续执行
+
+异步式I/O或非阻塞式I/O
+针对所有I/O操作，当线程遇到I/O操作时，不会以阻塞的方式等待I/O操作完毕，而只是将I/O请求发送给操作系统，继续执行下一条语句，当操作系统完成I/O操作时，以事件的形式通知执行I/O操作的线程，线程会在特定的时候处理这个事件，为了处理异步I/O，线程必须有事件循环，不断检查有没有未处理的事件，依次予以处理
+
+非阻塞模式下，一个线程永远在执行计算操作，这个线程所使用的CPU核心利用率永远是100%，IO以事件的方式通知
+阻塞模式下，多线程往往能提高系统吞吐量，因为一个线程阻塞还有其他线程在工作，多线程可以让CPU资源不被阻塞中的线程浪费
+
+多线程难以充分利用CPU资源，内存轨迹大，数据局部性弱，但是多线程符合过程式编程思维
+
+异步式读取文件
+var fs=require("fs");
+fs.readFile("file.txt","UTF-8",function(err,data){
+	if(err){
+		console.log("文件读取错误");
+	}else{
+		console.log(data);
+	}
+});
+console.log("end");
+会先打印出"end"，再打印出data
+
+var data=fs.readFileSync("file.txt","UTF-8");没有回调
+
+Synchronous同步的
+
+事件
+var eventEmitter=require("events").EventEmitter;
+var event=new EventEmitter();
+event.on("some_event",function(){
+	console.log("自定义事件");
+});
+//触发事件
+setTimeout(function(){
+	event.emit("some_event");
+},1000);

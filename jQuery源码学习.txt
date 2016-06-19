@@ -1,0 +1,217 @@
+jQuery的立即调用函数表达式写法有三种
+//写法一
+(function(window,factory){
+	factory(window)
+})(this,function(){
+	return function(){
+		//jQuery的调用
+	}
+});
+
+//写法二
+var factory=function(){
+	return function(){
+		//执行方法
+	}
+};
+var jQuery=factory();
+
+
+//写法三
+(function(window,undefined){
+	var jQuery=function(){}
+	//...
+	window.jQuery=window.$=jQuery;
+})(window);
+
+其实这个undefined并不是JavaScript数据类型的undefined，而是一个普普通通的变量名。只是因为没给它传递值，它的值就是undefined，undefined并不是JavaScript的保留字。
+
+关于传入undefined的原因，可以通过下面这个例子考虑
+var undefined = '慕课网'
+;(function(window) {
+  alert(undefined);//IE8 '慕课网'
+})(window)
+
+IE8存在这个问题，当然，大部分浏览器都是不能被修改的
+
+如果函数调用不传递，参数默认就是undefined
+;(function(window,undefined) {
+    //undefined
+})(window)
+
+////////////////////////////////
+function oClick1(){
+    ajQuery1();
+    function ajQuery1(){
+       show('ajQuery1')
+    }
+    ajQuery1(); 
+}
+function oClick2(){
+    try{
+        ajQuery2();
+    }catch(e){
+        show('oClick2,ajQuery2会报错，未定义，命名函数表达式不会预先提升')
+    }
+    var ajQuery2 = function(){
+       show('ajQuery2')
+    }
+    ajQuery2(); 
+}
+function oClick3(){
+    ;(function(){
+        show('ajQuery3')
+    })()
+}
+
+function oClick4(){
+    var ajQuery4 = function(){
+        show('ajQuery4') 
+    }();
+}
+
+
+$("#target1").click(oClick1);
+$("#target2").click(oClick2);
+$("#target3").click(oClick3);
+$("#target4").click(oClick4);
+
+
+
+function show(data) {
+   $("body").append('<li>' + data + '</li>')
+}
+
+////////jQuery的类数组对象结构
+
+很多人迷惑的jQuery为什么能像数组一样操作，通过对象get方法或者直接通过下标0索引就能转成DOM对象。
+
+首先我们看jQuery的入口都是统一的$, 通过传递参数的不同，实现了9种方法的重载：
+
+1. jQuery([selector,[context]])
+2. jQuery(element)
+3. jQuery(elementArray)
+4. jQuery(object)
+5. jQuery(jQuery object)
+6. jQuery(html,[ownerDocument])
+7. jQuery(html,[attributes])
+8. jQuery()
+9. jQuery(callback)
+
+9种用法整体来说可以分三大块：选择器、dom的处理、dom加载。
+
+换句话说jQuery就是为了获取DOM、操作DOM而存在的！所以为了更方便这些操作，让节点与实例对象通过一个桥梁给关联起来，jQuery内部就采用了一种叫“类数组对象”的方式作为存储结构，所以我们即可以像对象一样处理jQuery操作，也能像数组一样可以使用push、pop、shift、unshift、sort、each、map等类数组的方法操作jQuery对象了。
+
+
+<button id="test1">jQuey[0]</button>
+<button id="test2">jQuey.get</button>
+<button id="test3">aQuery[0]</button>
+<button id="test4">aQuery.get</button>
+
+<p id="book">book</p>
+
+<div id="show1"></div>
+<div id="show2"></div>
+<div id="show3"></div>
+<div id="show4"></div>
+
+<script type="text/javascript">
+
+var aQuery = function(selector) {
+    //强制为对象
+	if (!(this instanceof aQuery)) {
+		return new aQuery(selector);
+	}
+	var elem = document.getElementById(/[^#].*/.exec(selector)[0]);
+	this.length = 1;
+	this[0] = elem;
+	this.context = document;
+	this.selector = selector;
+	this.get = function(num) {
+		return this[num];
+	}
+	return this;
+}
+
+//结果是一个dom元素,可以把代码放到Google Chrome下运行
+//按F12通过调试命令 console.log() 打印出对象
+$("#test1").click(function() {
+	$('#show1').append($('#book')[0])
+})
+
+$("#test2").click(function() {	
+	$('#show2').append($('#book').get(0))
+})
+
+$("#test3").click(function() {
+	$('#show3').append(aQuery("#book")[0])
+})
+
+$("#test4").click(function() {
+	$('#show4').append(aQuery("#book").get(0))
+})
+
+
+</script>
+
+以上是模拟jQuery的对象结构，通过aQuery方法抽象出了对象创建的具体过程，这也是软件工程领域中的广为人知的设计模式-工厂方法。
+
+
+jQuery的无new构建原理
+函数aQuery()内部首先保证了必须是通过new操作符构建。这样就能保证当前构建的是一个带有this的实例对象，既然是对象我们可以把所有的属性与方法作为对象的key与value的方式给映射到this上，所以如上结构就可以模拟出jQuery的这样的操作了，即可通过索引取值，也可以链式方法取值，但是这样的结构是有很大的缺陷的，每次调用ajQuery方法等于是创建了一个新的实例，那么类似get方法就要在每一个实例上重新创建一遍，性能就大打折扣，所以jQuery在结构上的优化不仅仅只是我们看到的，除了实现类数组结构、方法的原型共享，而且还实现方法的静态与实例的共存，这是我们之后将会重点分析的。
+
+/////////////////////////////////////////////////////////////
+jQuery有3种针对文档加载的方法
+$(document).ready(function() {
+    // ...代码...
+})
+//document ready 简写
+$(function() {
+    // ...代码...
+})
+$(document).load(function() {
+    // ...代码...
+})
+
+
+一个是ready一个是load，这两个到底有什么区别呢？
+ready与load谁先执行：
+大家在面试的过程中，经常会被问到一个问题：ready与load那一个先执行，那一个后执行？答案是ready先执行，load后执行。
+
+DOM文档加载的步骤：
+要想理解为什么ready先执行，load后执行就要先了解下DOM文档加载的步骤：
+
+(1) 解析HTML结构。
+(2) 加载外部脚本和样式表文件。
+(3) 解析并执行脚本代码。
+(4) 构造HTML DOM模型。//ready
+(5) 加载图片等外部文件。
+(6) 页面加载完毕。//load
+
+从上面的描述中大家应该已经理解了吧，ready在第（4）步完成之后就执行了，但是load要在第（6）步完成之后才执行。
+
+结论：
+ready与load的区别就在于资源文件的加载，ready构建了基本的DOM结构，所以对于代码来说应该越快加载越好。在一个高速浏览的时代，没人愿意等待答案。假如一个网站页面加载超过4秒，不好意思，你1/4的用户将面临着流失，所以对于框架来说用户体验是至关重要的，我们应该越早处理DOM越好，我们不需要等到图片资源都加载后才去处理框架的加载，图片资源过多load事件就会迟迟不会触发。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

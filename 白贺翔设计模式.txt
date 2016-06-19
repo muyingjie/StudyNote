@@ -1,0 +1,1561 @@
+设计模式
+接口的实现方式：
+1、注释
+	//interface Composite{
+	//	function add(obj);
+	//	function remove(obj);
+	//	function update(obj);
+	//}
+	
+	//CompositeImpl implements Composite
+	function CompositeImpl(){}
+	CompositeImpl.prototype.add=function(obj){};
+	CompositeImpl.prototype.remove=function(obj){};
+	CompositeImpl.prototype.update=function(obj){};
+	
+	var c1 = new CompositeImpl();
+	var c2 = new CompositeImpl();
+2、属性检测
+	//interface Composite{
+	//	function add(obj);
+	//	function remove(obj);
+	//	function update(obj);
+	//}
+	
+	//interface FormItem{
+	//	function select(obj);
+	//}
+	
+	//CompositeImpl implements Composite,FormItem
+	function CompositeImpl(){
+		//显式的在类的内部接受所实现的接口
+		//一般来说在类的内部要定义一个变量，接收实现接口的名字
+		this.implementsInterface = ["Composite","FormItem"];
+	}
+	CompositeImpl.prototype.add=function(obj){};
+	CompositeImpl.prototype.remove=function(obj){};
+	CompositeImpl.prototype.update=function(obj){};
+	CompositeImpl.prototype.select=function(obj){};
+	//检测函数
+	function CheckCompositeImpl(instance){
+		//判断当前对象是否实现了所有的接口
+		if(!IsImplements(instance,"Composite","FormItem")){
+			throw new Error("没有实现所有的方法");
+		}
+	}
+	//公用的具体的检测方法 核心方法
+	function IsImplements(obj){
+		for(var i=1;i<arguments.length;i++){
+			var interfaceName = arguments[i];
+			var interfaceFound = false;
+			for(var j=0;j<obj.implementsInterface.length;j++){
+				if(obj.implementsInterface[j] == interfaceName){
+					interfaceFound=true;
+					break;
+				}
+			}
+			if(!interfaceFound){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	var c1=new CompositeImpl();
+	CheckCompositeImpl(c1);
+3、鸭式辩型 很经典 许多大型框架都采用鸭式辩型
+	一个类实现接口的目的就是要把接口里面所有的方法都实现
+	鸭式辩型核心的核心就是检测方法
+	
+	//1、接口类 用来实例化接口
+	//需要两个参数 1、接口名字 2、方法名数组
+	function Interface(name,methods){
+		if(arguments.length != 2){
+			throw new Error("该接口实例化对象构造函数参数不是2");
+		}
+		this.name = name;
+		this.method = [];
+		
+		for(var i=0,len=methods.length;i<len;i++){
+			if(typeof methods[i] !== “string”){
+				throw new Error("接口方法名不是string类型");
+			}
+			this.methods.push(methods[i]);
+		}
+	}
+	Interface.ensureImplements = function(obj){
+		if(arguments.length < 2){
+			throw new Error("ensureImplements参数个数为"+arguments.length+"，不符合要求");
+		}
+		
+		for(var i=1;i<arguments.length;i++){
+			var instanceInterface = arguments[i];
+			if(instanceInterface.constructor !== Interface){
+				throw new Error("参数类型不是Interface接口类型");
+			}
+			for(var j=0;j<instanceInterface.methods.length;j++){
+				var methodName=instanceInterface.methods[j];
+				if(!obj[methodName] || typeof object[methodName]!="function"){
+					throw new Error(methodName+"方法没有实现或者不是函数类型");
+				}
+			}
+		}
+	};
+	
+	
+	function CompositeImpl(){
+		
+	}
+	CompositeImpl.prototype.add=function(obj){};
+	CompositeImpl.prototype.remove=function(obj){};
+	CompositeImpl.prototype.update=function(obj){};
+	CompositeImpl.prototype.select=function(obj){};	
+	
+	var CompositeInterface = new Interface("CompositeInterface",["add","remove"]);
+	var FormItemInerface = new Interface("FormItemInerface",["update","select"]);
+	
+	var c1 = new CompositeImpl();
+	Interface.ensureImplements(c1,CompositeInterface,FormItemInerface);
+	
+单体模式	
+	1、简单单体
+	var Singleton={
+		attr1:true,
+		attr2:10,
+		method1:function(){
+			alert("方法一");
+		},
+		method2:function(){
+			alert("方法二");
+		}
+	};
+	alert(Singleton.attr1);
+	
+	2、借助闭包创建单体 闭包的主要目的是保护数据 拥有自己的作用域
+	var BHX={};
+	BHX.Singleton=(function(){
+		//在这个作用域里面可以添加自己的成员
+		var a1=true;
+		var a2=10;
+		function f1(){
+			alert("f1");
+		}
+		function f2(){
+			alert("f2");
+		}
+		
+		return {
+			attr1:a1,
+			attr2:a2,
+			method1:f1,
+			method2:f2
+		};
+	})();
+	alert(BHX.Singleton.attr1);
+	3、惰性单体 和闭包单体有一些相似的地方
+	var Ext={};
+	Ext.Base=(function(){
+		var uniqInstance;
+		
+		function init(){
+			var a1=10;
+			var a2=true;
+			var fn1=function(){alert("fn1");};
+			var fn2=function(){alert("fn2");};
+
+			return {
+				attr1:a1,
+				attr2:a2,
+				method1:fn1,
+				method2:fn2
+			};
+		}
+		
+		return {
+			getInstance:function(){
+				if(!uniqInstance){
+					uniqInstance=init();
+				}
+				return uniqInstance;
+			},
+		};
+	})();
+	alert(Ext.Base.getInstance().attr1);
+	
+	4、分支单体 判断程序的分支 和switch类似
+	var Ext={};
+	var diff=true;
+	Ext.More=(function(){
+		var objA={
+			attr1:"FF"
+		};
+		var objB={
+			attr1:"IE"
+		};
+		return def ? objA : objB;
+	})();
+	alert(Ext.More.attr1);
+	
+函数链式调用
+	function Dog(){
+		this.run=function(){
+			alert("Dog is running");
+			return this;
+		};
+		this.eat=function(){
+			alert("Dog is eating");
+			return this;
+		};
+		this.sleep=function(){
+			alert("Dog is sleeping");
+			return this;
+		};
+	}
+	var d1=new Dog();
+	d1.run();
+	d1.sleep();
+	d1.eat();
+	==================jquery模拟
+	(function(){
+		function _$(arguments){
+			var idSel=/^#\w+/;
+			this.dom;
+			
+			if(idSel.test(arguments[0])){
+				this.dom=document.getElementById(arguments[0].substring(1));
+			}else{
+				throw new Error("无法匹配id");
+			}
+		}
+		
+		Function.prototype.method=function(methodName,fn){
+			this.prototype[methodName]=fn;
+			return this;
+		};
+		
+		_$.prototype={
+			constructor:_$,
+			addEvent:function(){},
+			setStyle:function(){}
+		};
+		
+		_$.onReady=function(fn){
+			window.$=function(){
+				return new _$(arguments);
+			};
+			fn();
+			_$.method("addEvent",function(){
+				return this;
+			}).method("setStyle",function(){
+				return this;
+			});
+		};
+		
+		window.$=_$;
+	})(window);
+	
+	$.onReady(function(){
+		$("#inp")
+	});
+	
+工厂方式	
+	function CarShop(){
+		
+	}
+	CarShop.prototype={
+		constructor:CarShop,
+		sellCar:function(type){
+			var car=CarFactory.createCar(type);
+			return car;
+			//这是生产车的逻辑，所以不应该出现在这里
+			//var car;
+			//switch(type){
+			//	case "Benz":
+			//		car=new Benz();
+			//		break;
+			//	case "Bmw":
+			//		car=new Bmw();
+			//		break;
+			//	case "Audi":
+			//		car=new Audi();
+			//		break;
+			//	default:
+			//		"没有合适的车";
+			//}
+			//Interface.ensureImplements(car,CarInterface);
+			//return car;
+		},
+	};
+	
+	var CarInterface = new Interface("CarInterface",["start","run"]);
+	
+	function BaseCar(){}
+	BaseCar.prototype={
+		constructor:BaseCar,
+		start:function(){},
+		run:function(){}
+	};
+	
+	function Benz(){}
+	extend(Benz,BaseCar);
+	
+	function Bmw(){}
+	extend(Bmw,BaseCar);
+	
+	function Audi(){}
+	extend(Audi,BaseCar);
+	
+	var shop=new CarShop();	
+	var car=shop.sellCar("Benz");
+	car.start();
+	car.run();
+	
+	//注：在CarShop的sellCar方法中，既有卖车的逻辑，又有生产车的逻辑(new Benz() new Bmw()...)
+	//生产车的逻辑应该交给工厂来做
+	//生产一台车，单体模式
+	var CarFactory={
+		createCar:function(){
+			var car;
+			switch(type){
+				case "Benz":
+					car=new Benz();
+					break;
+				case "Bmw":
+					car=new Bmw();
+					break;
+				case "Audi":
+					car=new Audi();
+					break;
+				default:
+					"没有合适的车";
+			}
+			Interface.ensureImplements(car,CarInterface);
+			return car;
+		}
+	};
+	
+==================复杂工厂(真正的工厂)================
+	//买什么车去什么商店->商店->卖车->生产车->工厂
+	//需要一个商店抽象类，将CarShop作为抽象类
+	function CarShop(){}
+	CarShop.prototype={
+		constructor:CarShop,
+		sellCar:function(type){
+			//var car=CarFactory.createCar(type);
+			//return car;
+			this.abstractSellCar(type);
+		},
+		abstractSellCar:function(){
+			throw new Error("抽象类不可以直接调用");
+		}
+	};
+	
+	function BenzCarShop(){}
+	extend(BenzCarShop,CarShop);
+	BenzCarShop.prototype={
+		constructor:BenzCarShop,
+		sellCar:function(type){
+			var car;
+			var types=["Benz"];
+			for(var t in types){
+				if(types[t]===type){
+					car=CarFactory.createCar(type);
+				}else{
+					alert("没有对应的车型号");
+				}
+			}
+			return car;
+			//var car=CarFactory.createCar(type);
+			//return car;
+		}
+	};
+	
+	function BmwCarShop(){}
+	extend(BmwCarShop,CarShop);
+	BmwCarShop.prototype={
+		constructor:BmwCarShop,
+		sellCar:function(type){
+			var car;
+			var types=["Bmw"];
+			for(var t in types){
+				if(types[t]===type){
+					car=CarFactory.createCar(type);
+				}else{
+					alert("没有对应的车型号");
+				}
+			}
+			return car;
+			//var car=CarFactory.createCar(type);
+			//return car;
+		}
+	};
+	
+	var CarInterface = new Interface("CarInterface",["start","run"]);
+	
+	function BaseCar(){}
+	BaseCar.prototype={
+		constructor:BaseCar,
+		start:function(){},
+		run:function(){}
+	};
+	
+	function Benz(){}
+	extend(Benz,BaseCar);
+	
+	function Bmw(){}
+	extend(Bmw,BaseCar);
+	
+	function Audi(){}
+	extend(Audi,BaseCar);
+	
+	var CarFactory={
+		createCar:function(){
+			//利用eval动态创建传入类型的实例对象
+			var car=eval("new "+type+"()");
+			Interface.ensureImplements(car,CarInterface);
+			return car;
+		}
+	};
+	
+	var shop1=new BenzCarShop();
+	var car1=shop1.sellCar();
+	car1.run();
+桥接模式
+	事件绑定
+	window.onload=function(){
+		var oInput=document.getElementById("ipt");
+		oInput.addEventListener("click",sendReq,false);
+		
+		function sendReq(){
+			$.post("URL",{msg:"abc"},function(result){
+				
+			});
+		}
+	};
+	特权函数 使内部和外部解耦
+	function Public(){
+		var name="张三";
+		this.getName=function(){
+			return name;
+		};
+	}
+	
+	var p1=new Public();
+	alert(p1.getName());
+	===============
+	function Public(){
+		var privateMethod=function(){
+			alert("复杂操作");
+		};
+		
+		this.bridgeMethod=function(){
+			return privateMethod();
+		};
+	}
+	var p1=new Public();
+	p1.bridgeMethod();
+	==============
+	用桥把多个单体组织在一起
+	使每个单元都能独立化，可以实现自己的变化
+	function Class1(a,b,c){
+		this.a=a;
+		this.b=b;
+		this.c=c;
+	}
+	function Class2(d,e){
+		this.d=d;
+		this.e=e;
+	}
+	function BridgeClass(a,b,c,d,e){
+		this.class1=new Class1(a,b,c);
+		this.class2=new Class2(d,e);
+	}
+组合模式	
+	专门为Web上的动态用户界面而量身定制的
+	这种模式可以用一条命令在多个对象上激发复杂的或递归的行为
+	好处：用同样的方法处理对象的集合与其中的特定子对象
+	还可以用来把一批子对象组织成树状结构，并且使整棵树都可以被遍历
+
+	function Org(name){
+		this.name=name;
+		this.depts=[];
+	}
+	Org.prototype={
+		constructor:Org,
+		addDepts:function(child){
+			this.depts.push(child);
+			return this;
+		},
+		getDepts:function(){
+			return this.depts;
+		}
+	};
+	
+	function Dept(name){
+		this.name=name;
+		this.persons=[];
+	}
+	Dept.prototype={
+		constructor:Dept,
+		addPersons:function(child){
+			this.persons.push(child);
+			return this;
+		},
+		getPersons:function(){
+			return this.persons;
+		}
+	};
+
+	function Person(name){
+		this.name=name;
+	}
+
+	Person.prototype={
+		constructor:Person,
+		hardworking:function(){
+			alert("working");
+		},
+		sleeping:function(){
+			alert("sleeping");
+		}
+	};
+
+	var p1=new Person("张1");
+	var p2=new Person("张2");
+	var p3=new Person("张3");
+	var p4=new Person("张4");
+	var p5=new Person("张5");
+	var p6=new Person("张6");
+
+	var dept1=new Dept("开发部");
+	dept1.addPersons(p1).addPersons(p2).addPersons(p3);
+	var dept2=new Dept("销售部");
+	dept2.addPersons(p4).addPersons(p5).addPersons(p6);
+
+	var org=new Org("bjsxt");
+	org.addDepts(dept1).addDepts(dept2);
+
+	//需求：具体让某个人工作
+	for(var i=0,depts=org.getDepts();i<depts.length;i++){
+		var dept=depts[i];
+		for(var j=0;j<dept.getPersons().length;j++){
+			if(dept.getPersons()[j].name==="张3"){
+				dept.getPersons()[j].hardworking();
+			}
+		}
+	}
+	//当需求更改为开发部下又分为开发部1 开发部2 开发部3
+	//再让某个子开发部的某个人去工作，那么for循环就会再嵌套一层，if判断也更加复杂
+	//业务逻辑的更改造成了代码的大幅度变化
+	//此时我们可以让组合模式来帮我们
+
+	//组合模式应用的场景和特点
+	//场景：
+	//1、存在一批组织成某种层次体系的对象
+	//2、希望对这批对象或其中一部分对象实施一个操作
+
+	//特点：
+	//组合模式中只有两种类型对象：组合对象、叶子对象
+	//这两种类型都实现同一批接口
+	//一般我们会在组合对象中调用其方法并隐式调用下级方法，一般会采用递归的形式实现
+	
+	//组合对象
+	function Composite(name){
+		this.name=name;
+		this.type="Composite";//说明对象的类型
+		this.children=[];
+	}
+	Composite.prototype={
+		constructor:Composite,
+		addChild:function(child){
+			this.children.push(child);
+			return this;
+		},
+		getChild:function(name){
+			var elements=[];
+			var pushLeaf=function(item){
+				if(item.type === "Composite"){
+					item.children.each(arguments.callee);
+				}else if(item.type === "Leaf"){
+					elements.push(item);
+				}else{
+					throw new Error("类型错误");
+				}
+			};
+			if(name && this.name !== name){//根据name让指定name下的Leaf对象执行操作
+				this.children.each(function(item){
+					if(item.name === name && item.type === "Composite"){
+						item.children.each(pushLeaf);
+					}else if(item.name !=== name && item.type === "Composite"){
+						item.children.each(arguments.callee);
+					}else if(item.name === name && item.type === "Leaf"){
+						elements.push(item);
+					}
+				});
+			}else{//让所有的Leaf结点执行操作
+				//this.children得到的时开发部和销售部
+				this.children.each(pushLeaf);
+			}
+			return elements;
+		},
+		hardworking:function(name){
+			//得到所有的Leaf类型的对象
+			var leafObject=this.getChild(name);
+			for(var i=0;i<leafObject.length;i++){
+				leafObject[i].hardworking();
+			}
+		},
+		sleeping:function(name){			
+			var leafObject=this.getChild(name);
+			for(var i=0;i<leafObject.length;i++){
+				leafObject[i].sleeping();
+			}
+		}
+	};
+	//叶子对象
+	function Leaf(name){
+		this.name=name;
+		this.type="leaf";
+	}
+	Leaf.prototype={
+		constructor:Leaf,
+		addChild:function(child){
+			throw new Error("叶子结点不能添加子对象");
+		},
+		getChild:function(name){
+			if(this.name==name){
+				return this;
+			}
+			return null;
+		},
+		hardworking:function(){
+			alert(this.name+" working");
+		},
+		sleeping:function(){
+			alert(this.name+" sleeping");
+		}
+	};
+
+	var CompositeInterface=new Interface("CompositeInterface",["getChild","addChild"]);
+	var LeafInterface=new Interface("LeafInterface",["hardworking","sleeping"]);
+	
+	var p1=new Leaf("张1");
+	var p2=new Leaf("张2");
+	var p3=new Leaf("张3");
+	var p4=new Leaf("张4");
+	var p5=new Leaf("张5");
+	var p6=new Leaf("张6");
+
+	var dept1=new Composite("开发部");
+	dept1.addChild(p1).addChild(p2).addChild(p3);
+	var dept2=new Composite("销售部");
+	dept2.addChild(p4).addChild(p5).addChild(p6);
+
+	var org=new Composite("bjsxt");
+	org.addChild(dept1).addChild(dept2);
+	
+	org.hardworking("开发部");
+	//如果不传参数，就让所有结点调用hardworking方法
+	org.hardworking();
+	
+门面模式	
+	门面模式的两个作用：简化类的接口，消除类和使用它的客户代码之间的耦合
+	是最常用的设计模式
+	最经典的就是事件
+	
+	//做一件事情 必须调用2个函数 分别是a b
+	//其实就是不要把所有的逻辑都写在一个函数里面，要分开写
+	function a(x){}
+	function b(y){}
+	function ab(x,y){
+		a(x);
+		b(y);
+	}
+适配器模式	
+	现有的接口和不兼容的类之间进行适配。使用这种模式的对象又叫包装器，因为他们是在用一个新的接口包装另一个对象。借助适配器可以处理一些与API不匹配、不能一同使用的情况
+	
+	var obj={
+		str1:"111",
+		str1:"222",
+		str1:"333"
+	};
+	
+	function adapter(obj){
+		interfaceMethod(obj.str1,obj.str2,obj.str3);
+	}
+	
+	function interfaceMethod(x,y,z){
+		
+	}
+	===================
+	//假设要兼容YUI和prototype两个库
+	function $(){
+		var elements=[];
+		for(var i=0;i<arguments.length;i++){
+			var element=arguments[i];
+			if(typeof element === "string"){
+				element=document.getElementById(element);
+			}
+			if(arguments.length === 1){
+				return element;
+			}
+			elements.push(element);
+		}
+		return elements;
+	}
+	var yahoo={};
+	yahoo.get=function(el){
+		if(typeof el==="string"){
+			return document.getElementById(el);
+		}
+		if(el instanceof Array){
+			var elements=[];
+			for(var i=;i<el.length;i++){
+				elements.push(yahoo.get(el[i]));
+			}
+			return elements;
+		}
+		if(el){
+			return el;
+		}
+		return null;
+	};
+	yahoo.get=yuiToPrototypeAdapter;
+	function yuiToPrototypeAdapter(){
+		if(arguments.length === 1){
+			return $.apply(window,e instanceof Array?e:[e]);
+		}else{
+			return $.apply(window,arguments);//或者用call也行
+		}
+	}
+	window.onload=function(){
+		//var domarr=$("inp1","inp2"); prototype风格写法
+		//var domarr=yahoo.get(["inp1"]); YUI风格写法
+		
+		//适配器模式的目的就是要让以下prototype的参数风格传入yahoo框架也可以使用
+		yahoo.get("inp1","inp2");
+	};
+装饰者模式	
+	为对象添加新特性的技术
+	实现同样的接口
+	需要有子类
+	var CarInterface=new Interface("CarInterface",["getPrice","assemble"]);
+	function Car(car){
+		//就是为了让子类继承的 让子类多一个父类的引用
+		this.car=car;
+		//检查接口
+		Interface.ensureImplements(this,CarInterface);
+	}
+	Car.prototype={
+		constructor:Car,
+		getPrice:function(){
+			return 200000;
+		},
+		assemble:function(){
+			alert("组装汽车");
+		}
+	};
+	//如果新的需求需要创建子类，而子类有可能会影响到父类的某些属性
+	//这时就要用装饰者模式
+	//用来把原始对象包装在具有同样接口的另一个对象中
+	function LightDecorator(car){//参数car代表原始对象
+		//LightDecorator.superClass是父类的原型对象
+		Car.call(this,car);
+	}
+	extend(LightDecorator,Car);
+	
+	LightDecorator.prototype={
+		constructor:LightDecorator,
+		getPrice:function(){
+			return this.car.getPrice()+10000;//在子类上修改，没有影响到父类
+		},
+		assemble:function(){
+			alert("组装汽车");
+		}		
+	};
+	
+	function IceBoxDecorator(car){
+		LightDecorator.call(this,car);
+	}
+	extend(IceBoxDecorator,Car);
+	IceBoxDecorator.prototype={
+		constructor:IceBoxDecorator,
+		getPrice:function(){
+			return this.car.getPrice()+20000;//在子类上修改，没有影响到父类
+		},
+		assemble:function(){
+			alert("组装汽车");
+		}	
+	};
+	
+	var car=new Car();
+	alert(car.getPrice());
+	
+	car=new LightDecorator(car);
+	alert(car.getPrice());
+	
+	car=new IceBoxDecorator(car);
+	alert(car.getPrice());
+	=================================================
+	//装饰者模式不仅可以用在类上，还可以用在函数上
+	function getDate(){
+		return new Date().toString();
+	}
+	//包装函数
+	function upperCaseDecorator(fn){
+		return function(){
+			return fn.apply(this,arguments).toUpperCase();
+		};
+	}
+享元模式 优化模式 所谓优化，就是优化时间和空间
+	//出厂商 出厂日期 拥有者 车牌号 登记日期
+	function Car(make,model,year,owner,tag,renewDate){
+		this.make=make;
+		this.model=model;
+		this.year=year;
+		this.owner=owner;
+		this.tag=tag;
+		this.renewDate=renewDate;
+	}
+	Car.prototype={
+		constructor:Car,
+		getMake:function(){
+			return this.make;
+		},
+		getModel:function(){
+			return this.model;
+		},
+		getYear:function(){
+			return this.year;
+		},
+		renewRegistration:function(newRenewDate){
+			this.renewDate=newRenewDate;
+		}
+	};
+	var arr=[];
+	var start=new Date().getTime();
+	for(var i=0;i<5000000;i++){
+		arr.push(new Car("aaa","bbb","2012","ccc","112233","2013"));
+	}
+	var end=new Date().getTime();
+	alert(end-start);//700多毫秒
+	//占用内存大约 570M左右
+	
+	我们接下来用享元模式优化它
+	内在数据：可以共享的属性
+	外在数据：不能共享的属性
+	享元模式要把内在数据抽出
+	
+	
+	function Car(make,model,year){
+		this.make=make;
+		this.model=model;
+		this.year=year;
+	}
+	Car.prototype={
+		constructor:Car,
+		getMake:function(){
+			return this.make;
+		},
+		getModel:function(){
+			return this.model;
+		},
+		getYear:function(){
+			return this.year;
+		}
+	};
+	
+	//工厂模式 利用闭包工厂把静态的东西初始化出来
+	var CarFactory=(function(){
+		//已经生产好的car
+		var createdCars={};
+		return {
+			createCar:function(make,model,year){
+				//如果createdCars对象里已经存在当前的make model year 
+				if(createdCars[make+model+year]){
+					return createdCars[make+model+year];
+				}else{
+					var car=new Car(make,model,year);
+					createCars[make+model+year]=car;
+					return car;
+				}
+			}
+		};
+	})();
+	//用单体模式把外在的数据和内在的数据结合在一起
+	var CarRecordManager=(function(){
+		//把登记号的汽车防盗这个对象里
+		var carRecordDataBase={};
+		return {
+			addCarRecord:function(make,model,year,owner,tag,renewDate){
+				var car=CarFactory.createCar(make,model,year);
+				carRecordDataBase[tag]={
+					owner:owner,
+					renewDate:renewDate,
+					car:car
+				};
+			},
+			renewRegistration:function(tag,newRenewDate){
+				carRecordDataBase[tag].renewDate=newRenewDate;
+			}
+		};
+	})();
+	var arr=[];
+	var start=new Date().getTime();
+	for(var i=0;i<5000000;i++){
+		arr.push(CarRecordManager.addCarRecord("aaa","bbb","2012","ccc","112233","2013"));
+	}
+	var end=new Date().getTime();
+	alert(end-start);//3000-5000多毫秒
+	//内存大约占用290M左右
+	
+	//时间和空间不可兼得
+
+	模拟web日历 并利用享元模式优化
+	var CalendarInterface=new Interface("CalendarInterface",["display"]);
+	function CalendarYear(year,parent){
+		this.year=year;
+		this.element=document.createElement("div");
+		this.element.style.display="none";
+		parent.appendChild(this.element);
+		
+		this.months=[];
+		this.numDays=[31,isLeapYear(this.year)?29:28,31,30,31,30,31,31,30,31,30,31];
+		for(var i=0;i<12;i++){
+			this.months[i]=new CalendarMonth(i,this.numDays[i],this.element);
+		}
+	}
+	CalendarYear.prototype={
+		constructor:CalendarYear,
+		display:function(){
+			for(var i=0;i<this.months.length;i++){
+				this.months[i].display();
+			}
+			this.element.style.display="block";
+		}
+	};
+	function CalendarMonth(monthNum,numDays,parent){
+		this.monthNum=monthNum;
+		this.element=document.createElement("div");
+		this.element.style.display="none";
+		parent.appendChild(this.element);
+		
+		this.days=[];
+		
+		for(var i=0;i<numDays;i++){
+			this.days[i]=new CalendarDay(i+1,this.element);
+		}
+	}
+	CalendarMonth.prototype={
+		constructor:CalendarMonth,
+		display:function(){
+			for(var i=0;i<this.days.length;i++){
+				this.days[i].display();
+			}
+			this.element.style.display="block";
+		}
+	};
+	function CalendarDay(date,parent){
+		this.date=date;
+		this.element=document.createElement("div");
+		this.element.style.display="none";
+		parent.appendChild(this.element);
+	}
+	CalendarDay.prototype={
+		constructor:CalendarDay,
+		display:function(){
+			this.element.style.display="block";
+			this.element.innerHTML=this.date;
+		}
+	};
+
+	function isLeapYear(y){
+		return (y>0) && !(y%4) && ((y%100) || !(y%400));
+	}
+	
+	window.onload=function(){
+		var mydiv=document.getElementById("mydiv");
+		var myyear=new CalendarYear(2014,mydiv);
+		myyear.display();
+		
+		//一年都要new出来365个对象，年多了性能就很差了
+	};
+	
+	<div id="mydiv"></div>
+
+	//享元模式优化上面的日历 主要优化天对象
+	function CalendarMonth(monthNum,numDays,parent){
+		this.monthNum=monthNum;
+		this.element=document.createElement("div");
+		this.element.style.display="none";
+		parent.appendChild(this.element);
+		
+		this.days=[];
+		
+		for(var i=0;i<numDays;i++){
+			//只用这一个实例
+			this.days[i]=calendarDaySingleInstance;
+		}
+	}
+	CalendarMonth.prototype={
+		constructor:CalendarMonth,
+		display:function(){
+			for(var i=0;i<this.days.length;i++){
+				this.days[i].display(i+1,this.element);
+			}
+			this.element.style.display="block";
+		}
+	};
+	
+	function CalendarDay(){}
+	CalendarDay.prototype={
+		constructor:CalendarDay,
+		display:function(date,parent){
+			var element=document.createElement("div");
+			parent.appendChild(element);
+			element.style.display="block";
+			element.innerHTML=date;
+		}
+	};
+	var calendarDaySingleInstance=new CalendarDay();
+
+代理模式
+	Java中的Hibernate用到了代理模式
+	延迟本体对象的加载
+	代理也是对象，它的目的就是为了控制对本体对象的访问
+
+	模拟图书馆借书还书的场景
+	实例化图书馆需要消耗很大资源
+	var LibraryInterface=new Interface("LibraryInterface",["addBook","findBook","checkoutBook","returnBook"]);
+	
+	function Book(id,title,author){
+		this.id=id;
+		this.title=title;
+		this.author=author;
+	}
+	
+	function Library(books){
+		this.books=books;
+	}
+	Library.prototype={
+		constructor:Library,
+		addbook:function(book){
+			this.books[book.id]=book;
+		},
+		findbook:function(id){
+			if(this.books[id]){
+				return this.books[id];
+			}
+			return null;
+		},
+		checkoutbook:function(id){
+			//电脑登记 交押金 再借书
+			return this.findbook(id);
+		},
+		returnbook:function(book){
+			this.books[book.id]=book;
+		},
+	};
+
+	//图书馆的代理对象
+	function LibraryProxy(books){
+		this.books=books;
+		this.library=null;//定义一个空对象
+	}
+	//代理对象应该和本体对象应该实现同样的接口，但实际工作还是本体来做
+	LibraryProxy.prototype={
+		constructor:LibraryProxy,
+		initializeLibrary:function(){
+			//初始化图书馆方法
+			if(this.library == null){
+				this.library=new Library(this.books);
+			}
+		},
+		addbook:function(book){
+			this.initializeLibrary();
+			//this.books[book.id]=book;
+			this.library.addbook(book);
+		},
+		findbook:function(id){
+			this.initializeLibrary();
+			//if(this.books[id]){
+			//	return this.books[id];
+			//}
+			//return null;
+			this.library.findbook(id);
+		},
+		checkoutbook:function(id){
+			this.initializeLibrary();
+			return this.findbook(id);
+		},
+		returnbook:function(book){
+			this.initializeLibrary();
+			this.library.returnbookook(book);;
+		},
+	};
+
+	//实例化代理对象 推迟本体对象实例化的时间，什么时候具体去做事情了，再去实例化
+	//此处是延迟了Library对象的实例化
+	var proxy=new LibraryProxy({
+		"01":new Book("01","aaa","bbb"),
+		"02":new Book("02","ccc","ddd")
+	});
+	alert(proxy.findbook("02").author);
+
+观察者模式
+	可以对程序中的某个对象状态进行观察，并在其发生改变时能够得到通知
+	两个重要角色：观察者和被观察者
+	订阅报纸的案例：报社(发布者) 订阅者
+	发布者对应被观察者
+	function Publish(name){
+		this.name=name;
+		this.subscribers=[];//所有订阅者 数组成员是函数类型
+	}
+	//发布消息
+	Publish.prototype.deliver=function(news){
+		var publish=this;
+		//观察者模式的关键就是以下循环
+		this.subscribers.forEach(function(fn){
+			fn(news,publish);//把新消息发给一个订阅者
+		});
+		return this;
+	};
+
+	//具体的一个订阅者订阅报纸的方法
+	Function.prototype.subscribe=function(publish){
+		var sub=this;
+		//some方法：循环遍历数组的每一个元素，每一个元素执行一个函数，如果这里面有一个函数返回true，就返回true
+		var alreadyExists=publish.subscribers.some(function(item){
+			return item===sub;
+		});
+		
+		if(!alreadyExists){
+			publish.subscribers.push(this);
+		}
+		return this;
+	};
+
+	//具体的一个订阅者取消订阅报纸的方法
+	Function.prototype.unsubscribe=function(publish){
+		var sub=this;
+		//filter:循环遍历数组的每一个元素，每一个元素执行一个函数，如果不匹配，删掉该元素
+		publish.subscribers.filter(function(item){
+			return item !== sub;
+		});
+		return this;
+	};
+
+	<input id="pub1" type="button" value="报社1" /><input type="text" id="text1" /><br/>
+	<input id="pub2" type="button" value="报社2" /><input type="text" id="text1" /><br/>
+	<input id="pub3" type="button" value="报社3" /><input type="text" id="text1" /><br/>
+	<textarea id="sub1"></textarea>
+	<textarea id="sub2"></textarea>
+	
+	window.onload=function(){
+		//实例化发布者对象 报社对象
+		var pub1=new Publish("第一报社");
+		var pub2=new Publish("第二报社");
+		var pub3=new Publish("第三报社");
+		
+		//观察者 订阅者
+		var sub1=function(news){
+			document.getElementById("sub1").innerHTML=arguments[1].name+":"+news;
+		};
+		var sub2=function(news){
+			document.getElementById("sub2").innerHTML=arguments[1].name+":"+news;
+		};
+		
+		sub1.subscribe(pub1).subscribe(pub2).subscribe(pub3);
+		sub2.subscribe(pub1).subscribe(pub2);
+		
+		//事件绑定
+		var oPub1=document.getElementById("pub1");
+		var oPub2=document.getElementById("pub2");
+		var oPub3=document.getElementById("pub3");
+		var oText1=document.getElementById("text1");
+		var oText2=document.getElementById("text2");
+		var oText3=document.getElementById("text3");
+		addEvent(oPub1,"click",function(){
+			pub1.deliver(oText1.value);
+		});
+		addEvent(oPub2,"click",function(){
+			pub2.deliver(oText2.value);
+		});
+		addEvent(oPub3,"click",function(){
+			pub3.deliver(oText3.value);
+		});
+	};
+	
+命令模式	分为简单命令模式 复杂命令模式 用闭包封装命令模式
+	var CommandInterface=new Interface("CommandInterface",["execute"]);
+	//点击按钮触发几个元素执行一些动画效果
+	function StartCommand(obj){
+		this.ad=obj;
+	}
+	StartCommand.prototype.execute=function(){
+		this.ad.start();
+	};
+	
+	function StopCommand(obj){
+		this.ad=obj;
+	}
+	StopCommand.prototype.execute=function(){
+		this.ad.stop();
+	};
+	
+	var startCommand=new StartCommand(obj);
+	startCommand.execute();
+	var stopCommand=new StopCommand(obj);
+	stopCommand.execute();
+
+	//闭包命令模式
+	function MakeStart(obj){
+		return function(){
+			obj.start();
+		};
+	}
+	function MakeStop(obj){
+		return function(){
+			obj.stop();
+		};
+	}
+	
+	var startCommand = MakeStart(obj);
+	startCommand();
+	var stopCommand = MakeStop(obj);
+	stopCommand();
+	
+	//客户 调用者 接受者
+	//客户创建命令 调用者执行命令 接受者在命令执行时进行相应操作
+	//实例：控制上下左右移动 目标对象 还可以撤销
+	var ReversibleCommandInterface = new Interface("ReversibleCommandInterface",["execute","undo"]);
+	//命令对象的类 参数是接受者
+	function MoveUp(cursor){
+		this.cursor=cursor;
+	}
+	MoveUp.prototype={
+		constructor:MoveUp,
+		execute:function(){
+			this.cursor.move(0,-10);
+		},
+		undo:function(){
+			this.cursor.move(0,10);
+		}
+	};
+	
+	function MoveDown(cursor){
+		this.cursor=cursor;
+	}
+	MoveDown.prototype={
+		constructor:MoveDown,
+		execute:function(){
+			this.cursor.move(0,10);
+		},
+		undo:function(){
+			this.cursor.move(0,-10);
+		}
+	};
+	
+	//接受者
+	function Cursor(w,h,parent){
+		this.w=w;
+		this.h=h;
+		this.position={
+			x:w/2,
+			y:h/2
+		};
+		this.canvas=document.createElement("canvas");
+		this.canvas.width=this.w;
+		this.canvas.height=this.h;
+		parent.appendChild(this.canvas);
+		
+		this.ctx=this.canvas.getContext("2d");
+		this.ctx.fillStyle="red";
+		this.move(0,0);
+	}
+	Cursor.prototype={
+		constructor:Cursor,
+		move:function(x,y){
+			this.position.x+=x;
+			this.position.y+=y;
+			
+			this.ctx.clearRect(0,0,this.w,this.h);
+			this.ctx.fillRect(this.position.x,this.position.y,20,20);
+		}
+	};
+	//应该有一个命令的集合，目的就是为了当执行每一个命令之前 把该命令压入栈中
+	//命令对象在执行真的操作之前 应该把该命令加入到集合中
+	//当前是一个装饰类 装饰命令对象类的实例 两个参数(原始的命令对象[被装饰者]，命令集合[装饰者])
+	function UndoDecrator(command,undoStack){
+		this.command=command;
+		this.undoStack=undoStack;
+	}
+	UndoDecrator.prototype={
+		constructor:UndoDecrator,
+		execute:function(){
+			this.undoStack.push(this.command);
+			this.command.execute();
+		},
+		undo:function(){
+			this.command.undo();
+		}
+	};
+	
+	//完善HTML
+	function CommandButton(label,command,parent){
+		//检验接口
+		Interface.ensureImplements(command,ReversibleCommandInterface);
+		//实例化按钮 并放到父元素上
+		this.element=document.createElement("button");
+		this.element.innerHTML=label;
+		parent.appendChild(this.element);
+		addEvent(this.element,"click",function(){
+			command.execute();
+		});
+	}
+	
+	function UndoButton(label,parent,undoStack){
+		this.element=document.createElement("button");
+		this.element.innerHTML=label;
+		parent.appendChild(this.element);
+		addEvent(this.element,"click",function(){
+			if(undoStack.length===0){
+				alert("已经没有命令了");
+				return;
+			}else{
+				undoStack.pop()();
+			}
+		});
+	}
+	
+	window.onload=function(){
+		var body=...;
+		var cusor=new Cursor(400,400,body);
+		var undoStack=[];
+		
+		var upCommand=new UndoDecrator(new MoveUp(cursor,undoStack));
+		var downCommand=new UndoDecrator(new MoveDown(cursor,undoStack));
+		
+		var ubtn=new CommandButton("up",upCommand,body);
+		var dbtn=new CommandButton("down",downCommand,body);
+		var undobtn=new UndoButton("undo",body,undoStack);
+	};
+
+	=================================
+	//在上一个例子的基础上 增加保留历史痕迹的功能
+	//不需要实现undo方法了
+	var ReversibleCommandInterface = new Interface("ReversibleCommandInterface",["execute"]);
+	//命令对象的类 参数是接受者
+	function MoveUp(cursor){
+		this.cursor=cursor;
+	}
+	MoveUp.prototype={
+		constructor:MoveUp,
+		execute:function(){
+			this.cursor.move(0,-10);
+		}
+	};
+	
+	function MoveDown(cursor){
+		this.cursor=cursor;
+	}
+	MoveDown.prototype={
+		constructor:MoveDown,
+		execute:function(){
+			this.cursor.move(0,10);
+		}
+	};
+	
+	//接受者
+	function Cursor(w,h,parent){
+		this.w=w;
+		this.h=h;
+		this.commandStack=[];
+		this.canvas=document.createElement("canvas");
+		this.canvas.width=this.w;
+		this.canvas.height=this.h;
+		parent.appendChild(this.canvas);
+		
+		this.ctx=this.canvas.getContext("2d");
+		this.ctx.strokeStyle="red";
+		this.move(0,0);
+	}
+	Cursor.prototype={
+		constructor:Cursor,
+		move:function(x,y){
+			var that=this;
+			this.commandStack.push(function(){
+				that.lineTo(x,y);
+			});
+			this.executeCommands();
+		},
+		lineTo:function(){
+			this.position.x+=x;
+			this.position.y+=y;
+			this.ctx.lineTo(this.position.x,this.position.y);
+		},
+		executeCommands:function(){
+			this.position={
+				x:this.w/2,
+				y:this.h/2
+			};
+			this.ctx.clearRect(0,0,this.w,this.h);
+			this.ctx.beginPath();
+			this.ctx.moveTo(this.position.x,this.position.y);
+			for(var i=0;i<this.commandStack.length;i++){
+				this.commandStack[i]();
+			}
+			this.ctx.stroke();
+		},
+		undo:function(){
+			this.commandStack.pop();
+			this.executeCommands();
+		}
+	};
+
+	//完善HTML
+	function CommandButton(label,command,parent){
+		//检验接口
+		Interface.ensureImplements(command,ReversibleCommandInterface);
+		//实例化按钮 并放到父元素上
+		this.element=document.createElement("button");
+		this.element.innerHTML=label;
+		parent.appendChild(this.element);
+		addEvent(this.element,"click",function(){
+			command.execute();
+		});
+	}
+
+	function UndoButton(label,parent,cursor){
+		this.element=document.createElement("button");
+		this.element.innerHTML=label;
+		parent.appendChild(this.element);
+		addEvent(this.element,"click",function(){
+			if(cursor.length===0){
+				alert("已经没有命令了");
+				return;
+			}else{
+				cursor.undo();
+			}
+		});
+	}
+	window.onload=function(){
+		var body=...;
+		var cusor=new Cursor(400,400,body);
+		
+		var upCommand=new MoveUp(cursor);
+		var downCommand=new MoveDown(cursor);
+		
+		var ubtn=new CommandButton("up",upCommand,body);
+		var dbtn=new CommandButton("down",downCommand,body);
+		var undobtn=new UndoButton("undo",body,cursor);
+	};
+
+责任链模式
+	用来消除请求的发送者和接受者之间的耦合
+	主要处理发出者和接受者之间的耦合
+	//模拟场景：做项目->项目经理->分配任务->项目组(A B C D)
+	//任务类 发送者
+	function Assign(task){
+		this.task=task;
+	}
+	
+	//接受任务的类
+	function WorkFlow(assign){
+		this.assign=assign;
+	}
+	WorkFlow.prototype={
+		constructor:WorkFlow,
+		//分析当前的任务谁能去执行
+		filterHandler:function(es){
+			for(var i=0;i<es.length;i++){
+				if(this.assign.task===es[i].cando){
+					return es[i].todo();
+				}
+			}
+		}
+	};
+
+	//处理者
+	function Executor(name,cando){
+		this.name = name;
+		this.cando=cando;
+	}
+	Executor.prototype={
+		constructor:Executor,
+		todo:function(){
+			document.write(this.name+"开发"+this.cando);
+		}
+	};
+	
+	var el1=new Executor("aaa","javascript");
+	var el2=new Executor("bbb","css");
+	var el3=new Executor("ccc","java");
+	var el4=new Executor("ddd","sql");
+
+	//实例化任务对象
+	var assign=new Assign("java");
+	var wf=new WorkFlow(assign);
+	wf.filterHandler([el1,el2,el3,el4]);
+
+============================
+	//模拟场景：做项目->项目经理->分配任务->项目组(A B C D)
+	//任务类 发送者
+	function Assign(task){
+		this.task=task;
+	}
+	
+	//接受任务的类
+	function WorkFlow(assign){
+		this.assign=assign;
+	}
+	WorkFlow.prototype={
+		constructor:WorkFlow,
+		//分析当前的任务谁能去执行
+		filterHandler:function(executor){
+			//如果当前任务适合，就直接执行
+			if(this.assign.task === executor.cando){
+				return executor.todo();
+			}else{
+				this.filterHandler.call(this,executor.successor);
+			}
+		}
+	};
+
+	//处理者
+	function Executor(name,cando){
+		this.name = name;
+		this.cando=cando;
+		this.successor=null;//保留当前接受者的下家
+	}
+	Executor.prototype={
+		constructor:Executor,
+		todo:function(){
+			document.write(this.name+"开发"+this.cando);
+		},
+		//责任链模式的关键
+		setSuccessor:function(successor){
+			this.successor=successor;
+		}
+	};
+	
+	var el1=new Executor("aaa","javascript");
+	var el2=new Executor("bbb","css");
+	var el3=new Executor("ccc","java");
+	var el4=new Executor("ddd","sql");
+	el1.setSuccessor(e2);
+	el2.setSuccessor(e3);
+	el3.setSuccessor(e4);
+
+	//实例化任务对象
+	var assign=new Assign("java");
+	var wf=new WorkFlow(assign);
+	wf.filterHandler(el1);
+
+
+
+
+
+
+
+	

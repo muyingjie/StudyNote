@@ -1,0 +1,81 @@
+git
+===========本地的操作
+git init 将本地目录变成git仓库
+git add xxx.txt 把文件添加到仓库
+git commit -m "增加xxx文件"
+git status 查看是否有文件修改过
+git diff 查看文件修改的内容
+
+
+==============git与远程关联步骤：
+1 git remote add origin ssh地址
+2 git remote -v
+3 向远程提交时用git push origin master 输入gitHub用户名和密码
+
+
+
+git remote rm origin 解除与远程的关联
+git remote -v 查看与远程的关联
+git remote add origin ssh地址(https://github.com/zhaohuiziwo901/AddressService.git) 添加本地与远程仓库的关联
+git push origin master 输入gitHub用户名和密码
+
+
+每个项目都有一个 Git 目录
+cd repository_directory
+git clone xxx@abc
+执行完这两条指令后会在repository_directory文件夹中生成abc文件夹，abc文件夹里面就会有.git目录
+
+在 Windows 系统上，Git 会找寻用户主目录下的 .gitconfig 文件。
+主目录即 $HOME 变量指定的目录，一般都是 C:\Documents and Settings\$USER。
+此外，Git 还会尝试找寻 /etc/gitconfig 文件，只不过看当初 Git 装在什么目录，就以此作为根目录来定位。
+
+git在提交时会用到git config配置的信息
+git config --global user.name "myj"
+git config --global user.email xxx@xxx.xxx
+如果用了global选项，那么更改的配置文件就是用户主目录下面的那个，以后每个项目都会用这里的config
+如果要在某个特定项目中使用其他名字或者邮箱，去掉--global就可以，新的设置会保存在项目的.git目录中
+
+检查已有的配置信息：git config --list
+
+要对现有的某个项目进行版本管理，进入该项目根目录下执行
+git init
+之后该目录下会有.git文件夹
+
+cat .gitignore创建忽略文件列表文件
+*.[oa] //忽略扩展名为.o或.a结尾的文件
+
+.gitignore文件例子
+=========================
+#忽略所有除了lib.a之外.a结尾的文件
+*.a
+!lib.a
+#忽略根目录下的abc.txt文件
+/abc.txt
+#忽略build目录下的所有文件
+build/
+
+把所有已经跟踪过的文件暂存起来一并提交
+git commit -a -m 'added new benchmarks'
+
+git rm abc.txt 移除abc.txt文件
+
+本地Git仓库和GitHub仓库之间的传输是通过SSH加密的，所以需要一些设置：
+1、创建SSH key
+	先在家目录下查看有没有.ssh目录，以及.ssh目录下有没有id_rsa和id_rsa.pub这两个文件，如果没有通过下面指令创建SSH key
+	$ ssh-keygen -t rsa -C "xxx@xxx.com"
+	注意：如果设置了密码的话一定要记住
+	生成了之后在家目录里面就有id_rsa(私钥)和id_rsa.pub(公钥)
+2、在github上添加公钥内容
+github是通过SSH-key识别是谁推送上来的内容的
+
+3、创建远程仓库
+4、此时可以从这个远程仓库克隆出新的仓库，也可以关联一个本地库使二者同步
+5、如果想与本地库关联，通过下面的指令：
+	git remote add origin xxx@xxx.xxx
+	add后面跟的实际上是一个远程库的名字
+6、将本地修改提交到远程库：
+	git push origin master
+	
+	
+	
+git add -u，使用-u参数调用了git add命令，会将本地有改动（包括删除和修改）的已经追踪的文件标记到暂存区中。

@@ -1,0 +1,4098 @@
+我们一般所说的.Net就是.Net平台，但是.Net还有一个很重要的组成部分就是.Net Framework框架，.Net Framework可以理解为.Net的一个环境或者框架，有了这个框架才可以构建.Net应用
+好比信号塔提供了一个稳定的环境来保证我们中国移动互联网平台稳定的运转，.Net Framework就相当于信号塔，而.Net平台就相当于中国移动互联网平台
+
+.Net Framework框架分为CLR(公共语言运行时)和.Net类库
+
+c#编程语言可以开发基于.Net平台的应用
+
+Java既是一种平台又是一种编程语言，所以可以这样来说，
+对于Java程序员来说，是用Java语言在Java平台上开发应用
+对于.Net程序员来说，是用c#语言在.Net平台上开发应用
+
+.Net可以干什么
+桌面应用程序winform
+Internet应用程序Asp.net应用程序
+msdn csdn 携程 招商银行 证券之星 当当 京东 汽车之家
+手机开发
+Unity3D游戏开发或者虚拟现实(大家的机遇)
+
+.Net两种交互模式
+C/S	QQ VS
+
+B/S	只需要安装一个浏览器即可
+
+VS
+运行->devenu
+以.cs结尾的就认为是一个类
+解决方案包含项目，项目包含类
+
+解决方案->公司
+项目->部门
+类->员工
+
+视图->解决方案资源管理器
+
+//引用命名空间
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace _01_My_First_Demo//项目名或者命名空间
+{
+	class Program//类
+	{
+		static void Main(string[] args)//Main函数是程序的主入口
+		{
+			//code
+		}
+	}
+}
+
+在解决方案文件夹里面
+.suo文件是隐藏文件，我们一般不操作这个文件
+.sln文件是解决方案文件，可以双击运行
+剩下的就是些文件夹，我们称其为项目文件夹，例如 01-My First Demo
+
+项目文件夹里面
+.csproj	c#项目 c sharp project		项目文件，里面包含着这个项目的信息，可以双击运行
+
+先学习两句话
+console.WriteLine();
+Console.ReadKey();
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace _01_My_First_Demo
+{
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			Console.WriteLine('Hello World');
+			Console.ReadKey();//运行完了之后马上结束，也就是黑窗口刚出来就消失了，但是加上这句就起到了暂停程序的作用，并且等待用户按下任意键继续，按下的任意键将显示在控制台中
+		}
+	}
+}
+
+运行代码的两种手段
+(1)、绿色小箭头启动，看到的黑窗口就是控制台，以上程序的作用就是将'Hello World'输出到控制台
+(2)、F5
+
+shift+F5停止调试
+
+我们在运行之前习惯按下F6，用来查看错误，错误会用红色波浪线显示(2013中是F6,2012中是Ctrl+Shift+B)，其实就是生成解决方案
+
+解决方案右键单击->属性->启动项目
+
+项目的加载和卸载
+
+在项目上右击->卸载，该项目就不可用，如果有一天想要启用，可以右击->重新加载该项目
+
+注释符
+1、注销
+2、解释
+
+注释分三种
+1、单行
+2、多行
+3、文档注释	///
+///<summary>
+///这个方法的作用就是...
+///</summary>
+///<param name='n1'>第一个参数</param>
+///<param name='n2'>第二个参数</param>
+///<returns>返回比较大的那个数</returns>
+
+快速对其代码
+
+快速选中代码
+当光标在行首或者行尾的时候通过Shift+Home和Shift+End来快速选中代码
+
+Ctrl+K+C，Ctrl+E+C注释选中代码
+Ctrl+K+U，Ctrl+E+U取消注释的代码
+
+折叠冗余代码
+#region
+#endRegin
+
+在region的后面至少空一格再加注释
+
+字符串string类型必须用双引号，不能用单引号
+字符char类型必须用单引号，不能用双引号
+字符char类型
+char gender='男';
+char gender='';//字符类型不能为空，字符串类型才可以为空
+
+存储货币
+decimal money=5000m;//后面的m必须要有
+
+c#中变量不能被重复的声明定义
+
+声明变量的时候String和string的区别:
+String s="zhangsan";//基于.Net平台下任何一种语言(VB F#)共有的一个类
+string s="lisi";//属于c#的一个类
+
+同一个变量名，不能重复声明或者定义
+
+类或者方法的首字母要大写
+
+c#中也可以用+连接字符串，和js的+用法一样
+
+占位符
+
+Console.WriteLine("第一个数字是{0},第二个数字是{1}",n1,n2);
+异常是指语法上并没有任何错误，但是在程序运行期间由于某些原因出现了问题，使程序不能正常运行
+
+int n1=10;
+int n2=20;
+Console.WriteLine("第一个数字是{1},第二个数字是{0}",n1,n2);//20 10  即n1对应{0} n2对应{1}
+
+string str=Console.ReadLine();用于接收用户的输入
+
+\b相当于退格键，\b放到字符串的两端无效
+
+关于换行：
+string str="111111\n2222222";
+在读写文件的操作中，mac系统可以识别\n并且成功实现换行，而在windows系统中要将字符串写成string str="1111111\r\n22222222";才可以成功实现换行，mac系统是不识别\r\n换行的
+
+如果想要取消\在字符串中的转义作用，可以再字符串前面加@符，也就是
+string str=@"\a\b\v\f\r\h";里面的\都不代表转义了
+
+@符号的另外一个作用就是保留原格式输出
+
+等号两端参与运算的操作数的类型必须一致，如果不一致，满足下列条件会发生自动类型转换，或者称之为隐式类型转换
+（1）、两种类型兼容
+例如：int和double兼容（都是数字类型）
+（2）、目标类型大于源类型
+例如：double>int
+
+目标类型小于源类型的叫显式类型转换，或者强制类型转换
+
+显示类型转换的条件
+（1）、两种类型相兼容 int--double
+（2）、大的转小的 double---int
+语法：
+(待转换的类型)要转换的值
+
+int n1=10;
+int n2=3;
+double d=n1/n2;//结果是3，不是3.333...整型和整型加减乘除取余还是整型
+
+对于表达式，如果把其中一个操作数提升等级，结果也就提升了等级
+
+int n1=10;
+int n2=3;
+double d=n1*1.0/n2;//结果是3.3333333333，但我们不需要这么多位
+
+Console.WriteLine("{0:0.0000}",d);//3.3333
+
+类型相兼容的两个变量可以使用自动类型转换或者强制类型转换，但如果类型不兼容的话，我们可以使用Convert转换工厂进行转换
+
+string s="123";
+double d=Convert.ToDouble(s);
+int n=Convert.ToInt32(s);
+但是Convert转换也需要满足一个条件，面儿上必须要过得去，不能将"abc"这样的东西转成int型
+
+Convert.toChar();
+Convert.toDate();
+Convert.toDecimal();
+
+Console.WriteLine("请输入你的姓名");
+string name=Console.ReadLine();
+Console.WriteLine("请输入你的语文成绩");
+string strChinese=Console.ReadLine();
+Console.WriteLine("请输入你的数学成绩");
+string strMath=Console.ReadLine();
+Console.WriteLine("请输入你的英语成绩");
+string strEnglish=Console.ReadLine();
+
+int chinese=Convert.ToInt32(strChinese);
+int math=Convert.ToInt32(strMath);
+int english=Convert.ToInt32(strEnglish);
+
+Console.WriteLine("{0}总成绩是{1},平均成绩是{2}",name,chinese+math+enlish,(chinese+math+enlish)/3);
+
+//成绩可能有小数，所以得转成double类型
+double chinese=Convert.ToDouble(strChinese);
+...
+double sumScore=chinese+math+english;
+double avg=sumScore/3;
+Console.WriteLine("总成绩是{1},平均成绩是{2:0.00}",sumScore,avg);
+
+
+关系运算符连接起来的表达式称为关系表达式
+算术表达式、逻辑表达式(逻辑与表达式、逻辑或表达式、逻辑非表达式)、赋值表达式同理
+
+
+Console.WriteLine("输入语文成绩");
+int chinese=Convert.ToInt(Console.ReadLine());
+
+闰年
+(!year%400)||(year%4==0 && year%100!=0)
+逻辑与的优先级比逻辑或高，所以上面的括号可以去掉
+
+变量类型 int double string char decimal bool
+
+异常：语法上没有错误，在程序的运行过程当中，由于某些原因程序出现了错误，不能再正常的运行
+
+Console.WriteLine("请输入一个数字");
+int number=Convert.ToInt32(Console.ReadLine());
+
+Console.WriteLine(number*2);
+Console.ReadKey();
+在以上四行中，只有第二行可能出现异常，那么我们就需要捕获它
+
+try
+{
+	可能会出现异常的代码
+}
+catch
+{
+	出现异常后要执行的代码
+}
+如果try中的代码出现了异常，那么出现异常后面的代码都不执行，而会转而执行catch里面的代码
+
+
+int number=0;
+Console.WriteLine("请输入一个数字");
+try
+{
+	number=Convert.ToInt(Console.ReadLine());
+}
+catch
+{
+	Console.WriteLine("输入的内容不能够转换成数字");
+}
+Console.WriteLine(number*2);
+Console.ReadKey();
+
+此时，如果输入15abc，除了输出异常内容之外，还会出来一个0，是因为倒数第二行的0的原因
+我们可以将Console.WriteLine(number*2);放到try里面即可，除此之外我们还可以进行如下修改
+
+//假设没有出异常
+bool b=true;
+int number=0;
+Console.WriteLine("请输入一个数字");
+try
+{
+	number=Convert.ToInt(Console.ReadLine());
+}
+catch
+{
+	Console.WriteLine("输入的内容不能够转换成数字");
+	b=false;
+}
+if(b)
+{
+	Console.WriteLine(number*2);
+}
+Console.ReadKey();
+
+//练习：不断输入并打出其2倍，直到输入q终止
+string input="";
+while(input!="q")
+{
+	Console.WriteLine("请输入数字");
+	input=Console.ReadLine();//在这里用户可能输入 数字、q、乱七八糟的东西
+	if(input!="q")
+	{
+		int number=Convert.ToInt32(input);
+		Console.WriteLine("您输入的数字的2倍是{0}",number*2);
+	}
+	else
+	{
+		Console.WriteLine("输入的是q,程序退出");
+	}
+}
+Console.ReadKey();
+
+在此程序中int number=Convert.ToInt32(input);可能出现异常，所以我们需要进行异常处理
+string input="";
+while(input!="q")
+{
+	Console.WriteLine("请输入数字");
+	input=Console.ReadLine();
+	if(input!="q")
+	{
+		try
+		{
+			int number=Convert.ToInt32(input);
+			Console.WriteLine("您输入的数字的2倍是{0}",number*2);
+		}
+		catch
+		{
+			Console.WriteLine("您输入的字符串不能转换成数字");
+		}
+	}
+	else
+	{
+		Console.WriteLine("输入的是q,程序退出");
+	}
+}
+Console.ReadKey();
+
+调试
+1、F11逐语句调试（单步调试）
+2、F10逐过程调试
+3、断点调试，打完断点之后程序停在那里的时候再按F11是一行一行往下执行
+
+已知循环次数的话最好用for循环，未知循环次数最好用while循环
+
+
+Console.Write();//不会自动换行
+Console.WriteLine();//默认会自动换行
+
+
+int num=int.Parse("123abc");//和Convert.ToInt32()基本上一样，使用Convert.ToInt32()本质上是调用int.Parse()，但是基本上可以忽略
+除此之外还有char.Parse() decimal.Parse()
+
+int.TryParse()//"尝试"将一个字符串转换成int类型
+int number=0;
+bool b=int.TryParse("123",out number);//第一个参数就是要转换的字符串，在转换的过程中如果转换成功了，那么将转成的int型的数字赋给number，并且b的值将是true，转换失败的话number的值将被赋为0，b的值将被赋为false，并不会抛出异常
+Console.WriteLine(b);
+Console.WriteLine(number);
+TryParse的性能要比int.Parse和Convert.ToInt32效率要高
+
+看11,3个练习
+//循环输入5个人的年龄并计算平均年龄
+//如果录入的数据出现负数或大于100的数，立即停止输入
+int sum=0;
+for(int i=0;i<5;i++)
+{
+	Console.WriteLine("请输入第{0}个人的成绩",i+1);
+	int age=Convert.ToInt32(Console.ReadLine());
+	if(age>=0&&age<=100)
+	{
+		sum+=age;
+	}
+	else
+	{
+		Console.WriteLine("输入年龄不合法");
+		break;
+	}
+}
+Console.WriteLine("五个人的平均年龄是{0}",age);
+Console.ReadKey();
+//这时的程序如果输入合法，跑起来没什么问题，但是如果输入不合法，会跳出循环，但同时也会走计算平均年龄这条语句，解决该问题的办法就是用一个bool值控制其走向，具体如下
+int sum=0;
+bool b=true;
+for(int i=0;i<5;i++)
+{
+	Console.WriteLine("请输入第{0}个人的成绩",i+1);
+	try
+	{
+		int age=Convert.ToInt32(Console.ReadLine());
+		if(age>=0&&age<=100)
+		{
+			sum+=age;
+		}
+		else
+		{
+			Console.WriteLine("输入年龄不合法");
+			b=false;
+			break;
+		}
+	}
+	catch
+	{
+		Console.WriteLine("输入的年龄不正确，程序退出");
+		b=false;
+		break;
+	}
+}
+if(b)
+{
+	Console.WriteLine("五个人的平均年龄是{0}",age);
+}
+Console.ReadKey();
+
+
+//1-100之间的整数相加，得到累加值大于20的当前数
+
+//输出1-100之间的素数
+for(int i=2;i<100;i++)
+{
+	bool b=true;
+	for(int j=2;j<i;j++)
+	{
+		if(i%j==0)
+		{
+			b=false;
+			break;
+		}
+	}
+	if(b)
+	{
+		Console.WriteLine(i);
+	}
+}
+
+//产生随机数，两步
+//1、创建能够产生随机数的对象
+Random r=new Random();
+//2、让产生随机数的这个对象调用方法来产生随机数
+int rNumber=r.Next(1,10);//限定随机数是从1到10的，前闭后开区间
+
+
+变量类型
+int double string char bool decimal
+变量的使用规则：先声明再赋值最后使用
+int number;
+number;
+Console.WriteLine(number);
+
+常量
+const int num=20;
+
+枚举
+[public] enum enum1
+{
+	
+}
+public可以省略，用来修饰访问权限，public权限最高，在任何地方都可以访问，枚举命名要复合Pascal规范，枚举经常用来规范开发
+
+namespace _02枚举
+{
+	//将枚举声明到命名空间的下面，类的外面，表示这个命名空间下所有的类都可以实现这个枚举
+	public enum Gender
+	{
+		男,
+		女//枚举的最后逗号可加可不加
+	}
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			Gender gender=Gender.男;
+		}
+	}
+}
+
+枚举和int以及string之间的转换
+1、枚举强转成int
+public enum QQState
+{
+	OnLine,
+	OffLine,
+	Leave,
+	Busy,
+	QMe
+}
+
+//枚举类型默认可以和int类型互相转换 枚举类型和int类型是相兼容的
+QQState state=QQState.OnLine;
+int n=(int)state;
+Console.WriteLine();
+Console.ReadKey();
+//得到0
+
+
+Console.WriteLine((int)QQState.Leave);//得到2
+
+//而如果这样写
+public enum QQState
+{
+	OnLine=2,
+	OffLine,
+	Leave,
+	Busy,
+	QMe
+}
+
+Console.WriteLine(QQState.Leave);//4,即枚举从2开始
+
+2、int强制转成枚举
+public enum QQState
+{
+	OnLine,
+	OffLine,
+	Leave,
+	Busy,
+	QMe
+}
+int n1=3;
+QQState state=(QQState)n1;
+Console.WriteLine(state);
+Console.ReadKey();//得到Busy
+
+
+但是如果
+int n1=8;
+QQState state=(QQState)n1;
+Console.WriteLine(state);
+Console.ReadKey();//输出8，而且也不报异常
+
+//所有的类型都能转换成string类型
+3、枚举->字符串
+int n1=10;
+double n2=3.14;
+decimal n3=5000m;
+string s1=n1.ToString();
+string s2=n2.ToString();
+string s3=n3.ToString();
+Console.WriteLine(s1);
+Console.WriteLine(s2);
+Console.WriteLine(s3);
+Console.ReadKey();
+
+以上转换都可以成功
+接下来看下枚举的转换
+QQState state=QQState.OnLine;
+string s=state.ToString();
+Console.WriteLine();
+Console.ReadKey();//得到OnLine
+
+4、字符串->枚举 ****
+string s="0";
+//将s转换成枚举类型
+//QQState state=(QQState)s;强转的前提是兼容，所以这样不可以
+//Convert.ToInt32() int.parse() int.TryParse()
+
+//调用Parse方法的目的就是为了让它帮助我们将字符串转化成对应的枚举
+QQState state=Enum.Parse(typeof(QQState),s);//Enum是一个类，Parse是一个方法
+//这条语句的作用就是将s转换成QQState类型，并将转换后的结果存储在state变量里面
+//得到OnLine,注意这个是枚举的OnLine
+
+如果转换的字符串是枚举里面没有的，会抛出异常
+枚举和int相兼容
+
+结构
+可以帮助我们一次性声明多个不同类型的变量，注意是不同类型变量
+[public] struct 结构名//结构名字命名规范要复合Pascal
+{
+	成员
+}
+
+namespace _05struct
+{
+	public struct Person
+	{
+		//这三个字段(注意不是变量)要求外部能访问到，所以在前面需要加上public
+		//字段和变量有个本质的区别就是变量只能存一个值，而字段可以存很多值，在我们这个例子中name字段既可以是张三，也可以是李四，区分字段和变量，我们习惯性的将字段前面加一个下划线
+		public string _name;
+		public int _age;
+		public Gender _gender;
+	}
+
+	public enum Gender
+	{
+		男,
+		女
+	}
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			Person zsPerson;
+			zsPerson._name="张三";
+			zsPerson._age=21;
+			zsPerson._gender=Gender.男;
+			...
+
+			Person lsPerson;
+			lsPerson._name="李四";
+			lsPerson._age=22;
+			lsPerson._gender=Gender.女;
+			...
+		}
+	}
+}
+
+声明一个MyColor变量，并对其成员赋值，使MyColor可以表示成一个红色
+public struct MyColor
+{
+	public int _red;
+	public int _green;
+	public int _blue;
+}
+
+MyColor mc;
+mc._red=255;
+mc._green=0;
+mc._blue=0;
+
+数组可以一次性存储多个相同类型的变量，结构一次性存储多个不同类型的变量
+
+int[] nums=new int[10];//10代表数组的长度
+
+for(int i=0;i<nums.Length;i++)
+{
+	nums[i]=i;
+}
+
+如果所访问的索引超出了界限，会出异常
+
+string[] str=new string[10];//初值都是null
+bool[] bools=new bool[10];//初值都是false
+
+数组的声明方式
+int[] nums={1,2,3,4,5,6};
+int[] nums=new int[3]{1,2,3};//不推荐
+int[] nums=new int[]{1,2,3,4,5};//太麻烦
+
+数组的应用
+
+找最大值
+int[] nums={1,2,3,4,54,56,7,73,78,5};
+//int max=0;
+int max=nums[0];
+int max=MinValue;
+//int min=0;
+int min=nums[0];
+int min=MaxValue;
+int sum=0;
+for(int i=0;i<nums.Length;i++)
+{
+	if(nums[i]>max)
+	{
+		max=nums[i];
+	}
+	if(nums[i]<min)
+	{
+		min=nums[i];
+	}
+	sum+=nums[i];
+	Console.WriteLine("这个数组的最大值{0}，最小值{1}，平均值{2}，总和{3}",max,min,sum/nums.Length,sum);
+}
+
+string str=null;//""会在内存开空间 null不会开空间
+
+
+string[] names={"aaa","bbb","ccc","ddd"};
+string str=null;
+for(int i=0;i<string.Length-1;i++)
+{
+	str+=names[i]+"|";
+}
+Console.WriteLine(str+names[string.Length-1]);
+
+//反转
+string[] letters={"aaa","bbb","ccc"};
+for(int i=0;i<string.Length/2;i++)
+{
+	string tmp=letters[i];
+	names[i]=names[names.Length-1-i];
+	names[names.Length-1-i]=tmp;
+}
+
+冒泡排序
+int[] nums={9,8,7,6,5,4,3,2,1,0};
+
+for(int i=0;i<nums.Length-1;i++)
+{
+	for(int j=0;j<nums.Length-1-i;j++)
+	{
+		if(nums[j]>nums[j+1])
+		{
+			int tmp=nums[j];
+			nums[j]=nums[j+1];
+			nums[j+1]=tmp;
+		}
+	}
+}
+
+Array.Sort(nums);//只能升序排列
+Array.Reverse(nums);//反转
+
+如果想要降序，可以先sort，再reverse一下
+
+函数的语法
+public static 返回值类型 方法名([参数列表])
+{
+	方法体:
+}
+
+调用的时候：类名.方法名();但在某些情况下类名是可以省略的，如果你写的方法和main函数同在一个类当中，类名可以省略
+
+使用静态字段来模拟全局变量，c#中没有全局变量
+class Program
+{
+	public static int _number = 10;//静态字段
+
+	static void Main(string[] args)
+	{
+		
+	}
+
+	public static void Test(int a)
+	{
+		
+	}
+}
+
+读取输入的整数，多次调用（如果用户输入的是数字，则返回，否则提示用户重新输入）
+
+while(true)
+{
+	Console.WriteLine("请输入一个数字");
+	try
+	{
+		int number=Convert.ToInt32(Console.ReadLine());
+		Console.WriteLine(number);
+		break;
+	}
+	catch
+	{
+		Console.WriteLine("输入有误！！！");
+	}
+	Console.ReadKey();
+}
+把这段代码封装成方法//注意：方法的功能一定要单一，而且方法中最忌讳提示用户输入
+因为Console.WriteLine();只能在控制台里面跑，将来写Winform、asp/net里面是没有这个窗口的
+
+static void Main(string[] args)
+{
+	Console.WriteLine("请输入一个数字");
+	string input=Console.ReadLine();
+	int num=GetNumber(input);
+	Console.WriteLine(num);
+	Console.ReadKey();
+}
+
+//这个方法需要判断用户的输入是否是数字，如果是数字就返回否则返回提示用户重新输入
+public static int GetNumber(string s)
+{
+	while(true)
+	{
+		try
+		{
+			int number=Convert.ToInt32(s);
+			return number;
+		}
+		catch
+		{
+			Console.WriteLine("请重新输入");
+			s=Console.ReadLine();
+		}
+	}
+}
+//练习：只允许用户输入yes或者no，请改成方法，只要不是就重新输入
+public static string IsYesOrNo(string input)
+{
+	while(true)
+	{
+		if(input=="yes")
+		{
+			return input;
+		}
+		else
+		{
+			Console.WriteLine("只能输入yes和no，请重新输入");
+			input=Console.ReadLine();
+		}
+	}
+}
+
+//求数组中各元素的和
+public static int GetSum(int[] nums)
+{
+	int sum=0;
+	for(int i=0;i<nums.Length;i++)
+	{
+		sum+=nums[i];
+	}
+	return sum;
+}
+
+3个高级参数in out ref
+//求一个数组中的最大值、最小值、和、平均值，写成函数
+static void Main(string[] args)
+{
+	int[] nums={1,2,3,4,5};
+	int[] res=GetMaxMinSumAvg(nums);
+}
+public static int[] GetMaxMinSumAvg(int[] nums)
+{
+	int[] res=new int[4];
+	//假设res[0]最大值、res[1]最小值
+	res[0]=nums[0];
+	res[1]=nums[1];
+	res[2]=0;
+	for(int i=0;i<nums.Length;i++)
+	{
+		if(nums[i]>res[0])
+		{
+			res[0]=nums[i];
+		}
+		if(nums[i]<res[1])
+		{
+			res[1]=nums[i];
+		}
+		res[2]+=nums[i];
+	}
+	//平均值
+	res[3]=res[2]/nums.Length;
+	return res;
+}
+由此我们可以看出可以通过一个数组返回多个值，但是如果我们要返回的值有很多种类型的时候，这种方法就不可以了，这时需要用到out参数
+
+//注：out后面是需要多余返回的那些参数
+public static void Test(int[] nums,out int max,out int min,out int sum,out int avg)
+{
+	//out参数要求在方法的内部必须为其赋值
+	max=nums[0];
+	min=nums[0];
+	sum=0;//因为在形参列表中已经定义了max,min,sum三个参数，所以在这里不能够重复定义
+	
+	for(int i=0;i<nums.Length;i++)
+	{
+		if(nums[i]>res[0])
+		{
+			max=nums[i];
+		}
+		if(nums[i]<res[1])
+		{
+			min=nums[i];
+		}
+		sum+=nums[i];
+	}
+	avg=sum/nums.Length;
+}
+
+调用的时候可以像这样子来
+int max;//不必赋值，因为在调用的时候out会返回回来然后赋值给这个变量
+int min;//不必赋值，因为在调用的时候out会返回回来然后赋值给这个变量
+int sum;//不必赋值，因为在调用的时候out会返回回来然后赋值给这个变量
+int avg;//不必赋值，因为在调用的时候out会返回回来然后赋值给这个变量
+Test(nums,out max,out min,out sum,out avg);
+
+//分别提示用户名输入用户名和密码，写一个方法判断用户输入的是否正确
+//返回给用户一个登录结果，还要单独的给用户返回一个登录信息
+
+public static bool IsLogin(string name,string pwd,out string msg)
+{
+	if(name=="admin"&&pwd=="123456")
+	{
+		msg="登录成功";
+		return true;
+	}
+	else if(name=="admin")
+	{
+		msg="密码错误";
+		return false;
+	}
+	else if(pwd=="123456")
+	{
+		msg="用户名错误";
+		return false;
+	}
+	else
+	{
+		msg="未知错误";
+		return false;
+	}
+}
+
+Console.WriteLine("请输入用户名");
+string username=Console.ReadKey();
+Console.WriteLine("请输入密码");
+string userPwd=Console.ReadKey();
+string msg;
+bool b=IsLogin(userName,userPwd,out msg);
+Console.WriteLine("登录结果{0}",b);
+Console.WriteLine("登录信息{0}",msg);
+Console.ReadKey();
+
+//自己实现一个方法实现和TryParse一样的功能,TryParse做的事情就是将字符串转换成bool类型，转换成功返回true
+int num;
+bool b=int.TryParse("123",out num);
+Console.WriteLine(num);
+Console.WriteLine(b);
+Console.ReadKey();
+
+public static bool MyTryParse(string s,out int result)
+{
+	result=0;
+	try
+	{
+		result=Convert.ToInt32(s);
+		return true;
+	}
+	catch
+	{
+		return false;
+	}
+}
+
+//ref,能够将一个变量带入一个方法中进行改变，改变完成后再将改变后的值带出来
+public static void Main(string[] args)
+{
+	double salary=5000;
+	JiangJin(ref salary);
+	Console.WriteLine(salary);
+	Console.ReadKey();
+}
+public static void JiangJin(ref double s)
+{
+	s+=500;
+}
+
+public static void FaKuan(double s)
+{
+	s-=500;
+}
+
+//使用方法来交换两个int类型的变量
+public static void Main(string[] args)
+{
+	int n1=10;
+	int n2=20;
+	Test(ref n1,ref n2);
+}
+
+public static void Test(ref int n1,ref int n2)
+{
+	int temp=n1;
+	n1=n2;
+	n2=temp;
+}
+//ref要求在方法外部必须赋值
+
+//params可变参数
+public static void Main(string[] args)
+{
+	//int[] s={99,88,77};考虑到今后我们还会往数组后面加东西，所以这个变量就是经常改变的，那么，我们可以干脆不定义这个变量,Test在调用的时候可以按照下面这样子调用，我们可以理解为params就是将这几个数字放到了一个数组里面
+	Test("张三",99,88,77);
+	Console.ReadKey();
+}
+public static void Test(string name,params int[] score)//params int[] score可变参数数组，实际上数组的参数个数是不能变的，params只是模拟了一下
+{
+	int sum=0;
+	for(int i=0;i<score.Length;i++)
+	{
+		sum+=score[i];
+	}
+	Console.WriteLine("{0}这次考试总成绩是{1}",name,sum);
+}
+params可变参数是将实参列表中跟可变参数数组类型一致的元素都当做数组的元素处理
+
+我们在调用函数的时候，如果提示参数有params类型的，我们可以填入和形参类型一样的若干项，也可以传一个和形参类型相同的数组
+还要注意一点，参数数组必须是参数列表中的最后一个参数
+
+//求任意长度数组的最大值
+public static int GetMax(params int[] n)
+{
+	int sum=0;
+	for(int i=0;i<n.Length;i++)
+	{
+		sum+=n[i];
+	}
+	return sum;
+}
+public static void Main(string[] arg)
+{
+	int[] nums={1,2,4,5};
+	int sum=GetSum(1,2,3,4,5,6,7);
+	Console.WriteLine(sum);
+	Console.ReadKey();
+}
+
+//方法的重载
+
+public static void M(int n1,int n2)
+{
+	int result=n1+n2;
+}
+
+public static void M(double d1,double d2)
+{
+	int result=d1+d2;
+}
+
+public static void M(int n1,int n2,int n3)
+{
+	int result=n1+n2+n3;
+}
+
+方法的重载指的就是方法的名称相同，但是参数不同
+
+Console.WriteLine(1);
+Console.WriteLine(1.4);
+Console.WriteLine(true);
+Console.WriteLine('c');
+Console.WriteLine("111");
+Console.WriteLine(5000m);
+这就是典型的重载
+参数不同，分为两种情况
+(1)、如果参数个数相同，那么参数的类型就不能相同
+(2)、如果参数类型相同，那么参数的个数就不能相同
+
+方法的返回值和重载没有关系
+public static void M()
+{
+
+}
+public static int M()
+{
+
+}
+这就是两个不同的函数，构不成重载
+
+//方法的递归
+
+
+
+//练习：输入两个数字，计算两个数字之间和，要求第一个数字必须比第二个数字小，就重新输入
+public static void Main(string[] args)
+{
+	Console.WriteLine("请输入第一个数字");
+	string strNumberOne=Console.ReadLine();
+	int numberOne=GetNumber(strNumberOne);
+	string strNumberTwo=Console.ReadLine();
+	int numberTwo=GetNumber(strNumberTwo);
+	JudgeNumber(ref int n1,ref int n2);
+	int sum=GetSum(numberOne,numberTwo);
+	Console.WriteLine(sum);
+	Console.ReadKey();
+}
+//注意，我们在方法内部改变了n1和n2的值，但是外面调用的变量时不会改变的，所以需要加上ref
+public static void JudgeNumber(ref int n1,ref int n2)
+{
+	while(true)
+	{
+		if(n1<n2)
+		{
+			return;
+		}
+		else
+		{
+			Console.WriteLine("第一个数字不能大于或者等于第二个数字,请重新输入第一个数字");
+			string s1=Console.ReadLine();
+			n1=GetNumber(s1);
+			Console.WriteLine("请重新输入第二个数字");
+			string s2=Console.ReadLine();
+			n2=GetNumber(s2);
+		}
+	}
+}
+
+
+public static int GetNumber(string s)
+{
+	while(true)
+	{
+		try
+		{
+			int number=Convert.ToInt32(s);
+			return number;
+		}
+		catch
+		{
+			Console.WriteLine("输入有误！！！请重新输入");
+			s=Console.ReadLine();
+		}
+	}
+}
+
+public static int GetSum(int n1,int n2)
+{
+	int sum=0;
+	for(int i=n1;i<=n2;i++)
+	{
+		sum+=i;
+	}
+	return sum;
+}
+
+//保留指定位数的小数
+double avg=3.33333333333;
+avg.ToString("0.00");//转成两位小数，这样做会四舍五入，{0.00}占位也会四舍五入
+avg=Convert.ToDouble(s);
+Console.WriteLine(avg);
+
+在别的方法里面改变数组里元素的顺序、值等的时候，不需要该方法返回任何值，这个与值类型和引用类型变量性质有关系
+
+
+飞行棋项目
+1、画游戏头
+2、初始化地图（加载地图所需要的资源）初始化地图的目的是为了加载地图，地图的每一块我们都用一个int类型数组存起来，每个数字代表一种方块形式
+3、画地图
+4、玩游戏
+//这个地图在接下来几乎所有的方法中会调用到，所以提升为静态变量
+public static int[] Maps=new int[100];
+public static int[] PlayerPos=new int[2];//PlayerPos[0]为玩家A的坐标，PlayerPos[1]为玩家B的坐标
+public static string[] PlayerNames=new string[2];
+public static bool[] Flags=new bool[2];//Flags[0]默认是false Flags[1默认是false]
+public static void Main(string[] args)
+{
+	GameShow();
+
+	Console.WriteLine("请输入玩家A的姓名");
+	PlayerNames[0]=Console.ReadLine();
+	while(PlayerNames[0]=="")
+	{
+		Console.WriteLine("玩家A的姓名不能为空，请重新输入");
+		PlayerNames[0]=Console.ReadLine();
+	}
+	Console.WriteLine("请输入玩家B的姓名");
+	PlayerNames[1]=Console.ReadLine();
+	while(PlayerNames[1]==""||PlayerNames[1]==PlayerNames[0])
+	{
+		if(PlayerNames[1]=="")
+		{
+			Console.WriteLine("玩家B的姓名不能为空，请重新输入");
+			PlayerNames[1]=Console.ReadLine();
+		}
+		else
+		{
+			Console.WriteLine("玩家B的姓名不能和玩家A的姓名相同，请重新输入");
+			PlayerNames[1]=Console.ReadLine();
+		}
+	}
+	//玩家姓名输入OK之后 我们首先应该清屏
+	Console.Clear();
+	GameShow();
+	Console.WriteLine("{0}的士兵用A表示",PlayerNames[0]);
+	Console.WriteLine("{0}的士兵用B表示",PlayerNames[1]);
+	InitialMap();
+	DrawMap();
+
+	//当玩家A跟玩家B没有一个人在终点的时候，两个玩家不停的去玩游戏
+	while(PlayerPos[0]<99&&Player[1]<99)
+	{
+		if(Flags[0]==false)
+		{
+			PlayGame(0);
+		}
+		else
+		{
+			Flags[0]=false;
+		}
+		if(PlayerPos[0]>=99)
+		{
+			Console.WriteLine("玩家{0}无耻的赢了玩家{1}",PlayerNames[0],PlayerNames[1]);
+		}
+		if(Flags[1]==false)
+		{
+			PlayGame(1);
+		}
+		else
+		{
+			Flags[1]=false;
+		}
+		if(PlayerPos[1]>=99)
+		{
+			Console.WriteLine("玩家{0}无耻的赢了玩家{1}",PlayerNames[1],PlayerNames[0]);
+		}
+	}
+	Console.ReadKey();
+}
+
+public static void GameShow()
+{
+	Console.ForegroundColor=Consolecolor.Yellow;
+	Console.WriteLine("*********飞行棋项目**********");//黄色
+	Console.ForegroundColor=Consolecolor.Green;
+	Console.WriteLine("*********飞行棋项目**********");//绿色
+}
+//初始化地图，画游戏头
+//我们用另外的数组存储比较特殊的结构
+public static void InitialMap()
+{
+	int[] luckyturn={6,16,26,36,46};
+	int[] landMine={6,16,26,36,46};
+	int[] pause={6,16,26,36,46};
+	int[] timeTunnel={6,16,26,36,46};
+
+	for(var i=0;i<luckyturn.length;i++)
+	{
+		Maps[luckyturn[i]]=1;
+	}
+
+	for(var i=0;i<landMine.length;i++)
+	{
+		Maps[landMine[i]]=2;
+	}
+
+	for(var i=0;i<pause.length;i++)
+	{
+		Maps[pause[i]]=3;
+	}
+
+	for(var i=0;i<timeTunnel.length;i++)
+	{
+		Maps[timeTunnel[i]]=4;
+	}
+}
+//画地图
+public static void DrawMap()
+{
+	//控制台的信息粘贴过来的方法：右击左上角的按钮选择编辑->标记，再选中一些文字，再按回车键就可以了
+	Console.WriteLine("地图图例说明。。。。");
+	//画第一行
+	//玩家A和B的坐标相同的时候，画一个尖括号，否则该画A的地方画A，该画B的地方画B
+	for(int i=0;i<30;i++)
+	{
+		Console.Write(DrawSringMap(i));
+	}
+	//第一竖行
+	//画完第一横行之后应该换行
+	Console.WriteLine();
+	for(int i=30;i<35;i++)
+	{
+		for(int j=0;j<=28;j++)
+		{
+			Console.Write("  ");
+		}
+		Console.Write(DrawSringMap(i));
+		//每画完一个单元格，也应该换行
+		Console.WriteLine();
+	}
+	//第二横行
+	for(int i=65;i>=35;i--)
+	{
+		Console.Write(DrawStringMap(i));
+	}
+	Console.WriteLine();
+	//第二竖行
+	for(int i=65;i<=69;i++)
+	{
+		Console.WriteLine(DrawStringMap(i));
+	}
+	//最后一横行
+	for(int i=70;i<=99;i++)
+	{
+		Console.WriteLine(DrawStringMap(i));
+	}
+	Console.WriteLine();
+}
+//封装函数
+public static void DrawSringMap(i)
+{
+	string str="";
+	//在两端的时候需要限定A和B不能出界，因此还需要判断都在地图上
+	if(PlayerPos[0]==PlayerPos[1]&&PlayerPos[1]==i)
+	{
+		str=("<>");
+	}
+	else if(PlayerPos[0]==i)
+	{
+		str=("Ａ");//全角
+	}
+	else if(PlayerPos[1]==i)
+	{
+		str=("Ｂ");//全角
+	}
+	else
+	{
+		switch(Maps[i])
+		{
+			case 0:
+				Console.ForegroundColor=Consolecolor.Yellow;
+				str=("方块");
+				break;
+			case 1:
+				Console.ForegroundColor=Consolecolor.Yellow;
+				str=("幸运轮盘");
+				break;
+			case 2:
+				Console.ForegroundColor=Consolecolor.Yellow;
+				str=("地雷");
+				break;
+			case 3:
+				Console.ForegroundColor=Consolecolor.Yellow;
+				str=("暂停");
+				break;
+			case 4:
+				Console.ForegroundColor=Consolecolor.Yellow;
+				str=("时空隧道");
+				break;
+		}
+	}
+	return string;
+}
+
+public static void PlayGame(int playerNumber)
+{
+	Random r=new Random();
+	int rNumber=r.Next(1,7);
+	Console.WriteLine("{0}按任意键开始掷骰子",PlayerName[playerNumber]);
+	Console.ReadKey(true);//Console.ReadKey()的另一种用法
+	Console.WriteLine("{0}掷出了{1}",PlayerName[playerNumber],rNumber);
+	PlayerPos[playerNumber]+=rNumber;
+	Console.ReadKey(true);
+	Console.WriteLine("{0}按任意键开始行动",PlayerName[playerNumber]);
+	Console.ReadKey(true);
+	Console.WriteLine("{0}行动完了",PlayerName[playerNumber]);
+	Console.ReadKey(true);
+	//处理玩家A踩到玩家B的情况
+	if(PlayerPos[playerNumber]==PlayerPos[1-playerNumber])
+	{
+		Console.WriteLine("玩家{0}踩到了玩家{1}，玩家{2}退6格",PlayerNames[playerNumber],PlayerNames[1-playerNumber],PlayerNames[1-playerNumber]);
+		PlayerPos[1-playerNumber]-=6;
+		ChangePos();
+		Console.ReadKey(true);
+	}
+	else//踩到了关卡
+	{
+		//玩家的坐标
+		switch(Maps[PlayerPos[playerNumber]])
+		{
+			case 0:
+				Console.WriteLine("玩家{0}踩到了方块，安全",PlayerNames[playerNumber]);
+				Console.ReadKey(true);
+				break;
+			case 1:
+				Console.WriteLine("玩家{0}踩到了幸运轮盘，请选择1---交换位置2---轰炸对方",PlayerNames[playerNumber]);
+				string input=Console.ReadLine();
+				while(true)
+				{
+					if(input=="1")
+					{
+						Console.WriteLine("玩家{0}和玩家{1}交换位置",PlayerNames[playerNumber],PlayerNames[1-playerNumber]);
+						Console.ReadKey(true);
+						int temp=PlayerPos[playerNumber];
+						PlayerPos[playerNumber]=PlayerPos[1-playerNumber];
+						PlayerPos[1-playerNumber]=temp;
+						Console.WriteLine("位置交换成功，按任意键继续");
+						Console.ReadKey(true);
+						break;
+					}
+					else if(input==2)
+					{
+						Console.WriteLine("玩家{0}选择轰炸玩家{1}，玩家{2}退6格",PlayerNames[playerNumber],PlayerNames[1-playerNumber],PlayerNames[1-playerNumber]);
+						Console.ReadKey(true);
+						PlayerPos[1-playerNumber]-=6;
+						ChangePos();
+						Console.WriteLine("玩家{0}退了6格",PlayerNames[1-playerNumber]);
+						Console.ReadKey(true);
+						break;
+					}
+					else
+					{
+						Console.WriteLine("只能输入1或者2");
+						Console.ReadLine();
+					}
+				}
+				break;
+			case 2:
+				Console.WriteLine("玩家{0}踩到了地雷，退6格",PlayerNames[playerNumber]);
+				Console.ReadKey(true);
+				PlayerPos[playerNumber]-=6;
+				ChangePos();
+				break;
+			case 3:
+				Console.WriteLine("玩家{0}踩到了暂停，暂停一回合",PlayerNames[playerNumber]);
+				Flags[playerNumber]=true;
+				Console.ReadKey(true);
+				break;
+			case 4:
+				Console.WriteLine("玩家{0}踩到了时空隧道，前进10格",PlayerNames[playerNumber]);
+				PlayerPos[playerNumber]+=10;
+				Console.ReadKey(true);
+				ChangePos();
+				break;
+		}
+	}
+	//ChangePos();也可以在清屏的前面只调用一次ChangePos();
+	Console.clear();
+	DrawMap();
+}
+
+public static void ChangePos()
+{
+	if(PlayerPos[0]<0)
+	{
+		PlayerPos[0]=0;
+	}
+	if(PlayerPos[0]>=99)
+	{
+		PlayerPos[0]=99;
+	}
+	if(PlayerPos[1]<0)
+	{
+		PlayerPos[1]=0;
+	}
+	if(PlayerPos[1]>=99)
+	{
+		PlayerPos[1]=99;
+	}
+}
+
+//面向对象27分钟
+
+类的语法
+public class 类名
+{
+	字段;
+	属性;
+	方法;
+}
+
+添加类:右击项目->添加->类，或者右击项目->新建项->类，类都是以cs结尾的
+
+类不占内存，而对象是占内存的
+
+
+
+public class Person
+{
+	public string _name;
+	public int _age;
+	public char _gender;
+
+	public static void CHLSS()
+	{
+		Console.WriteLine("我叫{1}",this._name);//此处的this不加也可以，但是有时会出问题
+	}
+
+	
+}
+////////////////////////另一个类
+public class Program
+{
+	static void Main(string[] args)
+	{
+		Person sunQuan=new Person();
+		sunQuan._name="孙权";
+		sunQusn._age="23";
+	}
+}
+
+属性的作用就是保护字段，对字段的赋值和取值进行限定，属性的本质就是两个方法，一个是set一个是get
+public class Person
+{
+	string _name;//删掉public之后如果不加访问修饰符就会默认为private
+	public string Name
+	{
+		get{return _name;}
+		set{_name=value;}
+	}
+
+	int _age;
+	public int Age
+	{
+		get{return _age;}
+		set{
+			//通过内部限制保护字段的值
+			if(value<0||value>100)
+			{
+				value=0;
+			}
+			_age=value;
+		}
+	}
+
+	char _gender;
+	public char Gender
+	{
+		get{
+			if(_gender!='男'&&_gender!='女')
+			{
+				return _gender='男';
+			}
+			return _gender;
+		}
+		set{_gender=value;}
+	}
+
+	public void CHLSS()
+	{
+		Console.WriteLine("我叫{1}",this._name);//此处的this不加也可以，但是有时会出问题
+	}
+
+	
+}
+
+////////////////////////另一个类当中就不能通过字段赋值，因为被保护起来了
+public class Program
+{
+	static void Main(string[] args)
+	{
+		Person sunQuan=new Person();
+		//sunQuan._name="孙权"; 不能给字段赋值
+		//sunQusn._age="23"; 不能给字段赋值了
+		sunQuan.Name="孙权";
+		sunQuan.Age="23";
+	}
+}
+Field字段
+Method方法
+Properties属性
+
+创建对象之后我们要给属性赋值而不是给字段赋值了，但是给属性赋值最终会将值赋给字段
+给属性赋值的时候首先会执行set方法
+当输出属性的值的时候会执行get方法
+整个过程当中属性是不存储值的，对我们的赋值进行再处理
+字段是数据，很重要，是在内部保护起来的，属性才会与外界打交道，字段必需是私有的
+
+并不是所有的属性都有get和set，二者都有的叫可读可写属性，只有get的是只读属性，只有set的是可写属性
+
+
+
+
+通过reflector反编译工具可以看本质的代码
+
+静态和非静态的区别
+public class Person
+{
+	public void M1()
+	{
+		Console.WriteLine();
+	}
+}
+1、非静态类中，既可以由实例成员，也可以有静态成员，实例成员就是非静态成员
+2、调用实例成员的时候必需要用 对象名.实例成员名 来调用
+3、调用静态成员的时候必需要用 类名.静态成员名 来调用
+
+静态函数中只能访问静态成员，不能访问实例成员
+实例函数中既能使用静态成员，也能使用实例成员
+
+静态类中只允许出现静态成员
+静态类不允许被实例化
+
+调用静态成员的时候必须用类名调用，而不能用对象调用
+
+使用：
+1、如果你想要你的泪当做一个"工具类"去使用，可以考虑将类写成工具类，比如说Console.WriteLine()
+2、静态类在整个项目中资源共享
+
+静态类是占内存的
+我们认为给内存分为五块，经常用的就是堆、栈、静态存储区域，静态存储区域就存储静态类
+
+静态类资源越少越好，多了占内存，只有在程序全部结束之后静态类才会释放资源
+
+public class Student
+{
+	//析构函数，当我们的程序结束的时候执行析构函数
+	~Student()
+	{
+		
+	}
+
+	public Student(string name,int age,int chinese)
+	{
+		this.Name=name;
+		this.Age=age;
+		this.Chinese=chinese;
+	}
+
+	public Student(string name,int age):this(name,age,0)
+	{
+		//this.Name=name;
+		//this.Age=age;
+	}
+
+	private string _name;
+	public string Name
+	{
+		get{return _name;}
+		set{_name=value;}
+	}
+	
+	private int _age;
+	public int Age
+	{
+		get{return _age;}
+		set{
+			if(value<0||value>100)
+			{
+				value=0;
+			}
+			_age=value;
+		}
+	}
+
+	private int _chinese;
+	public int Chinese
+	{
+		get{return _chinese;}
+		set{_age=value;}
+	}
+
+	public void SayHello()
+	{
+		Console.WriteLine("我叫{0}，我今年{1}岁了，我是{2}生",this.Name,this.Age,this.Year);
+	}
+}
+
+初始化对象
+static void Main()
+{
+	Student zsStudent=new Student("zhangsan",18,80);
+	//zsStudent.Name="zhangsan";
+	//zsStudent.Age=18;
+	//zsStudent.Chinese=80;
+	zsStudent.SayHello();
+}
+
+构造函数作用：帮助我们初始化对象（给对象的每个属性依次赋值）
+构造函数很特殊
+构造函数没有返回值，连void也不能写
+构造函数的名字必须跟类名一样
+构造函数访问修饰符必须是public
+构造函数在类实例化（创建对象）的时候执行构造函数
+
+
+关键字new
+Person zsPerson=new Person();
+new帮我们做了三件事
+1、在内存中开辟一块空间
+2、在开辟的空间中创建对象
+3、调用对象的构造函数进行初始化
+
+构造函数可以有重载，用于不同的赋值情况
+每写好一个类，就会自动生成一个构造函数，参数为空，当写了一个新的构造函数的时候不管有没有参数原来那个默认的无参的构造函数就会被覆盖
+
+this关键字
+
+
+当我们写了很多个构造函数的时候会有很多this.Name,this.Age,this.Gender重复
+可以通过如下方式解决
+public Student(string name,int age,int chinese)
+{
+	this.Name=name;
+	this.Age=age;
+	this.Chinese=chinese;
+}
+
+public Student(string name,int age):this(name,age,0)//在这里实际上就是将第二个构造函数中存在的参数（和第一个参数最全的构造函数相比）传给了第一个构造函数，而第一个构造函数有而第二个构造函数中没有的参数赋为默认值
+{
+	//this.Name=name;
+	//this.Age=age;
+}
+
+析构函数：帮助我们回收资源，如果不使用析构函数就会通过.Net的垃圾回收机制自动释放资源
+
+static void Main()
+{
+	
+}
+public class Ticket
+{
+	private double _distance;
+	public double Distance
+	{
+		get{return _distance;}
+	}
+
+	public Ticket(double distance)
+	{
+		if(distance<0)
+		{
+			distanve=0;
+		}
+		this._distance=distance;
+	}
+
+	private double _price;
+	public double Price
+	{
+		get{
+			if(_distance>0&&_distance<=100)
+			{
+				return _distance*1.0;
+			}
+			else if(_distance>=101&&_distance<200)
+			{
+				return _distance*0.95;
+			}
+			else{
+				return _distance*0.8;
+			}
+			//return _price;
+		}
+	}
+
+	public void ShoeTicket()
+	{
+		Console.WriteLine("{0}公里需要{1}元",Distance,Price);
+	}
+}
+
+命名空间，可以看作是类的文件夹
+using System;//命名空间的引用
+using System.Collections.Generic;//Main方法中声明的list集合就引用了这个命名空间 如果不引用的话会报错，报错的时候会提示未引用命名空间，通过Alt+shift+F10查看需要引入什么命名空间
+namespace _02_命名空间
+{
+	class Program()
+	{
+		static void Main(string[] args)
+		{
+			List<int> list=new List<int>();
+			//如果我们想在这里想要引用另一个项目的类
+			//1、在解决方案->项目->引用下 添加引用
+			//2、引用命名空间，即在该项目中using 引入命名空间
+		}
+	}
+}
+
+值类型和引用类型
+1、值类型和引用类型在内存上存储的地方不一样
+2、传递值类型和传递引用类型的时候，传递方式不一样，值传递称之为值传递，引用类型叫引用传递
+
+值类型：int double bool char decimal struct enum
+引用类型：string 自定义类 数组
+
+值类型的值是存储在内存的栈当中，引用类型的值是存储在内存的堆中
+
+字符串
+有个很重要的特性就是不可变性
+
+string s1="zhangsan";
+s1="sunquan";
+
+当给一个字符串重新赋值之后，老值并没有销毁，而是重新开辟了一块内存，存储新的值
+
+当程序结束后，GC扫描整个内存，如果发现有的空间没有被指向，GC会回收
+
+
+string s1="zhangsan";
+string s2="zhangsan";
+//此时实际上在内存中只开了一块空间来存储"zhangsan"
+如果把s2的值改为"sunquan"，那么"zhangsan"所占的内存还可以保留，重新赋值的时候会再次开辟一块空间来存储"sunquan"
+
+我们可以将字符串看做是char类型的一个只读数组
+char和string类型的关系实际上就是羊肉和羊肉串的关系
+
+既然可以将string看做char类型的只读数组，所以我们可以通过下表访问字符串中的某个元素
+string s="abcdefg";
+Console.WriteLine(s[0]);//a
+//如果我们写s[0]='b';//会报错，因为s是只读的
+//但是如果我们一定要这样做，可以将字符串转换为char类型的数组
+//调用
+char[] chs=s.ToCharArray();
+chs[0]='b';
+//创建一个新的字符串对象
+s=new string(chs);
+
+由于对字符串的各种操作会在内存中产生大量垃圾，我们可以用StringBuilder
+
+StringBuilder sb=new StringBuilder();
+string str=null;
+for(int i=0;i<10000;i++)
+{
+	sb.Append(i);
+}
+//会很快，证明StringBuilder没有反复开内存
+
+str.ToUpper();//转换成大写 ToLower()小写
+
+str.Equals(str2)//比较str和str2是否相等
+str.Equals(str,StringComparison.OrdinalIgnoreCase)//忽略大小写比较
+
+str="a b dfd - + = ,,, fd";
+char[] chs={' ','_','+','=',','};
+string[] s=str.Split(chs);//返回一个string类型数组，但是这个数组中会有很多空字符串，需要再传入一个枚举类型的字符串就可以把空字符串去掉
+string[] s=str.Split(chs,StringSplitOptions.RemoveEmptyEntries);
+
+string str="国家关键人物老赵";
+if(str.Contains("老赵"))
+{
+	str=str.Replace("老赵","**");
+}
+Console.WriteLine(str);
+
+//substring
+string str="abcdefg";
+str.Substring(0);//和js中的substring不一样，第二个参数是截取的个数
+
+str.StartsWith("今天")//如果str是以"今天"开头的话，就返回true EndsWith
+
+str.IndexOf('天')//找'天'在字符串中出现的位置，第二个参数是搜索的起始位置 LastIndexOf
+
+str.Trim();//和js中trim一样 TrimStart()去掉前面的空格 TrimEnd()去掉后面的空格
+
+str.isNullOrEmpty();//是否为null或者空
+
+string[] names={"111","222","333"};
+string.Join("|",names);//将names数组用|拼起来
+
+
+实际开发的时候必须把每个类写在两个单独的类文件当中
+public class Person
+{
+
+}
+
+public class Student:Person//继承Person类
+{
+	private string _name;
+	public string Name
+	{
+		get{return _name;}
+		set{_name=value;}
+	}
+}
+public class Teacher:Person//继承Person类
+{
+
+}
+
+子类不能继承父类的私有字段，但是可以看到，可以理解为只读，习惯上说成子类没有继承父类的私有字段
+子类继承父类的构造函数了么？
+答：没有，但是
+
+继承的两个特性
+单根性：一个子类只能有一个父类
+传递性：
+
+文件-》右击-》视图-》查看类图
+
+public class Person
+{
+	public Person(){}
+}
+
+public class Student
+{
+	public Student(){}
+}
+
+//实例化Student类后，会先调用Student类构造函数，然后调用Person类的构造函数，只要调用Person类的构造函数，就会实例化了Person类，换句话说创建了子类对象同时父类对象也同时被创建了，子类默认调用父类无参数的构造函数，创建父类对象，让子类可以使用父类中的成员，所以如果再父类中重新写了一个有参数的构造函数，原来那个无参数的构造寒素就被干掉了，子类在继承的时候就会报错
+解决办法：
+1、在父类中重新写一个有参数的构造函数
+2、在子类中显式的调用有参的构造函数，利用:base
+
+public Student(string name,int age,char gender,int id):base(name,age,gender)
+{
+	//this.Name=name;
+	//this.Age=age;
+	//this.Gender=gender;
+	this.Id=id;
+}
+
+String和StringBuilder的区别就是String会产生新的实例，而StringBuilder不会
+
+xxx2.txt内容
+1111111111111111111111    ggg
+222222222222              bbb
+3333333333333333333       ccc
+
+
+
+string path=@"C:\Users\xxx1\xxx2.txt";
+//File类需要引入命名IO空间system.using
+string[] contents=File.ReadAllLines(path,Encoding.Default);//第二个参数用于处理乱码
+
+for(int i=0;i<contents.length;i++)
+{
+	string[] strNew=contents[i].Split(new char[]{''},StringSplitOption.RemoveEmpties);
+	
+	Console.WriteLine((strNew[0].Length>10?strNew.substring(0,8)+"......":strNew[0])+"|"+(strNew[1]));
+}
+
+string str="abc";//->cba
+//倒序循环
+//for(int i=str.Length-1;i>=0;i--)
+//{
+//	Console.Write(str[i]);
+//}
+
+char[] chs=str.ToCharArray();
+for(int i=0;i<chs.Length/2;i++)
+{
+	char temp=chs[i];
+	chs[i]=chs[chs.Length-1-i];
+	chs[chs.Length-1-i]=temp;
+}
+
+str=new string(chs);
+Console.WriteLine(str);
+
+
+string str="aeaeaeaeeteetete";
+int index=str.IndexOf('e');
+Console.WriteLine("{0}",index);
+int count=1;
+
+while(index!=-1)
+{
+	count++;
+	index=str.IndexOf('e',index1);
+	if(index==1)
+	{
+		break;
+	}
+	Console.WriteLine({0}次在{1},);
+}
+
+第二种做法
+for(int i=0;i<str.Length;i++)
+{
+	if(str[i]=='e')
+	{
+		Console.WriteLine(i);
+	}
+}
+
+Object类是所有类的基类
+
+new的第二个作用：隐藏从父类那里继承过来的同名成员
+隐藏的后果就是子类不能调用父类的成员
+
+new的作用同时告诉我们一个道理：尽量不要将子类和父类的方法名写成一样的，否则在实例化子类对象后调用该方法就是在调子类的方法，而父类的方法是调用不到的，如果是有意要这样做的，需要使用关键字new，例如:
+public Person
+{
+	public void SayHello()
+	{
+		Console.WriteLine("人");
+	}
+}
+public Student
+{
+	public void new SayHello()//在此加上new就是要隐藏从父类那里继承过来的成员
+	{
+		Console.WriteLine("学生");
+	}
+}
+
+Student stu=new Student();
+stu.SayHello();
+
+
+//重点：里氏转换
+1、里氏转换
+1）、子类可以赋值给父类
+2）、如果父类中装的是子类对象，那么可以将这个父类强转为子类对象
+
+子类对象可以调用父类的成员，但是父类对象不能调用子类的成员
+
+Student s=new Student();
+Person p=s;//子类可以赋值给父类:如果有一个地方需要一个父类作为参数，可以用子类代替
+现在p中存着父类对象，我们可以强转成子类，即
+Student ss=(Student)p;
+string str=string.Join("|",new string[]{"1","2"});//这里第二个参数就需要父类的对象(提示的时候会显示)，所以可以写个子类
+
+里氏转换经常会抛异常，所以需要用is和as判断下
+is:表示类型转换，如果能够转换成功，返回true，否则返回false
+as:表示类型转换，如果能够转换，返回对应对象，否则返回null
+
+
+Person p=new Student();
+if(p is Student)
+{
+	Student ss=(Student)p;
+	ss.StudentSayHello();
+}
+else
+{
+	Console.WriteLine("转换失败");
+}
+
+
+还是Person p=new Student();用as转
+
+Teacher t=p as Teacher;//此时是不能转换成功，因为p里面是Student
+
+public class Person
+{
+	public void PersonSayHi()
+	{
+		Console.WriteLine("我是人类");
+	}
+}
+
+public class Student:Person
+{
+	public void StudentSayHi()
+	{
+		Console.WriteLine("我是学生");
+	}
+}
+
+public class Teacher:Person
+{
+	public void TeacherSayHi()
+	{
+		Console.WriteLine("我是老师");
+	}
+}
+
+public class Program
+{
+	static void Main(string[] args)
+	{
+		//创建10个对象，通过一个循环，去调用他们各自打招呼的方法
+		Person[] pers=new Person[10];
+		Random r=new Random();
+		for(int i=0;i<pers.Length;i++)
+		{
+			int rNumber=r.Next(1,7);
+			switch(rNumber)
+			{
+				case 1:
+					pers[i]=new Student();
+					break;
+				case 2:
+					pers[i]=new Teacher();
+					break;
+				case 3:
+					pers[i]=new Worker();
+					break;
+			}
+		}
+		for(int i=0;i<pers.Length;i++)
+		{
+			//pers[i].PersonSayHi();//pers里面不管存什么类型，但pers是Person类型的，所以调用到的都是Person类的方法
+			if(pers[i] is Student)
+			{
+				((Student)pers[i]).StudentSayHi();
+			}else if(pers[i] is Teacher)
+			{
+				((Teacher)pers[i]).TeacherSayHi();
+			}
+			...
+		}
+	}
+}
+
+//protected
+子类可以访问父类受保护的成员
+
+权限：private最低public最高
+
+集合
+ArrayList(需要引入命名空间using System.Collections)
+ArrayList不是静态类，所以可以实例化
+//创建了集合对象
+//数组：长度不可变、类型单一
+//集合的好处：长度可以任意改变、类型不固定
+ArrayList list=new ArrayList();
+list.Add(1);//参数可以是任何类的实例
+list.Add(3.14);
+list.Add(new int[]{1,2,3});
+list.Add(new Person());
+list.Add(list);//将list自己放进去
+for(int i=0;i<list.Count;i++)
+{
+	if(list[i] is Person)
+	{
+		((Person)list[i]).SayHello();
+	}
+	else if(list[i] is int[])
+	{
+		for(int j=0;j<(int[])list[i].Length;j++)
+		{
+			Console.WriteLine(((int[])list[i])[j]);
+		}
+	}
+	...
+	Console.WriteLine(list[i]);
+}
+Console.ReadKey();
+
+//我们将一个对象输出到控制台，默认情况下 打印的就是这个对象所在类的命名空间
+int[] nums={1,2,3};
+Console.WriteLine(nums.ToString());
+
+//由上可见，添加进去简单，但是想要取出来看很麻烦，所以AddRange就弥补了这一点
+list.AddRange(new int[]{1,2,3});
+list.AddRange(list);
+
+list.Clear();//删除所有内容
+list.Remove(true);//删掉true这个元素，里面可以放任何对象
+list.RemoveAt(0);//删除list中第0个元素
+list.RemoveRange(0,3);//从0开始删除，删掉3个
+list.Reverse();//反转
+list.Sort();//升序排序，但是像true这种东西不能排，所以会报异常，所以list中类型差不多一样才能排列
+list.Insert(1,"插入的");//在1这个索引出插入"插入的"
+list.InsertRange(0,new string[]{"111","222"});//在0这个位置插入一个字符串数组
+list.Contains(1);//判断list中是否包含1
+
+if(!list.Contains("颜世伟"))
+{
+	list.Add("颜世伟");
+}
+else
+{
+	Console.WriteLine("已经有这个人了");
+}
+
+ArrayList list=new ArrayList();
+//count 表示这个集合中实际上包含的元素个数
+//capcity 表示这个集合中可以包含的元素个数
+list.Count;//0
+list.Capacity;//0
+
+ArratList集合的长度问题
+每次集合中世纪包含的元素个数count超过了可以包含的元素个数capacity的时候，集合就会向内存中申请多开辟一倍的空间，来保证集合的长度一直够用
+
+ArrayList list=new ArrayList();
+list.AddRange(new int[]{1,2,3,4});
+
+int sum=0;
+for(int i=0;i<list.Count;i++)
+{
+	sum+=(int)list[i];
+}
+
+//现在学习的ArrayList是为了学泛型集合做基础
+
+
+ArrayList list=new ArrayList();
+Random r=new Random();
+for(int i=0;i<10;i++)//注意不能循环list.Count count是当前存在的元素个数，当前存在元素个数是0
+{
+	int rNumber=r.Next(0,10);
+	if(!list.Contains(rNumber))
+	{
+		list.Add(rNumber);
+	}
+	else
+	{
+		i--;
+	}
+}
+
+//Hashtable 键值对集合 字典
+
+//创建了一个键值对集合对象
+Hashtable ht=new Hashtable();
+ht.Add(1,"zhangsan");//第一个参数是键、第二个参数是值
+ht.Add(2,true);
+ht.Add(3,'男');
+ht.Add(false,"错误的");
+
+for(int i=0;i<ht.Count;i++)
+{
+	Console.WriteLine(ht[i]);
+}
+//输出 "zhangsan" true  '男',因为i值是0 1 2 3，但是0没有对应值，"错误的"对应的键是false，但是没有false这个键
+
+Console.WriteLine(ht[1]);//"zhangsan"
+
+c#是强类型语言，js是弱类型语言
+char h6='男';
+Console.Write(h6.GetType());//System.Char 
+
+var h6='男';
+Console.Write(h6.GetType());//System.Char 根据值推断类型
+
+var input;//隐式类型的局部变量必须已初始化，这样写会报错，也就是说用var声明变量声明的时候必须赋值
+
+
+foreach(var item in ht)
+{
+	Console.WriteLine(item);//打印出了命名空间
+}
+
+foreach(var item in ht.Keys)//要遍历键
+{
+	Console.WriteLine(ht[item]);//键是item，值是ht[item]
+}
+
+foreach循环效率高
+
+ht[6]="new";//这样也可以添加数据
+ht[1]="干掉张三";//将会覆盖之前的键1对应的值，[]内部作了判断，如果这个键有对应的值，就覆盖，否则就是添加新数据
+
+if(!ht.ContainsKey("abc"))
+{
+	ht.Add("abc","cba");
+}
+else
+{
+	Console.Write("已经包含abc这个键");
+}
+
+ht.Clear();//移除所有元素
+ht.Remove();//传入键移除
+
+//将用户输入的简体字转换为繁体字
+
+private const String Jianti="1111";
+private const String Fanti="2222";
+static void Main(string[] args)
+{
+	Hashtable ht=new Hashtable();
+	for(int i=0;i<Jianti.length;i++)
+	{
+		ht.Add(Jian[i],Fan[i]);
+	}
+	Console.Write("请随便输入");
+	string input=Console.ReadLine();
+
+	for(int i=0;i<input.Length;i++)
+	{
+		if(ht.ContainsKey(input[i]))
+		{
+			Console.Write(ht[input[i]]);
+		}else
+		{
+			Console.Write(input[i]);
+		}
+	}
+	Console.ReadKey();
+}
+//Path类 静态类 using System.IO
+string str=@"C:\w\w\w\w.txt";
+//str.Substring(str.LastIndexOf("\")+1);可以拿到w.txt
+Console.WriteLine(Path.GetFileName(str));//也可以获得文件的名字
+Console.WriteLine(Path.GetFileNameWithoutExtension(str));
+Console.WriteLine(Path.GetExtension(str));
+Console.WriteLine(Path.GetDirectoryName(str));//得到文件夹目录
+Console.WriteLine(Path.GetFullPath(str));//全路径
+Console.WriteLine(Path.Combine(@"\a\","b.txt"));//组合
+
+//File类 静态类 操作文件 using System.IO
+File.Create(@"C:\a\a\a.txt");//创建文件
+File.Delete(@"C:\a\a\a.txt");//删除文件
+File.Copy(@"C:\a\a\a.txt",@"C:\a\a\b.txt");//复制文件
+File.Move();
+
+//编码
+编码：文件以什么样的形式将字符串保存为二进制编码
+
+乱码原因：保存文件时所用的编码跟你打开这个文件采用的编码格式不一样
+读写数据
+byte[] buffer=File.ReadAllBytes(@"C:\a\a\a.txt")返回一个字节数组
+string s=Encoding.GetEncoding("GB2312").GetString(buffer)或者
+string s=Encoding.GetEncoding("GBK").GetString(buffer)
+不能用utf8，因为保存的时候不是用这种编码保存的，GBK是比GB2312集合大的一个集合
+
+字节数组--字符串 Encoding.Default.GetString(字节数组)
+File.WriteAllBytes() 字符串--字节数组 Encoding.Default.GetBytes(字符串)
+
+string str="aaaaaaa";
+byte[] buffer=Encoding.Default.GetBytes(str);
+File.WriteAllBytes(@"C:\a\a\a.txt");
+//如果原来没有这个文件将新创建一个，否则将会覆盖
+
+
+
+UTF-8 UTF-7 UTF-32共同组成了一个编码格式Unicode
+
+string[] contents=File.ReadAllLines(@"C:\a\a\a.txt",Encoding.Default);
+
+foreach(string item in contents)
+{
+	Console.WriteLine(item);
+}
+
+string str=File.ReadAllText(@"C:\a\a\a.txt",Encoding.Default);
+
+ReadAllBytes可以读取任何类型的文件，因为我们所有的文件都是以字节的形式存储的，而ReadAllLines和ReadAllText只能读取文本文件
+
+File.WriteAllLines(@"C:\a\a\a.txt",new string[]{"aaa","bbb"});//第一行写aaa，第二行写bbb
+
+File.WriteAllText(@"C:\a\a\a.txt","ssss");//直接写入字符串
+
+File.AppendAllText(@"C:\a\a\a.txt","bbb");//追加bbb到文件中
+
+File文件只能读小文件，因为File一下子全都读出来，如果想读大文件需要文件流来做
+
+List泛型集合 using System.Collections.Generic;
+泛型集合一旦确定了泛型集合的类型，集合内的元素类型也就定了
+List<int> list=new List<int>();
+list.Add(1);
+list.AddRange(new int[]{1,2,3,4});
+list.AddRange(list);//可以添加自己进去，因为它自己也是int类型的
+
+for(int i=0;i<list.Count;i++)
+{
+	Console.Write(list[i]);
+}
+
+List<string> list=new List<string>();
+
+List泛型集合可以转换为数组，List优于数组的地方就是长度可以无限
+list.ToArray();//转成什么类型的数组取决于集合的类型
+int[] nums=list.ToArray();//转成了int类型的数组
+
+//集合转成数组
+List<int> listTwo=nums.ToList();//转成了int类型的集合
+
+装箱和拆箱
+装箱：就是将值类型转换为引用类型 拆箱与之相反
+
+int n=10;
+object o=n;//装箱
+
+int nn=(int)o;//拆箱
+
+
+//装箱浪费时间，即强转浪费时间
+ArrayList list=new ArrayList();
+for(int i=0;i<1000000;i++)
+{
+	list.Add(i);//1000000次装箱操作
+}
+
+List<int> list=new List<int>();
+for(int i=0;i<1000000;i++)
+{
+	list.Add(i);//1000000拆装箱操作
+}
+
+//此处没有发生任何装箱和拆箱
+string str="123";
+int n=Convert.ToInt32(str);
+
+看两种类型是否发生了装箱或者拆箱，要看这两种类型是否存在继承关系
+
+string在栈上，n在堆上
+
+
+int n=10;
+IComparable i=n;//IComparable是接口类型，也是一种引用类型，所以此处发生了装箱
+
+
+Dictionary字典 键值对集合
+Dictionary<int,string> dic=new Dictionary<int,string>();
+dic.Add(1,"张三");
+dic.Add(2,"李四");
+dic.Add(3,"王五");
+键必须唯一，如果dic.Add(1,"aaa");会抛异常，可以dic[1]="aaa"来覆盖原来的值
+
+除了通过foreach 键值对遍历之外，还有另外的遍历方法
+foreach(KeyValuePair<int,string> kv in dic)//一对一对的遍历
+{
+	Console.WriteLine("{0} {1}",kv.Key,kv.Value);
+}
+
+//将一个数组中的奇数放到一个集合中，再将偶数放在另一个集合中，最终将两个集合合并成一个，并且奇数显示在左边，偶数显示在右边
+
+int[] nums={1,2,3,4,5,6};
+List<int> listOu=new List<int>();
+List<int> listJi=new List<int>();
+for(int i=0;i<nums.Length;i++)
+{
+	if(nums[i]%2)
+	{
+		listJi.Add(nums[i]);
+	}
+	else
+	{
+		listOu.Add(nums[i]);
+	}
+}
+list<int> listSum=new List<int>();
+listSum.AddRange(listOu);
+listSum.AddRange(listJi);
+
+//也可以这样添加
+listJi.AddRange(listOu);
+
+foreach(int item in listJi)
+{
+	Console.Write(item);
+}
+
+
+//提示用户输入一个字符串，通过foreach循环将用户输入的字符串赋值给一个字符
+
+Console.WriteLine("输入字符串");
+string input=Console.ReadLine();
+char[] chs=new char[input.Length];
+int i=0;
+foreach(var item in input)//要把字符串中每个元素给数组，所以循环input
+{
+	chs[i]=item;
+	i++;
+}
+
+foreach(var item in chs)
+{
+	Console.Write(item);
+}
+
+
+
+
+
+//统计Welcome to China中每个字符出现的次数 忽略大小写
+
+string str="Welcome to China";
+Dictionary<char,int> dic=new Dictionary<char,int>();
+for(int i=0;i<str.Length;i++)
+{
+	if(dic[item])
+	{
+		dic[str[i]]++;
+	}
+	else
+	{
+		dic[str[i]]=1;
+	}
+}
+
+foreach(KeyValuePair<char,int> kv in dic)
+{
+	Console.WriteLine("{0}出现了{1}次",kv.Key,kv.Value);
+}
+//foreach(var item in str)
+//{
+//	if(dic[item])
+//	{
+//		dic[item]++;
+//	}
+//	else
+//	{
+//		dic[item]=1;
+//	}
+//}
+
+
+//文件流
+FileStream(using System.IO 非静态类)和File的区别
+
+StreamReader和StreamWriter
+FileStream是操作字节的，这意味着可以操作任何文件，因为所有文件都是字节构成的
+如果文件比较小的话直接用File即可
+
+FileStream fsRead=new FileStream(@"C:a\a\a\a.txt",FileMode.OpenOrCreate,FileAccess.Read);//OpenOrCreate代表有这个文件就打开，没有就创建 Read代表读取
+
+byte[] buffer=new byte[1024*1024*5];//每次读1024*1024*5这么多字节
+//fsRead.Read(buffer,0,buffer.Length);从0开始读，每次读5M，但是这第三个参数是有上限的，如果写了2G，内存受不了，也违背了FileStream设计的本意
+//返回本次实际读取到的有效字节数
+int r=fsRead.Read(buffer,0,buffer.Length);
+//将字节数组中每一个元素按照指定的编码格式解码成字符串
+string s=Encoding.Default.GetString(buffer);
+//关闭流
+fsRead.Close();
+//释放流所占的资源
+fsRead.Dispose();
+Console.WriteLine(s);
+
+如果我们需要打印的文件只有1K，而每次要打印5M，那么剩下的空间就会用空格代替，这时，我们在解码的时候需要注意
+string s=Encoding.Default.GetString(buffer,0,r);从0开始解码，解码r个
+
+//使用FileStream来写入数据
+
+将创建文件流对象的过程写在using当中，会自动帮助我们释放流占用的资源
+using(FileStrem fsWrite=new FileSteam(@"C:a\a\a\a.txt",FileStream.OpenOrCreate,FileAccess.Write))
+{
+	string str="看看有没有被覆盖";
+	byte[] buffer=Encoding.Default.GetBytes(str);
+	fsWrite.Write(buffer,0,buffer.Length);
+}
+
+多媒体文件的复制
+static void Main(string[] args)
+{
+	//思路：先将多媒体文件
+	string source=@"C:a\a\a\a.wmv";
+	string target=@"C:a\a\a\b.wmv";
+	CopyFile(source,target);
+	Console.WriteLine("复制成功");
+}
+
+public static void CopyFile(string source,string target)
+{
+	//创建一个负责读取的流
+	using(FileStream fsRead=new FileStream(source,FileMode.Open,FileAccess.Read))
+	{
+		//创建一个负责写入的流
+		using(FileStream fsWrite=new FileStream(target,FileMode.OpenOrOperate,FileAccess.Write))
+		{
+			byte[] buffer=new byte[1024*1024*5];
+			//因为文件可能会比较大(此处是34.9M)，所以我们在读取的时候可以通过一个循环读取
+			while(true)
+			{
+				//返回本次读取实际读取到的字节数
+				int r=fsRead.Read(buffer,0,buffer.Length);
+				//如果返回一个0，也就意味着什么都没有读取到，意味着读取完了
+				if(r==0)
+				{
+					break;
+				}
+				fsWrite.Write(buffer,0,r);//第三个参数是最多写入的长度，如果我们写buffer.Length，那么最后一次仍然读到5M的大小，但是最后只有4.9M有数据，所以会造成浪费，因此应该写成r
+			}
+			
+			
+		}
+	}
+}
+
+StreamWriter和StreamReader
+
+static void Main(string[] args)
+{
+	//使用StreamReader来读取一个文本文件
+	//using(StreamReader sr=new StreamReader(@"C:a/a/a.txt"),Encoding.Default)
+	//{
+	//	while(!sr.EndOfStream)
+	//	{
+	//		Console.WriteLine(sr.ReadLine());
+	//	}
+	//	Console.ReadKey();
+	//}
+
+	//使用StreamWriter来写入一个文本文件
+	using(StreamWriter sw=new StreamWriter(@"C:a/a/a.txt"))//在这里如果写上第二个参数true就会将要添加的文本追加到原来的文件后面
+	{
+		sw.Write("xxxxxxxxx");
+	}
+	Console.WriteLine("写入OK");
+}
+
+//多态之虚方法 让一个对象能够表现出多种状态（类型）
+public class Person
+{
+	private string _name;
+	public string Name
+	{
+		get;set;
+	}
+	public Person(string name)
+	{
+		this.Name=name;
+	}
+	public void SayHello()
+	{
+		Console.WriteLine("我是人类");
+	}
+}
+
+public class Chinese:Person
+{
+	public Chinese(string name):base(name)
+	{
+		
+	}
+	
+	public void SayHello()
+	{
+		Console.WriteLine("我是中国人");
+	}
+
+}
+
+public class Japanese:Person
+{
+	public Japanese(string name):base(name)
+	{
+		
+	}
+	public void SayHello()
+	{
+		Console.WriteLine("我是日本人，我叫{0}",this.Name);
+	}
+}
+
+public class Korea:Person
+{
+	public Korea(string name):base(name)
+	{
+		
+	}
+	public void SayHello()
+	{
+		Console.WriteLine("我是韩国人，我叫{0}",this.Name);
+	}
+}
+
+public class American:Person
+{
+	public American(string name):base(name)
+	{
+		
+	}
+	public void SayHello()
+	{
+		Console.WriteLine("我是美国人，我叫{0}",this.Name);
+	}
+}
+
+static void Main(string[] args)
+{
+	//Person[] pers=new Person[6];
+	Chinese cn1=new Chinese("韩梅梅");
+	Chinese cn2=new Chinese("李磊");
+	Japanese j1=new Japanese("j111");
+	Japanese j2=new Japanese("j222");
+	Korea k1=new Japanese("k111");
+	Korea k2=new Japanese("k222");
+	American a1=new Japanese("a111");
+	American a2=new Japanese("a222");
+	Person[] pers={cn1,cn2,j1,j2,k1,k2,a1,a2};
+
+	for(int i=0;i<pers.Length;i++)
+	{
+		//pers[i].SayHello();//全都是"我是人类"，因为虽然装的是子类的对象，但是数组的类型是父类的，所以会表现出父类的特点，如果想要得到各种表现，需要判断、强转
+		if(pers[i] is Chinese)
+		{
+			((Chinese)pers[i]).SayHello();
+		}else if(pers[i] is Japanese)
+		{
+			((Japanese)pers[i]).SayHello();
+		}else if(pers[i] is Korea)
+		{
+			((Korea)pers[i]).SayHello();
+		}else
+		{
+			((American)pers[i]).SayHello();
+		}
+	}
+	Console.ReadKey();
+}
+
+//上面的代码只是在干一件事，就是打招呼，但是我们必须转很多次，如果能用pers[i].SayHello()表现出多种类型，是想要得到的效果，而多态就是实现这件事的
+
+//实现多态的三种手段1、虚方法 2、抽象类 3、接口
+
+//虚方法
+1、首先将父类的方法标记为虚方法，使用关键字virtual，这个方法可以被子类重新写一遍
+2、在需要重写的子类前面加override
+
+
+
+
+
+public class Person
+{
+	private string _name;
+	public string Name
+	{
+		get;set;
+	}
+	public Person(string name)
+	{
+		this.Name=name;
+	}
+	public virtual void SayHello()
+	{
+		Console.WriteLine("我是人类");
+	}
+}
+
+public class Chinese:Person
+{
+	public Chinese(string name):base(name)
+	{
+		
+	}
+	
+	public override void SayHello()
+	{
+		Console.WriteLine("我是中国人");
+	}
+
+}
+
+public class Japanese:Person
+{
+	public Japanese(string name):base(name)
+	{
+		
+	}
+	public override void SayHello()
+	{
+		Console.WriteLine("我是日本人，我叫{0}",this.Name);
+	}
+}
+
+static void Main(string[] args)
+{
+	//Person[] pers=new Person[6];
+	Chinese cn1=new Chinese("韩梅梅");
+	Chinese cn2=new Chinese("李磊");
+	Japanese j1=new Japanese("j111");
+	Japanese j2=new Japanese("j222");
+	Korea k1=new Japanese("k111");
+	Korea k2=new Japanese("k222");
+	American a1=new Japanese("a111");
+	American a2=new Japanese("a222");
+	Person[] pers={cn1,cn2,j1,j2,k1,k2,a1,a2};
+
+	for(int i=0;i<pers.Length;i++)
+	{
+		pers[i].SayHello();//打印出各种各样的结果
+	}
+	Console.ReadKey();
+}
+
+//实现原理:实际上仍然是调用了父类的SayHello函数，但是父类的这个方法被子类重写了
+
+//狗会叫，猫也会叫，用多态做
+按照虚方法做，需要抽象出一个父类----动物类
+public class Animal
+{
+	public void Bark()
+	{
+		//因为猫会叫、狗也会叫、后期还会添加别的动物，所以这里不确定怎么写，这时可以考虑使用抽象类
+	}
+}
+
+//抽象类
+当父类中的方法不知道如何实现的时候，可以考虑将父类写成抽象类，将方法写成抽象方法
+
+public abstract class Animal
+{
+	//////////////////////////
+	//抽象类中可以有非抽象属性
+	private int _age;
+	public int Age
+	{
+		get{return _age;}
+		set{_age=value;}
+	}
+	/////////////////////////
+	/////////////////////////
+	//抽象类中也可以由构造函数
+	public Animal(int age)
+	{
+		this.Age=age;
+	}
+	/////////////////////////
+	public abstract void Bark();//抽象方法不允许有函数体，区别空实现和没有方法体，空实现是有花括号，但是里面没有写内容
+	public abstract string Name
+	{
+		get;
+		set;
+	}
+}
+
+public class Dog:Animal
+{
+	public override string Name
+	{
+		get
+		{
+			throw new NotImplementedException();
+		}
+		set
+		{
+			throw new NotImplementedException();
+		}
+	}
+	public override void Bark()
+	{
+		Console.WriteLine("狗汪汪叫");
+	}
+}
+
+public class Cat:Animal
+{
+	public override string Name
+	{
+		get
+		{
+			throw new NotImplementedException();
+		}
+		set
+		{
+			throw new NotImplementedException();
+		}
+	}
+	public override void Bark()
+	{
+		Console.WriteLine("猫喵喵叫");
+	}
+}
+
+public static void Main(string[] args)
+{
+	//Animal a=new Animal(); 会报错，抽象类和接口不能实例化
+	Animal a=new Dog();//可以创建一个子类赋值给父类
+	a.Bark();//这里的Bark方法也是父类的抽象函数的，这个方法被Dog类重写了，所以和虚方法同理也会调子类的方法
+}
+
+//如果子类继承了抽象父类，那么子类必须实现父类中所有的抽象成员，除非子类也是抽象类
+//抽象成员必须在抽象类中，不能再非抽象类中
+//抽象类中可以包含实例成员
+//抽象类中的实例成员可以不被子类实现
+//如果父类的抽象方法中有参数，那么，继承这个抽象父类的子类在重写父类的方法时必须传入参数
+//如果抽象父类的抽象方法中有返回值，那么子类在重写这个抽象方法的时候 也必须要传入返回值
+
+//如果父类中的方法有默认的实现，并且父类需要被实例化，这是可以考虑将父类写成一个普通类，用虚方法来实现多态
+//如果父类中的方法没有默认的实现，父类也不需要被实例化，则可以将该类定义为抽象类
+
+//抽象父类中也可以有虚方法，如果项目中需要很多多态，有些父类的方法需要有默认的实现，有些没有默认的实现，就既需要虚方法也需要抽象类
+
+-----------------------
+使用多态求矩形和圆形的面积和周长
+class Program
+{
+	static void Main(string[] args)
+	{
+		Shape shape=new Circle(5);
+		double area=shape.GetArea();//面积
+		double zc=shape.GetZC();//周长
+		Shape shape2=new Square(3,4);
+		double area2=shape2.GetArea();
+		double zc2=shape2.GetZC();
+	}
+}
+
+public abstract class Shape
+{
+	public abstract double GetArea();
+	public abstract double GetZC();
+}
+
+public class Circle:Shape
+{
+	private double _r;
+	public double R
+	{
+		get{return _r;}
+		set{_r=value;}
+	}
+	public Circle(double r)
+	{
+		this.R=r;
+	}
+	public override double GetArea()
+	{
+		return Math.PI*this.R*this.R;
+	}
+	public override double GetZC()
+	{
+		return 2*Math.PI*this.R;
+	}
+}
+
+public class Square:Shape
+{
+	private double _height;
+	public double Height
+	{
+		
+	}
+	private double _width;
+	public double Width
+	{
+		
+	}
+
+	public Square(double height,double width)
+	{
+		this.Height=height;
+		this.Width=width;
+	}
+
+	public override double GetArea()
+	{
+		return this.Height*this.Width;
+	}
+
+	public override double GetZC()
+	{
+		return 2*(this.Height+this.Width);
+	}
+}
+
+//模拟移动硬盘、U盘、MP3插在电脑上读写数据
+
+提一个父类出来---可移动存储设备
+
+电脑类较为复杂，电脑应该有两个方法，调用插到电脑上设备读的方法，。。。写的方法
+Computer-->CpuRead() CpuWrite()
+虽然不知道是谁插在电脑上读取，但是调用父类（设备）的读写方法一定没有错
+
+class Program
+{
+	static void Main(string[] args)
+	{
+		//MobileDisk md=new MoblieDisk();
+		//UDisk md=new UDisk();
+		//MP3 md=new MP3();
+		//Computer cpu=new Computer();
+		//cpu.CpuRead();
+		//cpu.CpuWrite();
+		//Console.ReadKey();
+
+		//MobileStorage ms=new UDisk();//如果换成了移动硬盘，MP3只需要修改这一行
+		//Computer cpu=new Computer();
+		//cpu.CpuRead(ms);
+		//cpu.CpuWrite(ms);
+		//Console.ReadKey();
+
+		MobileStorage ms=new UDisk();
+		Computer cpu=new Computer();
+		cpu.Ms=ms;
+		cpu.CpuRead();
+		cpu.CpuWrite();
+		Console.ReadKey();
+	}
+}
+
+
+public abstract class MobileStorage
+{
+	public abstract void Read();
+	public abstract void Write();
+}
+
+public class MoblieDisk:MoblieStorage
+{
+	public override void Read()
+	{
+		Console.WriteLine("移动硬盘读数据");
+	}
+	public override void Write()
+	{
+		Console.WriteLine("移动硬盘写数据");
+	}
+}
+
+public class UDisk:MoblieStorage
+{
+	public override void Read()
+	{
+		Console.WriteLine("U盘读数据");
+	}
+	public override void Write()
+	{
+		Console.WriteLine("U盘写数据");
+	}
+}
+
+public class MP3:MoblieStorage
+{
+	public override void Read()
+	{
+		Console.WriteLine("MP3读数据");
+	}
+	public override void Write()
+	{
+		Console.WriteLine("MP3写数据");
+	}
+	public void playMusic()
+	{
+		Console.WriteLine("MP3自己可以播放音乐");
+	}
+}
+
+public class Computer
+{
+	private MobileStorage _ms;
+	public MobileStorage Ms
+	{
+		get{return _ms;}
+		set{_ms=value;}
+	}
+
+	public void CpuRead()
+	{
+		Ms.Read();
+	}
+	public void CpuWrite()
+	{
+		Ms.Write();
+	}
+	//第一种写法
+	//public void CpuRead(MoblieStorage ms)
+	//{
+	//	ms.Read();
+	//}
+	//public void CpuWrite(MoblieStorage ms)
+	//{
+	//	ms.Write();
+	//}
+}
+
+//在后期的话，抽象类比虚方法用的多
+
+访问修饰符
+public
+private
+protected 只能在当前类的内部以及其子类中访问
+internal 只能在当前项目中访问。在同一个项目中，interval和public的权限是一样的
+protected internal protected和interval权限的总和
+
+能够修饰类的访问修饰符只有public和interval，默认是interval，不是public，interval即当前程序集(目前可以理解为当前项目)中访问。在同一个项目中，interval和public的权限是一样的
+
+可访问性不一致：子类的访问权限不能高于父类的访问权限，否则会暴露父类的成员
+
+
+//简单工厂设计模式
+设计模式：设计这个项目的一种方式，是帮助我们在开发过程中解决一种常见问题的一种模式
+
+//工厂模式代码实现
+public abstract class NoteBook
+{
+	public abstract void SayHello();
+}
+
+public class Acer:NoteBook
+{
+	public override void SayHello()
+	{
+		Console.WriteLine("我是鸿基笔记本");
+	}
+}
+
+
+public class Dell:NoteBook
+{
+	public override void SayHello()
+	{
+		Console.WriteLine("我是戴尔笔记本");
+	}
+}
+
+class Program
+{
+	static void Main(string[] args)
+	{
+		Console.WriteLine("请输入您想要的笔记本品牌");
+		string brand=Console.ReadLine();
+		NoteBook nb=GetNoteBook(brand);
+		nb.SayHello();
+	}
+	//工厂核心
+	public static NoteBook GetNoteBook(string brand)
+	{
+		NoteBook nb=null;
+		switch(brand)
+		{
+			case "Acer":nb=new Acer();
+				break;
+			case "Dell": nb=new Dell();
+				break;
+		}
+		return nb;
+	}
+}
+
+//值类型和引用类型
+引用类型：string 数组 自定义类 集合 object 接口
+
+string s1="aaa";
+string s2=s1;
+s2="bbb";
+Console.WriteLine(s1);//aaa
+Console.WriteLine(s2);//bbb
+字符串具有不可变性，s2声明的时候会重新开辟一块空间
+
+//序列化和反序列化
+
+序列化：就是将对象转化为二进制
+反序列化：反过来
+作用：传输数据
+
+class Program
+{
+	static void Main(string[] args)
+	{
+		Person p=new Person();
+		p.Name="aaa";
+		p.Gender='男';
+		using(FileStream fsWrite=new FileStream(@"C:\Users\x\x\x.txt",FileMode.OpenOrWrite,FileAccess.Write))
+		{
+			//开始序列化对象
+			BinaryFormatter bf=new BinaryFormatter();
+			bf.Serialize(fsWrite,p);
+		}
+		Console.WriteLine("序列化成功");
+------------------------------------------------
+		//接收对方发过来的二进制 反序列化为对象
+		Person p;
+		using(FileStream fsRead=new FileStream(@"C:\Users\x\x\x.txt",FileMode.OpenOrWrite,FileAccess.Read))
+		{
+			BinaryFormatter bf=new BinaryFormatter();
+			p=(Person)bf.Deserialize(fsRead);
+		}
+		Console.WriteLine(p.Name);
+		Console.WriteLine(p.Gender);
+	}
+}
+
+
+[Serializable]
+public class Person
+{
+	private string _name;
+	public string Name
+	{
+		get{return _name;}
+		set{_name=value;}
+	}
+
+	private string _gender;
+	public string Gender
+	{
+		get{return _gender;}
+		set{_gender=value;}
+	}
+}
+
+1、将这个类标记为可以被序列化的Serializable
+
+//部分类
+在一个命名空间下不能定义重复的类，但是不是很利于团队开发，可以加上partial关键字，在同一个类中也不能有重复的方法（在不构成重载的前提下）
+public partial class Person
+{
+	private string _name;
+}
+
+public partial class Person
+{
+	public void Test()
+	{
+		_name;//可以访问得到
+	}
+}
+
+//密封类 
+public sealed class Person:Test//可以继承别人
+{
+
+}
+
+public class Test:Person//要报错，不能被继承
+{
+
+}
+
+//重写父类的ToString方法 所有的变量都可以调用ToString方法，因为ToString方法是Object类的，ToString是Object类的虚方法
+Person p=new Person();
+Console.WriteLine(p.ToString());
+
+
+public class Person
+{
+	public override void ToString()
+	{
+		return "Hello World";
+	}
+}
+
+//接口
+public class Person
+{
+	public void SayHello()
+	{
+		Console.WriteLine("我是人类，可以吃喝");
+	}
+
+}
+public class NBAPlayer
+{
+	public void KouLan()
+	{
+		Console.WriteLine("我可以扣篮");
+	}
+}
+//想要定义一个学生类继承上面两个类，可以使用接口
+public class Student:Person,IKouLanable
+{
+	public void KouLan()
+	{
+		Console.WriteLine("我也可以扣篮");
+	}
+}
+public interface IKouLanable
+{
+	void KouLan();
+}
+
+//接口就是一种规范、能力
+
+public interface IFlyable
+{
+	//接口中的成员不允许添加访问修饰符，默认就是public
+	//接口中的成员不允许写具有方法体的成员
+	//接口中不能包含字段
+	void Fly();
+	//可以有自动属性
+	string Name
+	{
+		get;set;//不能有方法体
+	}
+}
+
+//接口的成员有方法、属性（自动属性，其实自动属性里面也是方法，即get和set方法，这两个方法没有方法体）和索引器，但本质上都是方法
+
+public class Person
+{
+	private string _name;
+	public string Name
+	{
+		get{return _name;}
+		set{_name=value;}
+	}
+	//在这里我们没有设置_age字段，但是当我们编译之后通过反汇编工具查看依然能得到_age字段，而且该字段和_name没什么本质上的区别，所以以后为了方便起见，都会将属性写成自动属性，当然这样写我们就不能通过get和set限定字段，而只能通过构造函数
+	public int Age
+	{
+		get;set;
+	}
+}
+
+接口特点
+1、只要一个类继承了一个接口，这个类必须实现接口中所有的成员
+2、为了多态，接口不能被实例化
+----------抽象类、接口、静态类都不可以被实例化
+
+class Program
+{
+	static void Main(string[] args)
+	{
+		IFlyable fly=new Person();//接口不能被实例化，但是接口类型的对象可以被赋予继承这个接口的类，比如new Person()
+		fly.Fly();
+		Console.ReadKey();
+	}
+	public class Person:IFlyable
+	{
+		public void Fly()
+		{
+			Console.WriteLine("人类在飞");
+		}
+	}
+	public class Bird:IFlyable
+	{
+		public void Fly()
+		{
+			Console.WriteLine("鸟在飞");
+		}
+	}
+	public interface IFlyable
+	{
+		void Fly();
+	}
+}
+
+接口中的成员不能加访问修饰符
+接口中的成员不能有任何实现
+接口中不能有构造函数，所以创建了对象也没有用，因为没有构造函数创建的对象就不会被初始化
+
+接口和接口之间可以继承，并且可以多继承
+接口不能去继承一个类，而类可以继承类，也可以继承接口
+
+如果一个子类继承了一个类A，实现了一个接口IA，那么IA要写在A的后面
+
+public abstract class Bird:IFlyable
+{
+	public double Wings
+	{
+		get;set;
+	}
+	public void EatAndDrink()
+	{
+		Console.WriteLine("会吃喝");
+	}
+	//public void Fly()
+	//{
+	//	Console.WriteLine("会飞");
+	//}
+}
+
+public class MaQue:Bird,IFlyable
+{
+	public void Fly()
+	{
+		Console.WriteLine("麻雀会飞");
+	}
+}
+
+public class YingWu:Bird,IFlyable,ISpeakable
+{
+	public void Fly()
+	{
+		Console.WriteLine("鹦鹉会飞");
+	}
+	public void Speak()
+	{
+		Console.WriteLine("鹦鹉会说话");
+	}
+}
+
+public TuoNiao:Bird
+{
+	public void Fly()
+	{
+		Console.WriteLine("鸵鸟不会飞");
+	}
+}
+
+public class Plane:Bird
+{
+	public void Fly()
+	{
+		Console.WriteLine("飞机会飞");
+	}
+}
+
+public interface IFlyable
+{
+	void Fly();
+}
+
+public interface ISpeakable
+{
+	void Speak();
+}
+
+//显示实现接口------为了解决方法的重名问题
+
+public class Bird:IFlyable
+{
+	public void Fly()
+	{
+		Console.WriteLine("鸟会飞");
+	}
+	void IFlyable.Fly()//不加访问修饰符默认就是private，类里面不加访问修饰符默认就是private
+	{
+		Console.WriteLine("这里是接口的飞");
+	}
+}
+public interface IFlyable
+{
+	void Fly();
+}
+public class Program
+{
+	IFlyable fly=new Bird();
+	fly.Fly();//这里调用的是接口的飞，
+	Bird bird=new Bird();
+	bird.Fly();//这里调用类的飞
+	Console.ReadKey();
+}
+
+//什么时候用接口实现多态：当很多子类都共有一个方法，而且这些子类也没有办法提出一个共有的父类，这时就需要接口，比如 飞机会飞、麻雀会飞的例子
+
+真的鸭子会游泳 木头鸭子不会游泳 橡皮鸭子会游泳 
+会干什么、能干什么侧重能力，用接口
+//如果考虑提一个父类，这个父类有游泳这个函数，但是木头鸭子不会游泳，所以不可以
+//也不能用虚方法，木鸭子不会游泳
+public class RealDuck:ISwimming
+{
+	public void Swim()
+	{
+		Console.WriteLine("真的鸭子靠脚丫游泳");
+	}
+}
+
+public class MuDuck
+{
+	
+}
+
+public class XPDuck:ISwiming
+{
+	public void Swim()
+	{
+		Console.WriteLine("橡皮鸭子飘着游泳");
+	}
+}
+
+public interface ISwimming
+{
+	void Swim();
+}
+
+ISwimming swim=new XPDuck();
+swim.Swim();
+
+超市收银系统
+
+商品父类ProductFather Price Count ID
+
+	Acer笔记本
+	
+	酱油
+	
+	香蕉
+	
+	三星手机
+
+仓库
+	存货
+	
+	提货
+	
+	进货
+
+收银
+
+
+//GUID能产生全世界独一无二的编号
+
+class Program
+{
+	static void Main(string[] args)
+	{
+		//Console.WriteLine(Guid.NewGuid().ToString());
+	}
+}
+
+//ProductFather类
+class ProductFather
+{
+	public double Price
+	{
+		get;set;
+	}
+	public double Count
+	{
+		get;set;
+	}public string ID
+	{
+		get;set;
+	}
+	public ProductFather(string id,double price,double count)
+	{
+		this.ID=id;
+		this.Price=price;
+		this.Count=count;
+	}
+}
+
+class SamSung:ProductFather
+{
+	public SamSung(string id,double price,double count):base(id,price,count)
+	{
+		
+	}
+}
+
+class Acer:ProductFather
+{
+	public SamSung(string id,double price,double count):base(id,price,count)
+	{
+		
+	}
+}
+
+class Banana:ProductFather
+{
+	public SamSung(string id,double price,double count):base(id,price,count)
+	{
+		
+	}
+}
+
+class JiangYou:ProductFather
+{
+	public SamSung(string id,double price,double count):base(id,price,count)
+	{
+		
+	}
+}
+
+//仓库类
+class CangKu
+{
+	//存储货物，存储父类
+	//List<ProductFather> list=new List<ProductFather>;这样是直接将数据加进去
+	List<List<ProductFather>> list=new List<List<ProductFather>>();//这样写是将数据的集合加进去
+
+	
+	//规定list[0]存放Acer电脑货架 list[1]酱油 list[2]三星手机 list[3]香蕉
+	//在创建仓库对象的时候向仓库中添加货架（也就是添加商品的集合）
+	public CangKu()
+	{
+		list.Add(new List<ProductFather>());
+		list.Add(new List<ProductFather>());
+		list.Add(new List<ProductFather>());
+		list.Add(new List<ProductFather>());
+	}
+	//List.Add();//只能添加集合进去
+	/////////////////////////////////////////////////////////
+	//进货
+	public void JinPros(string strType,int Count)
+	{
+		for(int i=0;i<count;i++)
+		{
+			switch(strType)
+			{
+				case "Acer":
+					list[0].Add(new Acer(Guid.NewGuid().ToString(),1000,"宏基XXXX"))；
+					break;
+				case "SamSung":
+					list[1].Add(new SamSung(Guid.NewGuid().ToString(),3000,"三星XXXX"))；
+					break;
+				case "JiangYou":
+					list[2].Add(new JiangYou(Guid.NewGuid().ToString(),10,"老抽XXXX"))；
+					break;
+				case "Banana":
+					list[3].Add(new Banana(Guid.NewGuid().ToString(),5,"香蕉XXXX"))；
+					break;
+			}
+		}
+	}
+	////////////////////////////
+	//取货
+	public ProductFather[] QuPros(string strType,int count)
+	{
+		ProductFather[] pros=new ProductFather[count];
+		for(int i=0;i<count;i++)
+		{
+			switch(strType)
+			{
+				case "Acer":
+					if(list[0].Count==0)
+					{
+						//已经拿完了
+					}
+					pros[i]=list[0][0];
+					list[0].RemoveAt(0);
+					break;
+				case "SamSung":
+					pros[i]=list[1][0];
+					list[1].RemoveAt(0);
+					break;
+				case "JiangYou":
+					pros[i]=list[2][0];
+					list[2].RemoveAt(0);
+					break;
+				case "Banana":
+					pros[i]=list[3][0];
+					list[3].RemoveAt(0);
+					break;
+			}
+		}
+		return pros;
+	}
+	/////////////////////
+	//向用户展示货物
+	public void ShowPros()
+	{
+		foreach(var item in list)
+		{
+			Console.WriteLine("我们超市有："+item[0].Name+"，\t有"+item.Count+"个，\t每个"+item[0]+"元");
+		}
+	}
+}
+
+//MD5加密，涉及到存储用户密码的时候一定要进行MD5加密
+
+
+public Program
+{
+	static void Main(string[] args)
+	{
+		string s=GetMD5("123");
+		Console.WriteLine(s);
+	}
+
+	//传入要加密的字符串
+	public static string GetMD5(string str)
+	{
+		//创建MD5对象
+		MD5 md5=MD5.Create();
+		//开始加密
+		//将字符串转成字节数组
+		byte[] buffer=Encoding.GetEncoding("GBK").GetBytes(str);
+		byte[] MD5Bufffer=md5.ComputeHash();
+
+		//将字节数组转换成字符串
+		//字节数组->字符串 3中方法
+		//1、将字节数组中每个元素按照指定的编码格式解析成字符串
+		//2、直接将数组ToString 是个命名空间 一定不行
+		//3、将字节数组中的每个元素ToString 
+		//return Enconding.GetEncoding("GBK").GetString(MD5Buffer);证明第一种不行
+		//验证第3种
+		string str2="";
+		for(int i=0;i<MD5Buffer.Length;i++)
+		{
+			str2+=MD5Buffer[i].ToString("x2");//参数x将十进制转换为十六进制
+		}
+		return str2;
+	}
+
+}
+
+//winform应用程序 桌面应用程序
+1、winform应用程序是一种智能客户端技术，我们可以使用winform应用程序帮助我们获得信息或者传输信息等，实际上就是NativeApp
+winform应用程序包括Properties 引用 App.config Form1.cs(Form1.Designer.cs Form1.resx Form1(资源文件)) Program.cs
+
+Directory类 用来操作文件夹 using System.IO 静态类
+File Path FileStream StreamReader StreamWriter
+
+Directory.CreateDirectory(@"C:\a");
+Directory.Delete(@"C:\a");//如果a文件夹下有子文件夹或者文件，那么这样写是删除不成功的，会抛异常，如果的确想删除，可以用：
+Directory.Delete(@"C:\a",true);
+
+Directory.Move(@"C:\a",@"D:\a");//将C盘下的a文件夹移动到D盘的a文件夹下面
+
+//获得指定文件夹下所有文件的全路径
+string[] path=Directory.GetFiles(@"C:\a\a","*.jpg");//筛选所有jpg格式的文件
+
+//获得指定文件夹下所有文件夹的全路径
+string[] path=Directory.GetDirectories(@"C:\a\a");
+
+//判断C盘下有没有 \a\b 这个路径
+Directory.Exists(@"C:\a\b")
+
+Directory.Delete(@"C:\a\b",true);
+
+/////////////////
+进程
+Process 不是静态类 
+Process[] pros=Process.GetProcesses();//得到当前正在运行的所有进程
+
+//通过打开一些应用程序
+Process.Start("calc");//打开记事本
+
+//通过一个进程打开指定目录下的文件
+ProcessStartInfo psi=new ProcessStartInfo(@"C:\a\a.txt");
+//创建进程对象
+Process p=new Process();
+p.StartInfo=psi;//此处需要ProcessStartInfo类的一个实例对象，所以需要开始的时候新创建一个
+p.Start();
+
+/////////////////////////////////////////////
+//线程
+一个进程由多个线程组成
+
+单线程的问题 假死状态
+
+public partial class Form1:Form
+{
+	public Form1()
+	{
+		InitializeComponent();
+	}
+	//当按钮点击的时候触发Test事件，然后程序在打印0-9999的过程中，窗体的最大化、最小化、关闭都是不可用的，好像是窗体死掉了一样，但是当输出9999完了之后又恢复正常，由此说明一个问题，我们每进行一个进程会开辟一个主线程，然后Test执行的时候，线程转而将精力花费在输出数字上，这样最大化、最小化、关闭这样的辅助功能就会暂时屏蔽掉，这时我们要在Test函数之前再开辟一个新的线程，帮助我们执行这个方法
+	private void button1_Click(object sender,EventArgs e)
+	{
+		//创建一个线程，执行Test方法
+		Thread th=new Thread(Test);
+		//标记这个线程准备就绪了，可以随时被执行，具体什么时候执行这个线程由CPU执行
+		//将线程设置为后台线程 只要所有的前台线程结束，后台线程自动结束
+		th.IsBackground=true;
+		th.Start();
+	}
+
+	private void Test()
+	{
+		for(int i=0;i<10000;i++)
+		{
+			Console.WriteLine(i);
+		}
+	}
+}
+////////////////////////////////////////////
+
+public partial class Form1:Form
+{
+	Thread th;
+	public Form1()
+	{
+		InitializeComponent();
+	}
+	
+	private void button1_Click(object sender,EventArgs e)
+	{
+		th=new Thread(Test);
+		th.IsBackground=true;
+		th.Start();
+	}
+
+	private void Test()
+	{
+		for(int i=0;i<10000;i++)
+		{
+			textBox1.Text=i.ToString();//textBox1是主线程创建的，但是Test函数被新线程执行了，所以现在问题就变成了新线程访问主线程的资源，但是应用程序不允许这样做，会抛出异常，在.Net下，是不允许跨线程的访问
+		}
+	}
+
+	private void Form_Load(object sender,EventArgs e)
+	{
+		//取消跨线程的访问 Control是所有控件的基类
+		Control.CheckForIllegalCrossThreadCalls=false;//将该值设置为false代表不捕获对错误线程的调用
+	}
+
+	
+	private void Form1_FormClosing(object sender,FormClosingEventArgs e)
+	{
+		//当点击叉关闭窗体的时候，判断新线程是否为null
+		if(th!=null)
+		{
+			//立即结束线程 线程被关闭之后就不能重新再start了
+			th.Abort();
+		}
+	}
+}
+
+
+///////////////////////////////
+static void Main(string[] args)
+{
+	Thread.sleep(3000);//延迟3秒钟执行Hello World
+	Console.WriteLine("Hello World");
+}
+
+//Socket网络编程
+
+人通过电话通信
+程序通过Socket通信
+
+打电话大家都要规定好都说普通话，电脑和电脑进行沟通也要有规定 这个规定就是协议 协议分为UDP协议和TCP协议
+
+TCP比较安全稳定，一般不会发生数据丢失，传输过程中发生"3次握手"，可以理解为客户端向服务器发送请求的时候经历了3个步骤，首先客户端询问服务器"你有空么？"，服务器告诉客户端"有空"，客户端再告诉服务器"我知道你有空了"，这三次沟通被称为"3次握手"，由于有3次握手，TCP协议效率上稍差，而UDP协议不管服务器有没有精力接收数据，但是效率较高
+
+客户端和服务器通信时，通过IP地址找到服务器，通过端口号找到服务器上的某个应用程序
+
+
+////////////////////////////基础加强
+//模拟DOS中输入路径打开文件的功能
+//使用指定进程打开指定的文件
+class Program
+{
+	ProcessStartInfo psi=new ProcessStartInfo(@"C:\a\a.txt");
+	Process p=new Process();
+	p.StartInfo=psi;
+	p.Start();
+}
+
+1、在控制台用户要进入的磁盘路径
+2、提示用户输入要打开的文件的名称
+
+//用面向对象做
+class Program
+{
+	public static void Main(string[] args)
+	{
+		Console.WriteLine("请选择要进入的磁盘");
+		string path=Console.ReadLine();
+		Console.WriteLine("请选择要打开的文件");
+		string fileName=Console.ReadLine();
+
+		FileFather ff=GetFile(fileName,path+fileName);
+		ff.OpenFile();
+		
+	}
+
+	public static FileFather GetFile(string fileName,string fullPath)
+	{
+		string extension=Path.GetExtension(fileName);
+		FileFather ff=null;
+		switch(extension)
+		{
+			case ".txt":
+				ff=new TxtPath(fullPath);
+				break;
+			case ".jpg":
+				ff=new JpgPath(fullPath);
+				break;
+			case ".wmv":
+				ff=new WmvPath(fullPath);
+				break;
+		}
+		return ff;
+	}
+}
+public abstract class FileFather
+{
+	public string FileName
+	{
+		get;set;
+	}
+	public abstract void OpenFile();
+	public FileFather(string fileName)
+	{
+		this.FileName=fileName;
+	}
+}
+
+public class TxtPath:FileFather
+{
+	public TxtPath(string fileName):base(fileName)
+	public override void OpenFile()
+	{
+		//这里需要全路径作为参数，除了TxtPath需要全路径，别的格式文件也需要全路径，所以要把这个全路径写到父类中
+		ProcessStartInfo psi=new ProcessStartInfo(this.fileName);
+		Process p=new Process();
+		p.StartInfo=psi;
+		p.Start();
+	}
+}
+
+public class JpgPath:FileFather
+{
+	public JpgPath(string fileName):base(fileName)
+	public override void OpenFile()
+	{
+		//这里需要全路径作为参数，除了TxtPath需要全路径，别的格式文件也需要全路径，所以要把这个全路径写到父类中
+		ProcessStartInfo psi=new ProcessStartInfo(this.fileName);
+		Process p=new Process();
+		p.StartInfo=psi;
+		p.Start();
+	}
+}
+
+public class WmvPath:FileFather
+{
+	public WmvPath(string fileName):base(fileName)
+	public override void OpenFile()
+	{
+		//这里需要全路径作为参数，除了TxtPath需要全路径，别的格式文件也需要全路径，所以要把这个全路径写到父类中
+		ProcessStartInfo psi=new ProcessStartInfo(this.fileName);
+		Process p=new Process();
+		p.StartInfo=psi;
+		p.Start();
+	}
+}
+
+//面向对象复习
+类里面的成员可以是字段、属性、构造函数、方法、接口
+class Person
+{
+	string _name;
+	public string Name
+	{
+		get{return _name;}
+		set
+		{
+			if(value!="孙权")
+			{
+				value="孙权";
+			}
+		}
+	}
+	//写成这样会自动生成私有字段
+	public string Gender
+	{
+		get;set;
+	}
+	//考虑：构造函数可以不可以是private的？答：不可以，当然，有例外
+	
+	public Person(name)
+	{
+		this.Name=name;
+	}
+	public void SayHello()
+	{
+		Console.WriteLine("名字：{0}",this.Name);//这里的this如果不写，语法上没有错，输出的还是Name属性，但是如果不加this，再次定义一个Name变量的话就会将属性覆盖
+	}
+}
+
+class Program
+{
+	static void Main(string[] Args)
+	{
+		Person p=new Person("aaa");//new关键字做3件事：1、在堆中开辟空间2、在开辟的空间中创建对象3、调用对象的构造函数
+	}
+	
+}
+
+//对非法值的限定：get函数 set函数 构造函数
+
+
+子类并不继承父类的构造函数，会默认继承父类的无参的构造函数，如果父类无参的构造函数被干掉了，而子类在继承的时候没有做任何处理就会报错，可以再在父类里重新写一个无参的构造函数来解决，或者在子类中使用关键字base直接使用父类的构造函数
+
+
+is as关键字
+
+Person person=new Student();
+Teacher t=person as Teacher;//转换成功返回Teacher对象，失败返回null
+if(person is Student)
+{
+	Console.WriteLine("可以转换");
+}
+else
+{
+	Console.WriteLine("不可以转换");
+}
+
+
+//面向对象计算器案例
+
+
+将运算符作为父类，具体的加、减、乘、除运算作为子类，由于每个子类都用到两个操作数，所以干脆将两个操作数写成父类的属性，创建对象的时候还需要构造函数把操作数传过去，用户输入运算符之后我们应该创建出来对应的操作数类，所以通过简单工厂创建出来一个父类对象，这个父类对象中一定装了某个子类
+
+
+class Program
+{
+	static void Main(string[] args)
+	{
+		Console.WriteLine("第一个数");
+		double n1=Convert.ToDouble32(Console.ReadLine());
+		Console.WriteLine("第二个数");
+		double n2=Convert.ToDouble32(Console.ReadLine());
+		Console.WriteLine("运算符");
+		string operate=Console.ReadLine();
+		CalFather cal=GetCal(operate,n1,n2);
+		dobule res=cal.GetResult();
+	}
+	public static CalFather GetCal(string operate,double n1,double n2)
+	{
+		CalFather cal=null;
+		switch(operate)
+		{
+			case "+":
+				cal=new Add(n1,n2);
+				break;
+			case "-":
+				cal=new Sub(n1,n2);
+				break;
+		}
+	}
+}
+
+public abstract class CalFather
+{
+	public double N1
+	{
+		get;set;
+	}
+	public double N2
+	{
+		get;set;
+	}
+
+	public abstract double GetResult();
+	public CalFather(double n1,double n2)
+	{
+		this.N1=n1;
+		this.N2=n2;
+	}
+}
+
+public class Add:CalFather
+{
+	public Add(double n1,double n2):base(n1,n2)
+	{}
+	public override double GetResult()
+	{
+		return this.N1+this.N2;
+	}
+}
+
+public class Sub:CalFather
+{
+	public Sub(double n1,double n2):base(n1,n2)
+	{}
+	public override double GetResult()
+	{
+		return this.N1-this.N2;
+	}
+}
+
+///////////////////////////
+public class Person
+{
+	public void T()
+	{}
+}
+
+public class Student:Person
+{
+	//这里的T函数会将父类的T函数隐藏，也就是说子类调用不到父类，如果我们是有意这么做的，可以写成public new void T()
+	public void T()
+	{}
+}
+
+//Main函数前面没有访问修饰符，所以默认是private，它在Program类里面也是类的成员
+static void Main(string[] args)
+{
+
+}
+
+只有interval和public能够修饰类
+
+
+sealed密封类不允许被继承
+
+
+抽象成员不能是静态的，调用父类里的函数的时候是用子类实例对象调用的，而一旦抽象成员变成静态的，就不能通过实例对象调用了
+
+
+接口中只能包含方法（属性、事件、索引器）
+
+//什么时候用接口
+例如：鸟会飞、飞机会飞，但是我们没有办法提出一个父类，所以飞这种能力只能成为一个接口
+public interface IFlyable
+{
+	void Fly();
+}
+
+public class Bird
+{
+	//在这里我们也没有办法提供一个飞的方法，因为不是所有的鸟都会飞，比如企鹅
+}
+
+public class QiE:Bird
+{
+	
+}
+
+public class MaQue:Bird,IFlyable
+{
+	public void Fly()
+	{
+		Console.WriteLine("鸟会飞");
+	}
+}
+
+public class Plane:IFlyable
+{
+	public void Fly()
+	{
+		Console.WriteLine("飞机会飞");
+	}
+}
+
+//接口是为了多态
+class Program
+{
+	static void Main(string[] args)
+	{
+		IFlyable fly=new Plane();
+		fly.Fly();
+		Console.ReadKey();
+	}
+}
+
+////////////////////////////////////////////////
+//考虑以下一种情况
+
+
+public interface IFlyable
+{
+	void Fly();
+}
+
+public class Bird
+{
+	public void Fly()
+	{
+		Console.WriteLine("绝大多数鸟会飞");
+	}
+}
+
+public class MaQue:Bird,IFlyable
+{
+	//这里的飞的函数，是父类的，还是接口的？还是子类自己写的？
+	//如果这时我们生成一下，不会报错，这时我们可以这样考虑：如果接口中的方法没有被重写，是一定会报错的，既然没有报错，那么一定是实现了接口中的方法，当然，这里的Fly会有一个警告线，警告此处的Fly会隐藏父类的Fly方法
+	public void Fly()
+	{
+		Console.WriteLine("鸟会飞");
+	}
+	//如果我们在这里想写一个麻雀自己的Fly方法，该怎么办？
+	//考虑到接口实现的时候有普通实现和显式实现，显式实现就是为了方法的重名问题，所以我们可以通过如下的代码来显式实现接口
+	void IFlyable.Fly()
+	{
+		Console.WriteLine("实现接口的飞方法");//这个方法是接口的，子类自己的飞方法在上面的Fly方法中已经写了，这样二者就不会冲突了
+	}
+}
+
+接口中的成员不能有访问修饰符，默认为public
+
+
+委托
+1、将一个方法作为参数传递给另一个方法
+2、委托所指向的函数必须跟委托具有相同的签名
+public delegate void DelSayHi(string name);
+class Program
+{
+	static void Main(string[] args)
+	{
+		//DelSayHi del=new DelSayHi(SayHiChinese);
+		//del("张三");
+		//DelSayHi del2=new DelSayHi(SayHiEnglish);
+		//del2("张三");
+		Test("张三",SayHiChinese);
+		Test("李四",SayHiEnglish);
+	}
+	public static void Test(string name,DelSayHi del)
+	{
+		//调用
+		del(name);
+	}
+	public static void SayHiChinese(string name)
+	{
+		Console.WriteLine("吃了么？"+name);
+	}
+	public static void SayHiEnglish(string name)
+	{
+		Console.WriteLine("Nice to meet you？"+name);
+	}
+}
+
+
+
+
+
+
+
+

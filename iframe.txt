@@ -1,0 +1,41 @@
+<input type="button" value="改变" id=""input1 />
+<iframe src="iframe1.html" id="iframe"></iframe>
+
+oInput.onclick=function(){
+	//iframe里面的window对象
+	alert(oIframe.contentWindow.document.getElementById("div1"));
+	//iframe里面的document对象
+	alert(oIframe.contentDocument.getElementById("div1"));
+};
+
+chrome浏览器需要在服务器环境下查看才有效果
+
+//iframe里面操作父级元素
+
+oInput.onclick=function(){
+	//parent为iframe父级window对象
+	window.parent.document.getElementById("div1");
+	//top为iframe最顶层window对象
+	window.top.document.getElementById("div1");
+};
+
+oIframe.onload=function(){
+	alert(123);//iframe加载完执行
+};
+IE不支持上述写法，IE下必须用事件绑定的写法
+
+防钓鱼
+if(window!=window.top){
+	window.top.location.href=window.location.href;
+}
+
+
+
+
+
+
+
+
+
+
+

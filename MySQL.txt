@@ -1,0 +1,750 @@
+配置MySQL
+配置向导文件
+C:\Program Files\MySQL\MySQL Server 5.1\bin\MySQLInstanceConfig.exe
+
+bin 存储可执行文件
+data 存储数据文件
+docs 文档
+include 存储包含的头文件
+lib 存储库文件
+share 错误消息和字符集文件
+
+MySQL的配置选项
+修改编码方式
+[mysql]
+default-character-set=utf8
+
+启动mysql服务
+net start mysql
+
+停止mysql服务
+net stop mysql
+
+mysql登录登出
+mysql 参数
+mysql -V --version
+mysql -u --user=name
+mysql -p --port=#
+mysql -P --password[=name]
+mysql -h --host=name
+
+mysql -uroot -p3306 -P -h127.0.0.1
+
+mysql -uroot -p -h127.0.0.1
+
+exit quit \q退出
+
+修改MySQL提示符
+方法一 连接客户端时通过参数指定
+mysql -uroot -proot --prompt \h执行之后命令提示符将不再是mysql> 而变成了localhost
+
+方法二 连接上客户端后，通过prompt \h
+
+prompt \D 得到完整的日期
+prompt \d 当前数据库
+prompt \h 服务器名称
+prompt \u 当前用户
+
+prompt \u@\h \d这样就将提示符修改成 "用户名@主机名 当前数据库"
+
+显示当前服务器版本
+select version()
+
+MySQL语句的规范
+关键字与函数名称全部大写
+数据库名称、表名称、字段名称全部小写
+SQL语句必须以分号结尾
+
+创建数据库
+CREATE {DATABASE|SCHEMAS} [IF NOT EXISTS] db_name [DEFAULT] CHARACTER SET [=] charset name
+[DEFAULT] CHARACTER 是指定编码方式
+
+SHOW {DATABASES|SCHEMAS} [LIKE 'pattern'|WHERE expr]
+
+show create database t1;查看创建t1数据库时的指令
+
+create database if not exists t2 character set gbk;//创建t2数据库，设置编码格式为gbk
+
+修改数据库ALTER {DATABASE|SCHEMA} [db_name] [DEFAULT] CHARACTER SET [=] charset_name;
+
+DROP {DATABASE|SCHEMA} [IF EXISTS] db_name
+
+MySQL数据类型
+所谓数据类型，就是指列、存储过程餐宿、表达式和局部变量的数据特征，它决定了数据存储的格式
+整型
+	TINYINT		-128——127	u:0——255
+	SMALLINT	-32768——32767	u:0——65536
+	MEDIUMINT	-2^23——2^23-1	u:0——2^24-1
+	INT		-2^31——2^32-1
+	BIGINT		-2^63——2^63-1
+浮点型
+	FLOAT[(M,D)]
+	DOUBLE[(M,D)]	用的不多
+	M是数字总位数，D是小数点后面的位数。如果M和D省略，则根据硬件允许的限制来保存值。单精度浮点型精确到大约小数点后7位
+日期时间型(用的较少)
+	YEAR		1(占用空间)
+	TIME		3
+	DATE		3
+	DATETIME	8
+	TIMESTAMP	4
+字符型
+	CHAR(M)		M个字节，0<=M<=255，定长类型
+	VARCHAR(M)	L+1个字节，其中L<=M且0<=M<=65535，变长类型
+	TINYTEXT	L+1个字节，其中L<2^8
+	TEXT		L+1个字节，其中L<2^16
+	MEDIUMTEXT	L+1个字节，其中L<2^24
+	LONGTEXT	L+1个字节，其中L<2^32
+	ENUM('value1','value2',...)	1或2个字节，取决于枚举值的个数（最多65535个值）
+	SET('value1','value2',...)	1、2、3、4或8个字节，取决于set成员的数目(最多64个成员)
+	其中，set是集合，可以从里面的值选择出任意多个进行排列组合
+
+数据表
+一行是一条记录，一列是一个字段
+打开数据库 USE 数据库名称
+显示当前打开的数据库 SELECT DATABASE
+创建数据表 CREATE TABLE [IF NOT EXISTS] table_name(
+	column_name data_type,
+	...
+);
+例如:CREATE TABLE tb1(
+	username VARCHAR(20),
+	age TINYINT UNSIGNED,
+	salary FLOAT(8,2) UNSIGNED,//总共8位，小数部分两位，整数部分8-2=6位
+);
+
+查看数据表 SHOW TABLES [FROM db_name] [LIKE 'pattern'|WHERE expr]
+
+查看数据表结构 SHOW COLUMNS FROM tbl_name
+
+记录的插入与查找 INSERT [INTO] tbl_name [(col_name,...)] VALUES(val,...);
+INSERT tb1 VALUES('Tom',25,9999.99);//省略掉列名和字段名时每一列都需要赋值
+
+记录查找 SELECT expr,... FROM tbl_name;
+
+空值与非空 CREATE TABLE tb2(
+	username VARCHAR(20) NOT NULL,
+	age TINYINT UNSIGNED NULL
+);
+
+AUTO_INCREMENT 自动编号，且必须与主键PRIMARY KEY配合使用，默认情况下，起始值为1，每次的增量为1
+
+PRIMARY KEY每张数据库表只能存在一个主键，主键自动为NOT_NULL
+
+注：AUTO_INCREMENT必须和PRIMARY KEY一起使用，但是PRIMARY KEY不一定必须要和AUTO_INCREMENT一起使用
+
+UNIQUE KEY 唯一约束，唯一约束可以保证记录的唯一性，唯一约束的字段可以为空值，每张数据表可以存在多个唯一约束
+
+默认约束：当插入记录时，如果没有明确为字段赋值，则系统赋予默认值
+
+CREATE TABLE tb6(
+	id SMALLINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	username VARCHAR(20) NOT NULL UNIQUE KEY,
+	sex ENUM('1','2','3') DEFAULT '3'
+);
+INSERT tb6(username) VALUES('Tom');
+Tom这条记录中的sex字段将默认存为3
+
+约束
+约束分为表级约束和列级约束
+只用于一个字段的约束叫列级约束，用于两个或两个以上字段的约束叫表级约束
+按照功能分类，约束类型包括
+	NOT NULL 非空约束
+	PRIMARY KEY 主键约束
+	UNIQUE KEY 唯一约束
+	DEFAULT 默认约束
+	FOREIGN KEY 外键约束
+
+前四种都已经讲过，FOREIGN KEY的存在就是为了保证数据的一致性和完整性
+
+外键约束的要求：
+1、父表和子表必须使用相同的存储引擎，而且禁止使用临时表
+2、数据表的存储引擎只能为InnoDB
+3、外键列和参数列必须具有相似的数据类型。其中数字的长度或是否有符号位必须相同，而字符的长度可以不同
+4、外键列和参照列必须创建索引，如果外键列不存在索引的话，MySQL将自动创建索引
+
+具有外键列的表就是子表，子表所参照的表就是父表
+
+编辑数据表的默认存储引擎：MySQL配置文件 default-storage-engin=INNODB 修改完成之后重启MySQL服务
+
+SHOW CREATE TABLE provinces;//查看创建provinces表时的命令
+
+CREATE TABLE provinces(
+	id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	pname VARCHAR(10) NOT NULL	
+);
+
+CREATE TABLE users(
+	id SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	username VARCHAR(10) NOT NULL,
+	pid BIGINT,
+	FOREIGN KEY(pid) REFERENCES provinces (id)
+	--参照provinces表中的id字段
+);
+执行完了之后报错：Can't create table "test.users" 报错的原因就是pid这个外键列的数据类型和父表中id列的数据类型不一致
+
+CREATE TABLE users(
+	id SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	username VARCHAR(10) NOT NULL,
+	pid SMALLINT,
+	FOREIGN KEY(pid) REFERENCES provinces (id)
+	--参照provinces表中的id字段
+);
+同样会报错，虽然外键列和父表中id列的数据类型一致了，但是一个是无符号型，一个是有符号型，也不可以
+
+CREATE TABLE users(
+	id SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	username VARCHAR(10) NOT NULL,
+	pid SMALLINT UNSIGNED,
+	FOREIGN KEY(pid) REFERENCES provinces (id)
+	--参照provinces表中的id字段
+);
+
+SHOW INDEXES FROM provinces\G; 显示索引 \G是以网格的形式来呈现
+
+外键约束的参照操作
+CASCADE 从父表删除或更新且自动删除或更新子表中匹配的行
+SET NULL 从父表删除或更新行，并设置子表中的外键列为NULL，如果使用该选项，必须保证子表列没有指定NOT NULL
+RESTRICT 拒绝对父表的删除或更新操作
+NO ACTION 标准SQL的关键字，在MySQL中与RESTRICT相同
+
+CREATE TABLE users1(
+	id SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	username VARCHAR(10) NOT NULL,
+	pid SMALLINT UNSIGNED,
+	FOREIGN KEY (pid) REFERENCES provinces (id) ON DELETE CASCADE
+);
+
+表级约束与列级约束
+对一个数据列建立的约束，称为列级约束
+对多个数据列建立的约束，称为表级约束
+列级约束既可以在列定义的时候声明，也可以在列定义后声明
+表级约束只能在列定以后声明
+以下声明的外键约束就是典型的在列定义之后声明的
+CREATE TABLE users(
+	id SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	username VARCHAR(10) NOT NULL,
+	pid SMALLINT UNSIGNED,
+	FOREIGN KEY(pid) REFERENCES provinces (id)
+	--参照provinces表中的id字段
+);
+实际开发中列级约束使用较多，表级约束较少
+并不一定所有的约束都存在表级约束
+主键PRIMARY KEY、唯一UNIQUE KEY、外键FOREIGN KEY三种约束可以存在表级约束
+非空NOT NULL、默认DEFAULT两种约束不存在表级约束
+
+修改数据表
+添加单列
+ALTER TABLE tbl_name ADD [COLUMN] col_name column_definition [FIRST|AFTER col_name]
+FIRST 将列插在最前面
+
+ALTER TABLE users1 ADD age TINYINT UNSIGNED NOT NULL DEFAULT 10;
+
+添加多列 不能指定位置关系，只能往最后添加
+ALTER TABLE tbl_name ADD [COLUMN] (col_name column_definition,...)
+
+删除列
+ALTER TABLE tbl_name DROP column_name
+如果想删除多列，可以再加一个DROP，如果希望删除的同时添加一列，还可以在后面跟上ADD，只要用逗号分开就可以
+
+添加约束
+添加主键约束
+ALTER TABLE tbl_name ADD [CONSTRAINT [symbol]] PRIMARY KEY [index_type](index_col_name,...)
+
+ALTER TABLE users2 ADD CONSTRAINT PK_users2_id PRIMARY KEY(id)
+添加唯一约束
+ALTER TABLE users2 ADD UNIQUE(username)
+
+添加外键约束
+ALTER TABLE users2 ADD FOREIGN KEY(pid) REFERENCES provinces(id);
+
+添加/删除默认约束
+假设users2表中有一列age
+ALTER TABLE users2 ALTER age SET DEFAULT 15;
+ALTER TABLE users2 ALTER age DROP DEFALUT;
+
+删除主键约束
+ALTER TABLE users2 DROP PRIMARY KEY;
+
+删除唯一约束
+ALTER TABLE users2 DROP INDEX username;
+
+删除外键约束
+ALTER TABLE users2 DROP FOREIGN KEY users2_ibfk_1;
+
+修改列定义（位置或类型）
+ALTER TABLE users2 MODIFY id SMALLINT UNSIGNED NOT NULL FIRST;
+--将id列挪到第一列
+
+ALTER TABLE users2 MODIFY id SMALLINT UNSIGNED NOT NULL AFTER pid;
+
+ALTER TABLE users2 MODIFY id TINYINT UNSIGNED NOT NULL FIRST;
+类型往小的范围变化时，数据可能会丢失
+
+使用CHANGE还可以修改列名称
+ALTER TABLE users2 CHANGE pid p_id TINYINT UNSIGNED NOT NULL;
+
+数据表更名
+ALTER TABLE users2 RENAME users3;
+RENAME TABLE users3 TO users2,users1 TO users_1;--RENAME指令可以修改多个表的名字
+
+尽量少使用数据表或列的更名
+
+对记录的操作
+INSERT users VALUES(NULL,'Tom','123',25,1);
+INSERT users VALUES(DEFAULT,'Tom','123',25,1);
+--可以通过NULL和DEFAULT将主键设置为自动增长的值
+
+INSERT users VALUES(DEFAULT,'Tom','123',25,1),VALUES(DEFAULT,'Tom',md5('123'),25,1);
+--跟多个VALUES可以一次性插入多条记录
+
+INSERT users SET username='Ben',password='456';
+--INSERT SET是插入记录的第二种方法，这种方式与上面INSERT的方式的区别是可以使用子查询
+--INSERT SELECT是插入记录的第三种方法，等学习了SELECT语句之后再回来看这种方法
+
+UPDATE
+更新记录(单表更新)
+多表更新只有学习了连接之后才会如何使用
+UPDATE users SET age=age+5;
+--让表中所有记录的age这一列都加5
+
+UPDATE users SET age=age-id,sex=0;
+
+UPDATE users SET age=age+10 where id%2=0;
+
+删除记录(单表删除)
+DELETE FROM users where id=6;
+
+DELETE FROM users;//清空数据表
+
+查找记录
+SELECT select_expr [,select_expr...]
+[
+	FROM table_references
+	[WHERE where_condition]
+	[GROUP BY {col_name|position} [ASC|DESC],...]
+	[HAVING where_condition]
+	[ORDER BY {col_name|expr|position} [ASC|DESC],...]
+	[LIMIT {[offset,] row_count|row_count OFFSET offset}]
+]
+
+SELECT sex FROM users GROUP BY sex;
+将表中所有sex的值枚举一遍放到sex这一列中，GROUP BY后面也可以写成数字，代表查询到的结果的第几列，也就是SELECT后面的第几列，但是一般不这样写
+
+我们也可以只对某一部分记录作分组，可以通过HAVING子句
+SELECT sex FROM users GROUP BY 1 HAVING age>35;
+运行之后发现报错了，因为HAVING子句后面的列必须保证是在SELECT后面的，或者是在一个聚合函数中才可以，所以可以写成
+
+SELECT sex,age FROM users GROUP BY 1 HAVING age>35;
+或者
+SELECT sex FROM users GROUP BY 1 HAVING count(id)>2;
+
+SELECT * FROM users ORDER BY id DESC;
+--按照id降序排序
+
+SELECT * FROM users ORDER BY age,id DESC;
+--按照年龄升序排序，如果遇到年龄相等的则按照id降序排序
+
+SELECT * FROM users LIMIT 2;
+--返回前两条记录
+
+SELECT * FROM users LIMIT 3,2;
+--返回第4、5条记录
+--LIMIT后面的第一个参数是返回第几条记录，索引从0开始，第二个参数是返回多少条记录
+--id号和它是第几条数据没有关系，LIMIT也不是按照id来找的
+
+INSERT test(username) SELECT username FROM users WHERE age>=30;
+
+记录的增删改称为记录的写操作，查是记录的读操作
+数据准备：六张表
+imooc_admin
+imooc_album
+imooc_category
+imooc_products
+imooc_user
+tbd_goods
+
+SHOW COLUMNS FROM tdb_goods;
+Field		Type			NULL	Key	Default		Extra
+goods_id	smallint(5) unsigned	NO	PRI	NULL		auto_increment
+goods_name	varchar(150)		NO		NULL
+goods_cate	varchar(40)		NO		NULL				(分类)
+brand_name	varchar(40)		NO		NULL				(品牌)
+goods_price	decimal(15,3) unsigned	NO		0.000
+is_show		tinyint(1)		NO		1				(商品是否上架)
+is_saleoff	tinyint(1)		NO		0				(商品是否已售完)
+
+SET NAMES gbk;//客户端使用gbk显示
+
+子查询是指出现在其他SQL语句内的SELECT子句
+
+子查询指嵌套在查询内部，且必须始终出现在圆括号内
+
+子查询可以包含多个关键字或条件，如DISTINCT、GROUP BYORDER BY、LIMIT、函数等
+
+子查询的外层查询可以是SELECT INSERT UPDATE SET或DO
+
+子查询可以返回标量、一行、一列或子查询
+
+使用比较运算符的子查询
+
+SELECT AVG(goods_price) FROM tdb_goods;
+
+SELECT ROUND(AVG(goods_price),2) FROM tdb_goods;
+--对于得到的平均值四舍五入取两位小数
+
+SELECT goods_id,goods_name,goods_price FROM tdb_goods WHERE goods_price>=5636.36;
+
+将上面两个SELECT语句合并得到
+SELECT goods_id,goods_name,goods_price FROM tdb_goods WHERE goods_price>=(SELECT ROUND(AVG(goods_price),2) FROM tdb_goods);
+
+若希望查找超极本类型的商品
+SELECT goods_price FROM tdb_goods WHERE goods_cate='超级本';
+假设得到三条记录4299 4799 7999
+
+如果希望查询哪些商品价格大于超极本，理论上来讲应该这样写
+SELECT goods_id,goods_name,goods_price FROM tdb_goods WHERE goods_price>(SELECT goods_price FROM tdb_goods WHERE goods_cate='超极本');
+确认之后报错了，提示Subquery returns more than 1 row子查询返回的结果大于一行
+这时要引入用ANY SOME ALL修饰的比较运算符，即如果子查询返回多个结果的时候可以用ANY SOME ALL来修饰
+
+ANY和SOME是符合其中一个就可以
+	ANY	SOME	ALL
+> >=	最小值	最小值	最大值
+< <=	最大值	最大值	最小值
+=	任意值	任意值	
+<> !=			任意值
+
+SQL语句改成下面这样之后(大于号后面加了ANY)
+SELECT goods_id,goods_name,goods_price FROM tdb_goods WHERE goods_price> ANY (SELECT goods_price FROM tdb_goods WHERE goods_cate='超极本');
+得到的结果是价格大于4299的商品
+
+如果改成下面这样(大于号后面加了ALL)
+SELECT goods_id,goods_name,goods_price FROM tdb_goods WHERE goods_price> ALL (SELECT goods_price FROM tdb_goods WHERE goods_cate='超极本');
+得到的结果是价格大于7999的商品
+
+使用NOT IN和IN的子查询
+=ANY与IN等价
+<>ALL或!=ALL与NOT IN等价
+
+使用EXIST 或 NOT EXIST的子查询
+
+使用INSERT...SELECT插入记录
+先创建一张表用来存储商品分类
+CREATE TABLE IF NOT EXISTS tdb_goods_cates(
+	cate_id SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	cate_name VARCHAR(40) NOT NULL
+);
+
+SELECT goods_cate FROM tdb_goods GROUP BY goods_cate;
+--得到所有类别
+
+INSERT INTO tdb_goods_cates(cate_name) SELECT goods_cate FROM tdb_goods GROUP BY goods_cate;
+
+多表更新
+UPDATE tdb_goods INNER JOIN tdb_goods_cates ON goods_cate=cate_name SET goods_cate=cate_id;
+
+多表更新之一步到位(将上面创建表、INSERT SELECT、UPDATE合并为一步，可以用CREATE SELECT)
+在创建数据标的同时将查询结果写到数据库
+CREATE TABLE tdb_goods_brands(
+	brand_id SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	brand_name VARCHAR(10) NOT NULL
+)
+SELECT brand_name FROM tdb_goods GROUP BY brand_name;
+
+UPDATE tdb_goods AS g INNER JOIN tdb_goods_brands AS b ON g.brand_name=b.brand_name SET g.brand_name=b.brand_id;
+这时tdb_goods中的brand_name字段虽然已经变成数字，但是brand_name字段的类型仍然是varchar类型的，所以需要将tdb_goods的类型也改成数字类型的
+ALTER TABLE tdb_goods CHANGE goods_cate cate_id SMALLINT UNSIGNED NOT NULL,
+CHANGE brand_name brand_id SMALLINT UNSIGNED NOT NULL;
+
+连接
+MySQL在SELECT语句、多表更新、多表删除语句中支持JOIN操作
+
+MySQL中JOIN、CROSS JOIN、INNER JOIN是等价的
+使用ON关键字来设定连接条件，也可使用WHERE来代替
+
+内连接只显示符合连接条件的记录
+SELECT goods_name,goods_cate,brand_name FROM tdb_goods AS g INNER JOIN tdb_goods_cates AS c ON g.cate_id=c.cate_id;
+
+外连接分为左外连接和右外连接
+左外连接得到左表的全部记录和右表中符合条件的记录
+
+多表连接
+SELECT goods_id,goods_name,cate_name,brand_name,goods_price FROM tdb_goods AS g 
+INNER JOIN tdb_goods_cates AS c ON g.cate_id=c.cate_id
+INNER JOIN tdb_goods_brands AS b ON g.brand_id=b.brand_id;
+
+无限级分类表设计
+CREATE TABLE tdb_goods_types(
+	type_id SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	type_name VARCHAR(20) NOT NULL,
+	parent_id SMALLINT UNSIGNED NOT NULL DEFAULT 0
+);
+
+INSERT TABLE tdb_goods_types(...);
+
+parent_id为0时是顶级分类
+
+自身连接
+SELECT s.type_id,s.type_name,p.type_name FROM tdb_goods_types AS s 
+LEFT JOIN tdb_goods_types AS p 
+ON s.parent_id=p.type_id;
+
+SELECT p.type_id,p.type_name,s.type_name FROM tdb_goods_types AS p 
+LEFT JOIN tdb_goods_types AS s 
+ON s.parent_id=p.type_id;
+
+多表的删除
+表当中有重复的记录，希望删除goods_id较大的记录
+SELECT goods_id,goods_name FROM tdb_goods GROUP BY goods_name HAVING count(goods_name)>1;
+
+DELECT t1 FROM tdb_goods AS t1 
+LEFT JOIN (SELECT goods_id,goods_name FROM tdb_goods GROUP BY goods_name HAVING count(goods_name)>1) AS t2 
+ON t1.goods_name=t2.goods_name 
+WHERE t1.goods_id>t2.goods_id;
+
+MySQL中的运算符和函数
+字符函数 数值运算符与函数 比较运算符与函数 日期时间函数 信息函数 聚合函数 加密函数
+
+字符函数
+CONCAT() 字符连接 SELECT CONCAT('imooc','-','MySQL'); --imooc-MySQL
+CONCAT_WS() 使用指定的分隔符进行字符连接
+
+SELECT CONCAT(first_name,last_name) AS fullname FROM test;
+
+SELECT CONCAT('|','A','B','C');--用 | 将A B C连在一起
+
+FORMAT()数字格式化，由于返回结果为字符串类型，所以归为字符函数
+SELECT FORMAT(12560.751,2); --得到12,560.75 保留两位小数
+
+LOWER() 转为小写
+
+UPPER() 转为大写
+
+LEFT() 获取左侧字符串 SELECT LEFT('MySQL',2); --得到My，获取到前两位
+SELECT LOWER(LOWER('MySQL'));
+
+RIGHT() 获取右侧字符串 SELECT RIGHT('MySQL',3); --得到SQL
+
+LENGTH() 
+
+LTRIM()
+
+TRIM() 除了可以删除空格外还可以删除指定字符
+SELECT TRIM(LEADING '?' FROM '??MySQL???'); --得到MySQL?? LEADING是删除前导空格 TRAILING是后续 BOTH是前后都删
+
+RTRIM()
+
+SUBSTRING() SELECT SUBSTRING('MySQL',1,2); --第二个参数是从第几个开始截取，索引从1开始，第三个参数是截的长度
+
+[NOT] LIKE 模式匹配
+
+REPLACE() 
+SELECT REPLACE('??MyS??QL???','?',''); --得到MySQL 
+SELECT REPLACE('??MyS??QL???','??','!'); --得到!MyS!QL!? 将两个问号替换成一个! 替换不了的保留
+
+SELECT 'MySQL' LIKE 'M%'; --%代表Windows中的*，任意多个字符 此处得到1 1代表true _代表任意一个字符
+
+SELECT * FROM test WHERE first_name LIKE '%1%%' ESCAPE 1; --忽略1后面的%，查找first_name中带有%的记录
+
+数值运算符及函数
+CEIL()
+
+DIV 整数除法
+SELECT 3 DIV 4; --得到0
+SELECT 3/4; --得到0.75
+
+FLOOR()
+
+MOD 取模
+
+POWER()幂运算
+
+ROUND()四舍五入 SELECT ROUND(3.652,2); --得到3.65 保留两位小数
+
+TRUNCATE()数字截取 
+	SELECT TRUNCATE(125.89999,3); --得到125.899截取小数点后3位小数，不是四舍五入
+	SELECT TRUNCATE(125.89999,-1); --截取-1位小数，得到120
+
+[NOT] BETWEEN...AND... 是否在区间内    SELECT 35 BETWEEN 1 AND 22;35是否在1和22之间？ --得到0 相当于false
+
+[NOT] IN() 是否在所列举的像中 SELECT 10 IN(15,10,20); --得到1
+
+IS [NOT] NULL 是否为空 SELECT NULL IS NULL; --得到1
+	SELECT * FROM test WHERE first_name IS NULL; --查找first_name为空的记录
+
+日期时间函数
+NOW() 当前日期时间
+
+CURDATE() 当前日期
+
+CURTIME() 当前时间
+
+DATE_ADD() 日期变化 SELECT DATE_ADD('2014-3-12',INTERVAL 365 DAY); 在2014年3月12日的基础上加365天
+DATE_ADD() 日期变化 SELECT DATE_ADD('2014-3-12',INTERVAL -365 DAY); 在2014年3月12日的基础上减365天
+
+DATEDIFF() 得到两个日期之间的差值 SELECT DATEDIFF('2012-3-12','2013-3-12'); --得到365
+
+DATE_FORMAT() 日期格式化 SELECT DATE_FORMAT('2014-3-2','%m/%d/%Y'); 03/02/2014
+
+信息函数
+CONNECTION_ID() 连接ID
+
+DATABASE() 当前数据库
+
+LAST_INSERT_ID() 最后插入记录的ID 当插入多条记录时只能得到第一条记录的ID
+
+USER() 当前用户
+
+VERSION() 版本信息
+
+聚合函数
+AVG()
+
+COUNT()
+
+MAX()
+
+MIN()
+
+SUM()
+加密函数
+MD5() 信息摘要算法
+PASSWORD() 密码算法
+
+自定义函数 user-define function UDF 
+mysql中规定函数的参数最多是1024个
+
+CREATE FUNCTION f1() RETURNS VARCHAR(30)
+RETURN DATE_FORMAT(NOW(),'%年%m月%d日 %H点%i分%s秒');
+
+创建了上述函数之后就可以直接通过SELECT f1();来得到当前时间
+
+CREATE FUNCTION f2(num1 SMALLINT UNSIGNED,num2 SMALLINT UNSIGNED)
+RETURNS FLOAT(10,2) UNSIGNED
+RETURN (num1+num2)/2;
+
+SELECT f2(10,15);
+
+DESC test;--查看test表结构
+
+DELIMITER $$ --修改结束符为$$
+
+CREATE FUNCTION adduser(username VARCHAR(20))
+RETURNS INT UNSIGNED
+BEGIN
+INSERT test(username) VALUES(username);
+RETURN LAST_INSERT_ID();	--由于我们在上面已经将结束符改为$$了，所以这里虽然加了分号，但是mysql语句仍然没有结束
+END
+//BEGIN END类似于语言编程中的语句块
+
+DROP FUNCTION adduser; 删除adduser函数
+
+存储过程
+存储过程式SQL语句和控制语句的预编译集合，以一个名称存储并作为一个单元处理
+
+存储过程的优点
+增强SQL语句的功能和灵活性
+实现较快的执行速度
+减少网络流量
+
+参数修饰符IN OUT INOUT
+IN表示该参数的值必须在调用存储过程时指定，但是不可以作为返回值
+OUT表示该参数的值可以被存储过程改变，并且可以返回
+INOUT表示该参数调用时指定，并且可以被改变和返回
+
+CREATE PROCEDURE sp1() SELECT VERSION();
+
+CALL sp1(); --调用存储过程
+
+创建按id删除用户的存储过程
+DELIMITER //
+CREATE PROCEDURE removeUserById(IN p_id INT UNSIGNED)
+BENGIN
+DELETE FROM users WHERE id=p_id;
+END
+//
+DELIMITER ;
+CALL removeUserById(3);
+
+如果想修改过程体，只能先删除存储体，再重建
+DROP PROCEDURE removeUserById;
+
+--创建一个删除用户并返回用户总数的存储过程
+DELIMITER //
+CREATE PROCEDURE removeUserAndReturnUserNums(IN p_id INT UNSIGNED,OUT userNums INT UNIGNED) 
+BEGIN
+DELETE FROM users WHERE id=p_id;
+SELECT count(id) FROM users INTO userNums; --INTO用于将SELECT得到的结果存储到userNums变量中
+END
+//
+DELIMITER;
+
+CALL removeUserAndReturnUserNums(27,@nums); --类似于@nums这种变量的叫用户变量 只在当前mysql客户端有效
+--在BEGIN END之间通过DECLARE定义的变量只在BEGIN END之间有效
+
+--创建一个存储过程，通过年龄删除记录，返回两个变量，分别是删除的用户数和剩余的用户数
+ROW_COUNT() 返回插入 更新 删除的被影响的行数
+DELIMITER //
+CREATE PROCEDURE removeUserByAgeAndReturnInfos(IN p_age SMALLINT UNSIGNED,OUT deleteUsersNum SMALLINT UNSIGNED,OUT usersCounts SMALLINT UNSIGNED) 
+BEGIN
+DELETE FROM users WHERE age=p_age;
+SELECT ROW_COUNT() INTO deleteUsersNum
+SELECT COUNT(id) FROM users INTO usersCounts;
+END
+//
+DELIMITER ;
+
+CALL removeUserByAgeAndReturnInfos(21,@a,@b);
+
+存储过程一般独立来执行，而函数可以作为其他SQL语句的组成部分来出现
+
+存储引擎
+SHOW CREATE TABLE t; 查看创建数据表t的命令
+
+MySql可以将数据以不同的技术存储在文件(内存)中，这种技术就称为存储引擎
+每种存储引擎使用不同的存储机制 索引技巧 锁定水平 最终提供广泛且不同的功能
+
+存储引擎又叫表类型
+
+MySql支持的存储引擎有
+MyISAM
+InnoDB
+Memory
+CSV
+Archive
+
+并发控制：
+当多个连接对记录进行修改时保证数据的完整性和一致性
+
+锁
+共享锁 读锁 在同一个时间段内，多个用户可以读取同一个资源
+排他锁 写锁 在任何时候只能有一个用户写入资源，当进行写锁时会阻塞其他的读锁或写锁操作
+
+锁颗粒
+表锁，是一种开销最小的锁策略
+行锁，是一种开销最大的锁策略
+
+事务
+用于保证数据库的完整性
+原子性 一致性 隔离性 持久性
+
+特点		MyISAM	InnoDB	Memory	Archive
+存储限制	256TB	64TB	有	无
+事务安全	-	支持	-	-
+支持索引	支持	支持	支持	
+锁颗粒		表锁	行锁	表锁	行锁
+数据压缩	支持	-	-	支持
+支持外键	-	支持	-	-
+
+用的比较多的是MyISAM和InnoDB
+
+通过修改MySql配置文件修改存储引擎
+- default-storage-engine
+
+通过创建数据表命令实现
+CREATE TABLE tp1(
+	s1 VARCHAR(10)
+)ENGINE=MyISAM;
+
+通过SHOW CREATE TABLE 'tp1';可以查看数据表的存储引擎
+
+ALTER TABLE tp1 ENGINE=InnoDB; --修改存储引擎

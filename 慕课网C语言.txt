@@ -1,0 +1,2 @@
+ANSC C 是为了统一语法标准而创建的
+Linux下常见的编辑器有emacs和vim

@@ -1,0 +1,18 @@
+jade
+jade -P index.jade//将index.jade解析成可读性较好的方式
+jade -P -w index.jade//加上-w之后不用反复编译，index.html会检测index.jade的变化自动生成
+
+jade当中如果不写标签名直接写上id和类，默认标签就是div，例如：
+#id.classname 编译之后结果就是<div id="id" class="classname"></div>
+
+//jade声明变量的指令
+jade -P -w --obj '{"course":"jade"}'
+
+//当jade文件种和命令行中同时声明了两个相同类型的变量的时候，jade文件里面的变量得到优先级较高
+
+当有很多个变量进行传递的时候需要在外部新创建一个json文件来存储所有的变量，将json文件中的变量定义解析到jade文件中对应的指令为
+jade index.jade -P -w -O imooc.json
+
+
+
+

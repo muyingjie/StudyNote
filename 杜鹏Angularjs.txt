@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en" ng-app>
+<head>
+	<meta charset="UTF-8">
+	<title>xxx</title>
+	<script type="text/javascript" src="angular.min.js"></script>
+	<script type="text/javascript">
+	function aaa($scope){
+		$scope.name="hello";//这里就相当于数据
+	}
+	</script>
+</head>
+<body>
+	<div ng-controller="aaa"><!-- 这里相当于控制器 -->
+		{{name}}<!-- 这里相当于视图 -->
+	</div>
+</body>
+</html>
+
+//$rootScope
+<script type="text/javascript">
+function aaa($scope,$rootScope){
+	$scope.name="hello";
+	//$rootScope是全局的作用域
+	$rootScope.age="hi";
+}
+function bbb($scope){
+	$scope.name="hi";
+}
+</script>
+<body>
+	<div ng-controller="aaa">
+		{{name}}
+	</div>
+	<div ng-controller="bbb">
+		{{name}}
+		{{age}}
+	</div>
+</body>
+
+//AngularJs中控制器对应的函数形参是不可以修改的，因为我们在视图层中写的ng-controller="aaa"，这里只是写了一个函数名，并没有写调用的参数，所以AngularJs内部会帮助我们判断传入了什么参数，所以这些形参我们不能改，这种机制叫依赖注入
+
+//AngularJs中为依赖注入的参数专门起了一个名字，叫做服务，当我们看到以$开头的参数时，这就是一个服务
+
+//AngularJs中以ng开头的给标签加的属性叫做指令
+ng-app是初始化AngularJs的一个指令，如果不写的话AngularJs是不会执行的，如果写到html标签上，那么页面当中所有的地方都会有效，如果单单写在某个标签上，那就只有这个标签有效了
+
+//AngularJs的双向数据绑定 即将视图中展示出来的数据和model层中的数据绑定起来，也就是MVVM模式
+-------------------------$timeout服务
+<script type="text/javascript">
+function aaa($scope,$timeout){
+	$scope.name="hello";
+	$timeout(function(){
+		$scope.age="hi";//要想实现AngularJs的双向数据绑定，必须注入$timeout服务，并且必须使用$timeout服务，而不能使用原生的定时器
+	});
+}
+</script>
+<body>
+	<div ng-controller="aaa">
+		{{name}}
+	</div>
+</body>
+
+------------------------ng-click点击指令
+<script type="text/javascript">
+function aaa($scope){
+	$scope.name="hello";
+}
+</script>
+<body>
+	<div ng-controller="aaa" ng-click="name='hi'"><!--里面的name变量就是div里面双花括号引起来的name变量，也可以在ng-click里面写一个函数来调用-->
+		{{name}}
+	</div>
+</body>
+
+<script type="text/javascript">
+function aaa($scope){
+	$scope.name="hello";
+	$scope.show=function(){
+		$scope.name="hi";
+	};
+}
+</script>
+<body>
+	<div ng-controller="aaa" ng-click="show()"><!--也可以在ng-click里面写一个函数来调用-->
+		{{name}}
+	</div>
+</body>
+
+----------------------------------以上所讲都是M影响V，接下来我们讨论下V影响M
+<script type="text/javascript">
+function aaa($scope){
+	$scope.name="hello";
+}
+</script>
+<body>
+	<div ng-controller="aaa">
+		<input type="text" ng-model="name"/>
+		<p>{{name}}</p>
+	</div>
+</body>
+ng-model指令的值绑定到了name数据上
+
+//购物金额计算的例子
+<script type="text/javascript">
+function aaa($scope){
+	$scope.iphone={
+		money:5,
+		num:1
+	};
+}
+</script>
+<body>
+	<div ng-controller="aaa">
+		<p>价格<input type="text" ng-model="iphone.money"/></p>
+		<p>个数<input type="text" ng-model="iphone.num"/></p>
+		<p>费用<span>{{iphone.money*iphone.num|currency:'￥'}}</span></p>
+	</div>
+</body>
+==========将计算总价的部分抽象成函数
+<script type="text/javascript">
+function aaa($scope){
+	$scope.iphone={
+		money:5,
+		num:1
+	};
+	$scope.sum=function(){
+		return $scope.iphone.money*$scope.iphone.num;
+	};
+}
+</script>
+<body>
+	<div ng-controller="aaa">
+		<p>价格<input type="text" ng-model="iphone.money"/></p>
+		<p>个数<input type="text" ng-model="iphone.num"/></p>
+		<p>费用<span>{{sum()|currency:'￥'}}</span></p>
+	</div>
+</body>
+===========加上运费
+<script type="text/javascript">
+function aaa($scope){
+	$scope.iphone={
+		money:5,
+		num:1,
+		fre:10
+	};
+	$scope.sum=function(){
+		return $scope.iphone.money*$scope.iphone.num;
+	};
+}
+</script>
+<body>
+	<div ng-controller="aaa">
+		<p>价格<input type="text" ng-model="iphone.money"/></p>
+		<p>个数<input type="text" ng-model="iphone.num"/></p>
+		<p>费用<span>{{sum()|currency:'￥'}}</span></p>
+		<p>运费<span>{{iphone.fre|currency:'￥'}}</span></p>
+		<p>总价<span>{{sum()+iphone.fre|currency:'￥'}}</span></p>
+	</div>
+</body>
+============如果数量大于某个值的时候包邮（没运费）
+<script type="text/javascript">
+function aaa($scope){
+	$scope.iphone={
+		money:5,
+		num:1,
+		fre:10
+	};
+	$scope.sum=function(){
+		return $scope.iphone.money*$scope.iphone.num;
+	};
+	//需要用到$watch监听，此时当money变化的时候这个函数就会触发
+	$scope.$watch("iphone.money",function(){
+		console.log(123);
+	});
+	//此时当num变化的时候这个函数就会触发
+	$scope.$watch("iphone.num",function(){
+		console.log(123);
+	});
+	//如果想要不论在money和num哪个变化都触发某个函数的话，直接写iphone经过试验是不行的，需要加上第三个参数true才可以，这第三个参数的意思就是深度监听
+	$scope.$watch("iphone",function(){
+		console.log(123);
+	},true);
+	//除此之外，$watch第二个参数function还可以接收两个参数，新旧的value值
+	$scope.$watch("iphone",function(newVal,oldVal){
+		console.log(123);
+	},true);
+	//$watch除了监听一个字符串之外，还可以监听一个函数，当该函数的返回值改变时，就会触发函数
+	$scope.$watch($scope.sum,function(newVal,oldVal){
+		$scope.iphone.fre=newVal>100?0:10;
+	});
+	//$apply作用是修改数据
+	$scope.$apply(function(){
+		$scope.name="hi";
+	});
+}
+</script>
+<body>
+	<div ng-controller="aaa">
+		<p>价格<input type="text" ng-model="iphone.money"/></p>
+		<p>个数<input type="text" ng-model="iphone.num"/></p>
+		<p>费用<span>{{sum()|currency:'￥'}}</span></p>
+		<p>运费<span>{{iphone|currency:'￥'}}</span></p>
+		<p>总价<span>{{sum()+iphone|currency:'￥'}}</span></p>
+	</div>
+</body>
+
+---------------AngularJs中的模块化
+<html lang="en" ng-app="myApp1"><!-- 如果程序是从某个模块开始启动的，类似于C语言中的main函数 -->
+<script type="text/javascript">
+var m1=angular.module("myApp1",[]);//第一个参数是自己定义的一个模块的名字，第二个参数是数组，里面存放当前模块所依赖的其他模块
+m1.controller("aaa",function($scope){
+	$scope.name="hello";
+});
+m1.controller("bbb",function($scope){
+	$scope.name="hi";
+});
+//由于是依赖注入，因此压缩的时候如果$scope被缩写成别的短的名字了，那就会出问题，可以这样写来解决：
+var m1=angular.module("myApp1",[]);
+m1.controller("aaa",["$scope",function($scope){
+	$scope.name="hello";
+}]);
+m1.controller("bbb",["$scope",function($scope){
+	$scope.name="hi";
+}]);
+</script>
+<body>
+	<div ng-controller="aaa">
+		{{name}}
+	</div>
+	<div ng-controller="bbb">
+		{{name}}
+	</div>
+</body>
+
+----------------AngularJs工具方法
+function show(){
+	console.log(this);
+}
+angular.bind(document,show)();//用来改this指向
+
+var a={
+	name:"hello"
+};
+var b={
+	age:20
+};
+var c=angular.copy(a,b);//a将b中所有的属性覆盖，所以b就成了{name:"hello"}
+
+angular.extend(a,b);//将b的属性给a，类似$.extend
+
+angular.isArray()
+angular.isDate
+angular.isDefined
+angular.isUndefined
+angular.isFunction
+angular.isNumber
+angular.isObject
+angular.isString
+angular.isElement 传入原生对象和jQuery对象都返回true
+angular.equals(a,b) 判断a和b是否相等 如果是属性和方法都相同的引用类型变量，也会返回true，如果是NaN和NaN作比较也会返回true
+angular.forEach(value,fn,result);
+angular.forEach(values,function(value,i){
+	this.push(value+i);//this就是指result
+},result);
+
+angular.fromJson/toJson 类似parse和stringify方法
+angular.toJson(json,true);//第二个参数传入true的时候，格式化后json将以可读性较为友好的方式呈现
+
+angular.identity/noop //起辅助作用
+var str="hello";
+console.log(angular.identity(str));//"hello"
+
+angular.lowercase/uppercae //大小写转换
+
+angular.element(oDiv).css("background","red") //类似于jQuery中的方法
+
+但是angular只是实现了jQuery里面的部分方法，如果写成
+
+angular.element("#div1").css("background","red") //不可以
+
+解决的方法也很简单，直接引入jQuery就可以了，引入jQuery之后需要说明的一点就是angular.element和$是等价的
+
+angular.bootstrap //动态触发angular
+
+document.onclick=function(){
+	angular.bootstrap(document,["myApp"]);
+};
+
+angular.injector //angular内部使用 注册器
+
+
+
+//run方法 当html中不写ng-controller的时候也可以触发angular 但是run只有全局作用域
+var ml=angular.module("myApp",[]);
+m1.run(["$rootScope",function($rootScope){
+	$rootScope.name="hello";
+}]);
+<div>
+	<p>{{name}}</p>
+</div>
+
+
+==============过滤器
+过滤器中的竖线叫做管道符，冒号后的叫做参数
+<div>
+	<p>{{name|currency:"￥"}}</p>
+	<p>{{name|number}}</p> number将前面的name按照每三位加一个逗号来显示，对于小数部分只显示三位
+	<p>{{name|uppercase}}</p>
+	<p>{{name|lowercase}}</p>
+	<pre>{{name|json}}</pre> 将json格式化成阅读比较友好的模式，必须在pre标签中
+	<p>{{name|limitTo:2}}</p> 截取前两个，name可以是字符串，可以是数组
+	<p>{{name|date}}</p> name是毫秒时，date过滤器将其格式化成日期的格式date:"yyyy" 冒号后面可以写显示的格式
+	<p>{{name|orderBy:"color"}}</p> 当name是形如[{"color":"blue","num":10},{"color":"green","num":10},{"color":"red","num":10}]按照color排序
+	<p>{{name|orderBy:"color":true}}</p> 排序的时候为逆序
+	<p>{{name|filter:"red"}}</p> 只有value为red的值筛选出来
+</div>
+
+过滤器可以组合使用
+
+js中使用过滤器，需要使用$filter服务
+var m1=angular.module("myApp",[]);
+m1.controller("Aaa",["$scope","$filter",function($scope,$filter){
+	$scope.name=$filter("uppercase")("hello");
+	//如果遇到传参的情况，就直接在括号里的后面写
+	$scope.name=$filter("number")("122344556.2222",1)
+}]);
+
+自定义过滤器
+var m1=angular.module("myApp",[]);
+m1.filter("firstUpper",function(str){//如果需要参数的话可以直接跟在str后面写
+	return function(str){
+		//这里的参数str实际上就是要处理的对象，在这里就是name
+		return str.charAt(0).toUpperCase()+str.substring(1);
+	}
+});
+<div>
+	<p>{{name|firstUpper}}</p>
+</div>
+
+===========使用ng-repeat遍历集合中的数据
+<script>
+var m1=angular.module("myApp",[]);
+m1.controller("Aaa",["$scope",function($scope){
+	$scope.dataList=["aaa","bbb","ccc"];
+}]);
+</script>
+<ul ng-controller="Aaa">
+	<li ng-repeat="data in dataList">{{data}}</li>
+</ul>
+===========第11集已完
+<script>
+var m1 = angular.module('myApp',[]);
+m1.controller('Aaa',['$scope','$filter',function($scope,$filter){
+	
+	var oriArr = [
+		{ name : "red" , age : "20" },
+		{ name : "yellow" , age : "40" },
+		{ name : "blue" , age : "30" },
+		{ name : "green" , age : "10" }
+	];
+	
+	$scope.dataList = oriArr;
+
+	$scope.fnSort = function(arg){
+		arguments.callee['fnSort'+arg] = !arguments.callee['fnSort'+arg];
+		$scope.dataList = $filter('orderBy')($scope.dataList , arg , arguments.callee['fnSort'+arg] );
+		
+	};
+	$scope.fnFilter = function(){
+		$scope.dataList = $filter('filter')( oriArr , $scope.filterVal );
+	};
+
+}]);
+</script>
+<div ng-controller="Aaa">
+	<input type="text" ng-model="filterVal"><input type="button" ng-click="fnFilter()" value="搜索">
+	<table border="1">
+    	<tr>
+		<th ng-click="fnSort('name')">姓名</th>
+		<th ng-click="fnSort('age')">年龄</th>
+        </tr>
+        <tr ng-repeat="data in dataList">
+        	<td>{{ data.name }}</td>
+            	<td>{{ data.age }}</td>
+        </tr>
+    </table>
+</div>
+===================ng-repeat加强
+<script>
+var m1=angular.module("myApp",[]);
+m1.controller("Aaa",["$scope",function($scope){
+	$scope.dataList=["aaa","bbb","ccc","ddd","eee"];
+}]);
+</script>
+<ul ng-controller="Aaa">
+	<li ng-repeat="data in dataList">{{$index}}</li> 通过$index可以获得每一项的下标
+	<li ng-repeat="data in dataList">{{$first}}</li> 如果是第一项这里返回true，否则返回false $last $middle $odd $even同理
+	<li ng-repeat="data in dataList" class="{{$even?'active':''}}">{{$data}}</li>
+</ul>
+
+ng-repeat-start和ng-repeat-end用来循环兄弟结构的形式
+
+<div ng-repeat-start="data in dataList">{{data}}</div>
+<p>{{data}}</p>
+<div ng-repeat-end="data in dataList">{{data}}</div>
+接下来将会循环这一段从ng-repeat-start到ng-repeat-end的代码段
+
+==================angular中的事件指令
+ng-click ng-dbclick ng-mouseenter ...
+ng-selected ng-change ng-copy ng-cut ng-paste
+
+<div ng-controller="Aaa">
+	<input type="checkbox" ng-model="aaa" /> 点击该复选框之后aaa的值就成了true，ng-selected的值就变成了true，select的第二项默认被选中，再点击一次aaa的值就成了false，select又恢复了第一项为选中的状态
+	<select>
+		<option>111</option>
+		<option ng-selected="aaa">222</option>
+	</select>
+</div>
+
+ng-change事件要配合ng-model来实现
+<input type="text" ng-change="bbb='hello'" ng-model="bbb">{{bbb}} 当这个文本框里面的内容发生变化的时候就会触发ng-change事件，就将bbb的值改成了hello
+
+<input type="text" value="aabbcc" ng-copy="ccc=true">{{ccc}} 当对input框中的文本复制的时候就会将ccc的值改为true
+=============ng-disabled指令
+<div ng-controller="Aaa">
+	<input type="button" value="{{text}}" ng-disabled="isDisabled">
+</div>
+<script>
+var m1=angular.module("myApp",[]);
+m1.controller("Aaa",["$scope","$interval",function($scope,$interval){
+	var iNow=5;
+	$scope.text="5s";
+	$scope.isDisabled=true;
+
+	var timer=$interval(function(){
+		iNow--;
+		$scope.text=iNow+"s";
+		if(iNow==0)
+		{
+			$interval.cancel(timer);
+			$scope.text="可以点了";
+			$scope.isDisabled=false;
+		}
+	},1000);
+}]);
+</script>
+
+ng-readonly对于按钮不起作用，对于textarea，input框起作用
+
+<input type="button" ng-value="text" ng-disabled="isDisabled">处理表单的时候尽量用angular中的ng-value，用户体验会更好一些，如果写成value的话，当html加载完而js还没加载进来的时候按钮上就会显示{{text}}，但是使用了ng-value就不会有这种情况了
+
+====================14集已完
+与input中的ng-value道理一样，普通标签中的{{xxx}}也可以用ng-bind来替换
+
+<div ng-bind="text"></div>与<div>{{text}}</div>等价
+
+当遇到<div>{{text}}{{text}}</div>这种情况的时候就不能用ng-bind了，可以用ng-bind-template，即
+<div ng-bind-template="{{text}},{{text}}"></div>
+
+以上的情况只是考虑了控制器方法中$scope.text是普通文本的情况，当$scope.text里面含有html标签的时候，例如
+$scope.text="<h1>text</h1>";如果依然用ng-bind和ng-bind-template的话就会把标签名也输出到页面中，而不会将html标签解析，这个时候可以用ng-bind-html指令，但是由于这个指令用的很少，所以需要安装额外的插件，实际上也可以将其看作一个模块，这时如果再某个模块中要用ng-bind-html指令的时候除了要引入该模块的代码之外需要在依赖项数组参数里面加上"ngSanitize"，即
+
+var m1=angular.module("myApp",["ngSanitize"]);
+
+考虑到{{text}}是很多人用的一种习惯用法，所以Angular通过ng-cloak指令也可以实现在写成{{text}}的情况下也可以做到在加载的时候避免看到页面当中出现{{text}}，具体用法如下
+<div ng-cloak>{{text}}</div> 这个指令的工作原理是当页面加载完但是没有解析Angular之前先让该元素display为none，解析完了之后再让它显示出来
+
+如果我们希望页面中的{{text}}不被解析，那么需要写成<div ng-non-bindable>{{text}}</div>
+
+16集 样式相关指令
+.red{background:#f00;}
+<div ng-class="{red:true}"></div>这样写.red样式就会加到div上面
+
+<div ng-style="{color:'red',background:'#f00'}">
+
+如果在控制器方法中写了$scope.style="{color:'#f00'}" 而在页面中希望用这条样式的时候可以这样写
+<div ng-style="{{style}}"></div>
+
+ng-attr-href同ng-href
+ng-attr提供了一种更加通用的方法
+
+<div ng-show="true">aaa</div> div会显示ng-show设置为false时div会隐藏，ng-hide是它的相关方法
+
+//点击复选框div显示，再次点击复选框div隐藏
+<script>
+var m1=angular.module("myApp",[]);
+m1.controller("Aaa",["$scope",function($scope){
+	$scope.bBtn=true;
+}]);
+
+</script>
+<div ng-controller="Aaa">
+	<input type="checkbox" ng-model="bBtn">
+	<div ng-show="bBtn">aaaa</div>
+</div>
+
+ng-if和ng-show效果看起来一样，但是ng-if是做的添加删除dom，而ng-show是通过css设置显示隐藏
+
+<div ng-controller="Aaa">
+	<input type="checkbox" ng-model="bBtn">
+	<div ng-switch on="bBtn">
+		<p ng-switch-default>默认的效果</p>
+		<p ng-switch-when="false">切换的效果</p>
+	</div>
+</div>
+页面刚上来的时候bBtn的值为true，那么就会显示 "默认的效果" ，再点击一次checkbox，bBtn的值变为false，就会显示 "切换的效果"
+
+ng-open指令，主要针对HTML5中的details标签，这个标签只有chrome支持
+<details ng-open="false">
+	<summary>aaa</summary>
+	<p>bbb</p>
+</details>
+在页面中显示的时候summary和p的前面会有一个可以点击的小三角，点击一下内容会收缩起来，再点击会展开，那么ng-open的值设为true时，默认是展开状态，ng-open值为false时，默认为收缩状态
+
+<div ng-controller="Aaa" ng-init="text='hello'">
+	{{text}}
+</div>
+不在控制器方法中写Aaa而在ng-init里面初始化$scope.text的值也可以，这时页面中就会显示hello
+
+//在下面这种情况下用ng-init比较方便
+$scope.arr=[[a,b],[c,d]];
+
+<div ng-repeat="arrOuter in arr" ng-init="outerIndex=$index">
+	<div ng-repeat="arrInner in arrOuter" ng-init="innerIndex=$index">
+		<span>{{arrInner}}:{{outerIndex}}{{innerIndex}}</span>
+	</div>
+</div>
+
+//ng-include指令将会把temp.html里面的html结构引过来，放到了该div中
+<div ng-controller="Aaa" ng-include="'temp.html'">
+	
+</div>
+//控制双向数据绑定在input发生onblur事件的时候再发生
+<input type="text" ng-model="text" ng-model-options="{updateOn:'blur'}">
+<div>{{text}}</div>
+
+//angular还支持面向对象的写法
+m1.controller("Aaa",["$scope",FnAaa]);
+function FnAaa($scope){}
+FnAaa.prototype.num="123";
+FnAaa.prototype.text="hello";
+FnAaa.prototype.show=function(){
+	return "AngularJs"
+};
+//这时控制器如果还是这样写就会有问题
+<div ng-controller="Aaa">
+	{{text}}
+</div>
+//controller提供了一个叫做as的属性,在这里a1就是构造函数创建出来的对象
+<div ng-controller="FnAaa as a1">
+	{{a1.text}}
+</div>
+
+标签指令
+放在ng-app里面的a标签在点击的时候是不会刷新页面的，而普通的a标签会刷新
+
+ng-options必须和ng-model配合在一起使用
+$scope.colors=[
+	{name:"red"},
+	{name:"green"},
+	{name:"yellow"},
+];
+<select ng-options="color.name for color in colors" ng-model="myColor">
+
+</select>
+<a href="">{{myColor.name}}</a>
+在ng-options里面color.name是要在option里面显示的值，后面就是一个for in循环
+
+<form novalidate>
+	<input type="email">
+</form>
+加上novalidate之后input里面如果邮箱格式不合法，失去焦点时不会有默认的边框变红的样式
+
+$scope.text="hello";
+<form novalidate name="myForm">
+	<input type="text" name="myText" ng-model="text">
+	<div>{{myForm.myText.$valid}}</div>
+	<div>{{myForm.myText.$invalid}}</div>
+	<div>{{myForm.myText.$pristine}}</div>
+	<div>{{myForm.myText.$dirty}}</div>
+</form>
+
+这时页面上的文本框中会显示hello，对应的四个div里面的值分别是true false true false，当我们对文本框中的内容作修改的时候，第三个div里面的值就会显示false，因为pristine代表是否是初始值，修改了input里面的内容那么就一定不是初始值了，所以必然是dirty，即脏值，在这里valid代表是否是有效值 invalid代表是否是无效值 pristine代表是否是原始值 dirty代表是否是脏值
+
+$error是一个综合性的结果，如果是Email形式的input，那么框里面必须输入邮箱格式的字符串，否则的话$error就会返回
+{"email":true} 值为true就代表邮箱验证不成功
+
+$scope.text="hello";
+<form novalidate name="myForm">
+	<input type="text" name="myText" ng-model="text" required ng-minlength="5">
+	<div>{{myForm.myText.$valid}}</div>
+	<div>{{myForm.myText.$invalid}}</div>
+	<div>{{myForm.myText.$pristine}}</div>
+	<div>{{myForm.myText.$dirty}}</div>
+	<div>{{myForm.myText.$error}}</div>
+</form>
+
+input加上了required之后就会验证是否为空，如果不是空的话最后一个div就会显示{"required":"false"}
+反之如果为空的话最后一个div就会显示{"required":"true"}
+
+加上 ng-minlength=5之后，最后就会显示，{"required":"false","minlength":false}，因为 当前input中是hello，正好是5个字符，所以minlength符合要求，就会显示false，当我们删掉其中几个字符的话就会显示true
+
+ng-maxlength同理
+
+还有ng-pattern指令，通过正则限制输入的内容
+
+而且这些指令同时出现的时候是有优先级的，例如同时给input加上required ng-minlength ng-pattern，那么required的优先级最高，当required显示为true的时候，证明input里面没内容，此时ng-minlength和ng-pattern是false，而实际上也应该是有验证的先后顺序的
+
+在css中增加.ng-valid和.ng-invalid这两个类可以给符合条件时和不符合条件时的input框增加样式
+
+=============表单验证实例
+<div ng-controller="Aaa">
+	<form novalidate name="nForm">
+		<div>
+			<label>用户名:</label>
+			<input type="text" name="nText" ng-model="regText.name" required ng-pattern="/^[a-zA-Z]+$/" ng-blur="change('regText',nForm.nText.$error)" />
+			<span ng-repeat="re in regText.regList|filter:regText.regVal">{{re.tips}}</span>
+		</div>
+		<div>
+			<label>密码:</label>
+			<input type="password" name="nPassword" ng-model="regPassword.name" required ng-minlength="6" ng-blur="change('regPassword',nForm.nPassword.$error)" />
+			<span ng-repeat="re in regPassword.regList|filter:regPassword.regVal">{{re.tips}}</span>
+		</div>
+	</form>
+</div>
+var m1=angular.module("myApp",[]);
+m1.controller("Aaa",["$scope",function($scope){
+	$scope.regText={
+		regVal:"default",
+		regList:[
+			{name:"default",tips:"请输入用户名"},
+			{name:"required",tips:"用户名不能为空"},
+			{name:"pattern",tips:"用户名必须是字母"},
+			{name:"pass",tips:"√"}
+		],
+		change:function(err){
+			//console.log(err);
+			for(var attr in err){
+				if(err[attr]==true){
+					this.regVal=attr;
+					return;
+				}
+			}
+			this.regVal="pass";
+		}
+	};
+	$scope.regPassword={
+		regVal:"default",
+		regList:[
+			{name:"default",tips:"请输入密码"},
+			{name:"required",tips:"密码不能为空"},
+			{name:"minlength",tips:"密码长度至少为6位"},
+			{name:"pass",tips:"√"}
+		],
+		
+	};
+	$scope.change:function(re,err){
+		for(var attr in err){
+			if(err[attr]==true){
+				$scope[reg].regVal=attr;
+				return;
+			}
+		}
+		$scope[reg].regVal="pass";
+	}
+}]);
+
+==============自定义指令
+通过module的directive来实现
+//定义一个hello自定义标签指令
+m1.directive("hello",function(){
+	return {
+		restrict:"E",//restrict指定指令的类型，ng-xxx这就是属性指令，此外还有覆盖原有标签的标签指令，自定义标签的指令，E是element的缩写
+		template:"<div>hello angular</div>",//给自定义标签hello里面添加html模板，此时页面中写<hello></hello>就会显示hello angular
+	};
+});
+m1.directive("hello",function(){
+	return {
+		restrict:"A",//属性指令 restrict的参数是可以写在一起的 区分大小写 "C"代表class "M"代表注释 E和A用的多，C和M用的少
+	};
+});
+
+============写一个选项卡的指令
+<my-tab></my-tab>
+<!-- <div id="div1">
+	<input class="active" type="button" value="1" />
+	<input type="button" value="2" />
+	<input type="button" value="3" />
+	<div style="display:block;"></div>
+	<div></div>
+	<div></div>
+</div> -->
+
+m1.directive("myTab",function(){
+	return {
+		restrict:"E",
+		replace:true,
+		template:
+			"<div id="div1">
+				<input class="active" type="button" value="1" />
+				<input type="button" value="2" />
+				<input type="button" value="3" />
+				<div style="display:block;"></div>
+				<div></div>
+				<div></div>
+			</div>"
+		
+	};
+});
+
+当template的内容比较多的时候可以用templateUrl来引入外部html
+
+m1.directive("myTab",function(){
+	return {
+		restrict:"E",
+		replace:true,
+		templateUrl:"temp2.html"
+	};
+});
+m1.controller("Aaa",["$scope",function($scope){
+	$scope.name="hello";
+}]);
+<body ng-controller="Aaa">
+	<my-tab></my-tab>
+	<my-tab></my-tab>
+</body>
+
+temp2.html:
+<div id="div1">
+	<input class="active" type="button" value="1" />
+	<input type="button" value="2" />
+	<input type="button" value="3" />
+	<div style="display:block;">{{name}}</div>
+	<div></div>
+	<div></div>
+</div>
+指令是可以复用的，所以上面的代码就出现了两个选项卡
+其次预览之后div里面显示出来了hello，证明能找到父级作用域定义的数据
+
+<my-tab></my-tab>
+<my-tab ng-init="name='hi'"></my-tab>
+
+name被赋值为hi，此时两个选项卡里面都显示hi，这是因为Angular会先找内层作用域，就找到了ng-init里面将name的值改为hi，但是问题是给第二个my-tab重新改了name，第一个也受到了影响，也就是说改一个所有的都得变，说明它们是共享作用域的，但是这样指令的扩展性就会比较差，这时在自定义指令的时候我们可以将scope参数的值设为true即可，代表每次用这个元素指令都会有一个独立的作用域，这样就成了
+m1.directive("myTab",function(){
+	return {
+		restrict:"E",
+		replace:true,
+		scope:true,
+		templateUrl:"temp2.html"
+	};
+});
+虽然我们给scope设置为true，但是目前给父级作用域$scope加name，下面所有的作用域用到name的时候如果当前作用域没有给那么值，还是会继承父级中name的这个值，有时并不希望这样，所以Angular提供了隔离作用域，所谓隔离作用域，就是只在当前标签内起作用，和父级的作用域没有任何瓜葛，可以将scope参数的值改为{}，这就形成了隔离作用域
+m1.directive("myTab",function(){
+	return {
+		restrict:"E",
+		replace:true,
+		scope:{},
+		controller:["$scope",function($scope){
+			$scope.name="miaov";
+		}],
+		templateUrl:"temp2.html"
+	};
+});
+我们既然可以设置隔离作用域，那么隔离作用域的数据从哪来呢？directive下还有一个参数叫controller，在这个里面可以定义自己的数据，但是这样做的话controller里面定义一个数据所有的指令都会跟着变化，而且如果我们在temp2.html中给选项卡的父级加了id，那么每引一次my-tab就都会创建一个该id的元素，这样明显是不行的，因此scope还有绑定策略一说
+m1.directive("myTab",function(){
+	return {
+		restrict:"E",
+		replace:true,
+		scope:{
+			myId:"@myId"//假如给my-tab绑定了一个自定义属性my-id，那么
+		},
+		controller:["$scope",function($scope){
+			$scope.name="miaov";
+		}],
+		templateUrl:"temp2.html"
+	};
+});
+<my-tab my-id="div1"></my-tab>
+模板里面的div的id可以赋值为{{myId}}，即
+<div id="{{myId}}"></div>
+这样myId就是个动态的值，会去找myTab的scope里面的myId值
+
+
+拖拽的自定义指令
+<body ng-controller="Aaa">
+	<div id="div1" my-drag="true"></div> my-drag属性指令，希望加上该指令就可以拖拽，而且如果该指令的值为true的时候是带框拖拽，false的时候是普通拖拽
+</body>
+
+var m1=angular.module("myApp",[]);
+m1.directive("myTab",function(){
+	return {
+		restrict:"A",
+		link:function(scope,element,attr){
+			//console.log(element);
+			//通过attr.myDrag可以获取到my-drag指令的值，angular.equals方法用来判断两个值是否相等
+			attr.myDrag=angular.equals(attr.myDrag,"true");
+			var disX=0;
+			var disY=0;
+			element.on("mousedown",function(ev){
+				var _this=this;
+				disX=ev.pageX-$(this).offset().left();
+				disY=ev.pageY-$(this).offset().top();
+				if(attr.myDrag){
+					var $line=$("<div>");
+					$line.css({width:$(this).outerWidth(),height:$(this).outerHeight(),position:"absolute",left:$(this).offset().left,top:$(this).offset().top,border:"1px dashed #000"});
+					$(body).append($line);
+				}
+				$(document).on("mousemove",function(ev){
+					if(attr.myDrag){
+						$line.css({"left":ev.pageX-disX});
+						$line.css({"top":ev.pageY-disY});
+					}
+					else{
+						$(_this).css({"left":ev.pageX-disX});
+						$(_this).css({"top":ev.pageY-disY});
+					}
+				});
+				$(document).on("mouseup",function(){
+					$(document).off();
+					if(attr.myDrag){
+						$(_this).css({"left":$line.offset().left});
+						$(_this).css({"top":$line.offset().top});
+						$line.remove();
+					}
+				});
+				return false;
+			});
+		},
+	};
+});
+
+自定义指令的相互调用
+现在有两个嵌套指令
+这时由于replace为true，将里面的hi指令给盖了
+可以设置transclude指令为true 再将template改变一下 来避免
+<hello>
+	<hi></hi>
+</hello>
+
+var m1=angular.module("myApp",[]);
+m1.directive("hello",function(){
+	return {
+		restrict:"E",
+		replace:true,
+		transclude：true,
+		//template:"<div>hello angular</div>"
+		template:"<div>hello angular<h1 ng-transclude></h1></div>" 
+		//加上ng-transclude的意思就是将hello指令标签里面所有的东西都扔到h1里面去，这样<span>hi angular</span>就被放到h1里面了
+		//如果把ng-transclude写到div上，那么div里面的hello angular和h1标签都会被盖掉
+	};
+});
+m1.directive("hi",function(){
+	return {
+		restrict:"E",
+		replace:true,
+		template:"<span>hi angular</span>"
+	};
+});
+
+//如果希望hello指令标签里定义的数据再hi里面能拿到，可以这样：
+
+var m1=angular.module("myApp",[]);
+m1.directive("hello",function(){
+	return {
+		restrict:"E",
+		replace:true,
+		transclude：true,
+		template:"<div>hello angular<h1 ng-transclude></h1></div>",
+		controller:function($scope){
+			//$scope.name="miaov";这样添加的数据只能在hello上用，如果想要让hi也能用，需要这样天机
+			this.name="miaov";
+		}
+	};
+});
+m1.directive("hi",function(){
+	return {
+		restrict:"E",
+		replace:true,
+		require:"^hello",//在require中写需要引的数据，但是直接写成hello是在用一级的引用，而hello是hi的父级，所以需要在前面加上^
+		//写成?hello的话可以在hello没有找到的情况下不至于让程序报错，也可以将?和^写在一起使用
+		template:"<span>hi angular</span>",
+		link:function(scope,element,attr,reController){
+			console.log(reController);//reController其实就是指require中hello指令对应的控制器
+			//通过reController.name就可以找到父级对应的name数据，也就是hello
+		}
+	};
+});
+
+如果hello是写在hi上的属性指令，就不用加^了
+
+$http服务 用于完成Ajax操作
+m1.controller("Aaa",["$scope","$filter",function($scope,$filter){
+	$http({
+		method:"GET", //POST JSONP等等
+		url:"data.php",
+	}).success(function(data,status,headers,config){
+		console.log(data);
+	}).error(function(data){
+		console.log(data);
+	});
+}]);
+
+//实例：百度搜索
+m1.controller("Aaa",["$scope","$filter",function($scope,$filter){
+	$scope.data=[];
+	$scope.change=function(name){
+		$http.({
+			method:"JSONP",
+			url:"https://sp0.baidu.com/5jfd43ojaiefma/su?wd="+name+"&cb=JSON_CALLBACK"
+		}).success(function(data){
+			console.log(data);
+			$scope.data=data.s;
+		});
+	};
+}]);
+
+<input type="text" ng-model="name" />
+<input type="button" ng-click="change(name)" value="搜索" />
+<ul>
+	<li ng-repeat="eachData in data">{{eachData}}</li>
+</ul>
+
+$location服务
+$location.absUrl() 绝对地址，对于输入的中文会编码
+$location.path() 和路由有关系，后期会介绍，获得地址中#后的部分，当传入参数的时候是设置，不传参数的时候是获取
+$location.hash() 哈希值同样可以设置获取
+$location.search()
+$location.url()
+$location.host()
+$location.post()
+$location.protocol()
+
+$anchorScroll 锚点跳转服务
+<div ng-controller="Aaa" id="parent">
+	<ul>
+		<li ng-repeat="id in [1,2,3,4]" ng-click="change('div'+id)">{{id}}</li>
+	</ul>
+	<div ng-repeat="id in [1,2,3,4]" ng-attr-id="div{{id}}">{{id}}</div>
+</div>
+
+$scope.change=function(id){
+	$location.hash(id);
+	$anchorScroll();//如果不加这句，当跳到了某个地方，滚动到开头，再点这个地方的索引希望调到这里时无效
+};
+
+$cacheFactory服务
+m1.controller("Aaa",["$scope","$cacheFactory",function($scope,$cacheFactory){
+	var cache=$cacheFactory("myCache",{
+		capacity:2,//缓存的容量
+	});
+	cache.put("name","hello");
+	cache.put("age","20");
+	cache.put("job","Js");
+	cache.get("name");
+	cache.put("age");
+	cache.remove("name");
+	cache.info();//
+}]);
+
+$log用于调试，类似chromeF12 和 firebug
+
+$interpolate 插值服务
+m1.controller('Aaa',['$scope','$interpolate',function($scope,$interpolate){
+	
+	$scope.$watch('body',function(newBody){
+		
+		if(newBody){
+			var temp = $interpolate(newBody);
+			$scope.showText = temp({ name : $scope.name });
+			
+		}
+		
+	});
+	
+}]);
+<div ng-controller="Aaa">
+	<input type="text" ng-model="name">
+    <textarea ng-model="body">
+    </textarea>
+    <p>{{showText}}</p>
+</div>
+
+
+$q 类似jQuery中的Deferred
+m1.controller("Aaa",["$scope","$q",function($scope,$q){
+	var dfd=$q.defer();
+	function show(){
+		setTimeout(function(){
+			dfd.resolve();//将状态改为了成功，就会调成功的回调，即弹出成功
+		},2000);
+		return dfd.promise;
+	}
+	show().then(function(){
+		alert("成功");
+	},function(){
+		alert("失败");
+	});
+}]);
+
+供应商的概念
+供应商是对服务进行相关初始配置操作
+并不是所有的服务都有与其对应的供应商
+m1.config(["$interpolateProvider","$logProvider",function($interpolateProvider,$logProvider){
+	//表达式中默认{{}}是格式化的模板，但是我们在这里可以配置到底格式化模板长什么样
+	$interpolateProvider.startSymbol("@@");
+	$interpolateProvider.endSymbol("@@");
+	//
+	$logProvider.debugEnabled(false);//禁用$log服务的debug功能
+}]);
+m1.controller('Aaa',['$scope','$interpolate',function($scope,$interpolate){
+	$scope.showText="hello";
+}]);
+<div ng-controller="Aaa">
+    <p>{{showText}}</p>
+</div>
+
+自定义服务
+通过factory方法定义服务
+//第一个参数是服务名 自定义的服务开头尽量不要用$
+m1.factory("myService",function(){
+	return {
+		name:"hello",
+		show:function(){
+			return this.name+":angular";
+		},
+	};
+});
+//自定义的服务尽量写在内部服务的后面
+m1.controller("Aaa",["$scope","myService",function($scope,myService){
+	console.log(myService.show());
+}]);
+
+//实例：生成一个随机数的服务
+m1.factory("myRndNum",function(){
+	return function(n1,n2){
+		return n1+parseInt(Math.random())*(n2-n1);
+	};
+});
+m1.controller("Aaa",["$scope","myRndNum",function($scope,myRndNum){
+	console.log(myRndNum(3,6));
+}]);
+
+//provider自定义服务可以在对应的供应商中改变其config 而factory不可以
+m1.provider("myService",function(){
+	return {
+		$get:function(){
+			return {
+				name:"hello",
+				show:function(){
+					return this.name+":angular";
+				}
+			};
+		}
+	};
+});
+m1.config(["myServiceProvider",function(myServiceProvider){
+	
+}]);
+m1.controller("Aaa",["$scope","myService",function($scope,myService){
+	console.log(myService.show());
+}]);
+
+===================
+m1.provider('myRandomNum',function(){
+	return {
+		bolInt : false,
+		int : function(argBol){
+			if(argBol){
+				this.bolInt = true;
+			}
+			else{
+				this.bolInt = false;
+			}
+		},
+		$get : function(){
+			var This = this;
+			return function(num1,num2){
+				return This.bolInt ? Math.round(Math.random()*(num2 - num1)) + num1 : Math.random()*(num2 - num1) + num1;
+			};
+		}
+	};
+});
+m1.config(['myRandomNumProvider',function(myRandomNumProvider){
+	myRandomNumProvider.int(false);
+}]);
+m1.controller('Aaa',['$scope','myRandomNum',function($scope,myRandomNum){
+	
+	console.log( myRandomNum(-3,6) );
+	
+}]);
+
+=================
+模块之间的通信
+var m1=angular.module("myApp",[]);
+m1.factory("myService",function(){
+	return {
+		name:"hello",
+		show:function(){
+			return this.name+":angular";
+		}
+	};
+});
+var m2=angular.module("myApp",["module1"]);//必须引入module1模块才可以让m2模块访问myService服务
+m2.controller("Aaa",["$scope","myService",function($scope,myService){
+	console.log(myService.show());
+}]);
+
+除了factory和provider之外，定义服务还有service constant value方法
+
+angular插件
+
+ngSanitize
+
+ngRoute 单页面路由操作
+
+var m1=angular.module("myApp",["ngRoute"]);
+m1.controller("Aaa"["$scope",function($scope){
+	
+}]);
+<div ng-controller="Aaa">
+	<div ng-view></div> ng-view指令只有在引入ngRoute插件的时候才起作用
+</div>
+
+
+templateCache:
+//注射器加载完所有的模块时，此方法执行一次
+myModule.run(function($templateCache){
+	$templateCache.put("hello.html","<div>Hello Everyone!!!</div>");
+});
+myModule.directive("hello",function($templateCache){
+	return {
+		restrict:"A",
+		template:$templateCache.get("hello.html"),
+		replace:true
+	};
+});
+===========================================大漠穷秋
+directive里面参数函数返回的对象中的参数说明
+transclude:以元素指令为例，当指令内还有别的标签时，如果设置了replace为true的话，元素指令里面的东西都没了，这时可以设置transclude值为true，然后再设置template：
+template:"<div>Hello Everyone!<div ng-transclude></div></div>"这样内容就会被放到ng-transclude里面去
+
+compile://一般不写
+
+link:function(scope,element,attr){
+	//在这里操作DOM 绑定事件
+	element.bind("mouseenter",function(){
+		scope.loadData();
+		//scope.$apply("loadData()")
+		//注意：可能每个controller都会用这个指令，但是不一定每个controller里面都定义了loadData这个方法，这时我们就需要给指令添加属性：
+		<div ng-controller="MyCtrl">
+			<loader howToLoad="loadData()"></loader>
+		</div>
+		<div ng-controller="MyCtrl2">
+			<loader howToLoad="loadData2()"></loader>
+		</div>
+		//在link里面就需要第三个参数attr来找到howToLoad了，即
+		scope.$apply(attr.howtoload);//页面中虽然是驼峰的，但是在这里就得是小写的，方法howtoload后面也不要加括号
+	});
+}
+
+指令间相互调用
+m1.directive("superman",function(){
+	return {
+		scope:{},//创建独立作用域
+		restrict:"AE",
+		controller:funtion($scope){//这个controller和之前我们接触过的MVC里面的controller不是一个东西，这个controller是我们的指令暴露给外部一些方法去调用的
+			$scope.abilities=[];
+			this.addStrength=function(){
+				$scope.abilities.push("strength");
+			};
+			this.addSpeed=function(){
+				$scope.abilities.push("speed");
+			};
+			this.addLight=function(){
+				$scope.abilities.push("light");
+			};
+		},
+		link:function(scope,element,attrs){
+			//link里面是操作这个指令元素本身的一些方法
+			element.addClass("btn btn-primary");
+			element.bind("mouseenter",function(){
+				console.log(scope.abilities);
+			});
+		}
+	};
+});
+m1.directive("strength",function(){
+	return {
+		require:"^superman",//依赖于superman指令，写了require之后link里面就可以写第四个参数了
+		link:function(scope,element,attrs,supermanCtrl){
+			supermanCtrl.addStrength();//addStrength是superman控制器提供给外界的方法
+		}
+	};
+});
+m1.directive("speed",function(){
+	return {
+		require:"^superman",//依赖于superman指令，写了require之后link里面就可以写第四个参数了
+		link:function(scope,element,attrs,supermanCtrl){
+			supermanCtrl.addSpeed();//addStrength是superman控制器提供给外界的方法
+		}
+	};
+});
+m1.directive("light",function(){
+	return {
+		require:"^superman",//依赖于superman指令，写了require之后link里面就可以写第四个参数了
+		link:function(scope,element,attrs,supermanCtrl){
+			supermanCtrl.addLight();//addStrength是superman控制器提供给外界的方法
+		}
+	};
+});
+
+<div class="row">
+	<div class="col-md-3">
+		<superman strength>动感超人——力量</superman>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-3">
+		<superman strength speed>动感超人——力量+敏捷</superman>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-3">
+		<superman strength speed light>动感超人——力量+敏捷+发光</superman>
+	</div>
+</div>
+
+===========独立作用域
+m1.directive("hello",function(){
+	return {
+		restrict:"AE",
+		template:"<div><input type="text" ng-model="userName">{{userName}}</div>",
+		replace:true
+	};
+});
+现在如果页面中多个地方用到了hello这个指令的话任意一个input里面的内容发生了变化，其他的模型和视图都会跟着变，也就是说hello共享了一个作用域，这时加上scope:{}就独立了，即
+m1.directive("hello",function(){
+	return {
+		restrict:"AE",
+		scope:{}
+		template:"<div><input type="text" ng-model="userName">{{userName}}</div>",
+		replace:true
+	};
+});
+
+scope绑定策略
+@绑定字符串
+=与父scope中的属性进行双向绑定
+&传递一个来自父scope的函数，稍后调用
+
+<div ng-controller="myController">
+	<drink flavor="{{controllerFlavor}}"></drink>
+</div>
+
+m1.controller("myController",["$scope",function(){
+	$scope.controllerFlavor="百威";
+}]);
+m1.directive("drink",function(){
+	return {
+		restrict:"AE",
+		template:"<div>{{flavor}}</div>",
+		link:function(scope,element,attrs){
+			scope.flavor=attrs.flavor;
+		}
+	};
+});
+//像上面这样写，flavor就是父级controller上的scope对象下的flavor，这种操作我们可以省略而写成下面这种写法：
+m1.directive("drink",function(){
+	return {
+		restrict:"AE",
+		template:"<div>{{flavor}}</div>",
+		scope:{
+			flavor:"@flavor",
+		}
+	};
+});
+
+=======================等于号时的绑定效果
+myModule.controller("myCtrl",function($scope){
+	$scope.ctrlFlavor="百威";
+});
+myModule.directive("drink",function(){
+	return {
+		restrict:"AE",
+		scope:{
+			flavor"="
+		},
+		template:"<input type='text' ng-model='flavor' />"
+	};
+});
+
+<div ng-controller="MyCtrl">
+	Ctrl:
+	<input type="text" ng-model="ctrlFlavor" />
+	Directive:
+	<drink flavor="ctrlFlavor"></drink>
+</div>
+===============================&符号绑定
+var m1=angular.module("myModule",[]);
+m1.controller("myCtrl",["$scope",function($scope){
+	$scope.sayHello=function(name){
+		alert("Hello "+name);
+	};
+}]);
+m1.directive(greeting",function(){
+	return {
+		restrict:"AE",
+		scope:{
+			greet:"&"
+		},
+		template:"<input type='text' ng-model='username' /><br/>"+
+			"<button class='btn btn-default' ng-click="greet({name:username})">Greeting</button><br/>"
+	};
+});
+<div ng-controller="myCtrl">
+	<greeting greet="sayHello(name)"></greeting>
+</div>
+
+===================案例：expander指令
+<div ng-controller="someController">
+	<expander class="expander" expander-title="title">
+		{{text}}
+	</expander>
+</div>
+var expanderModule=angular.module("expanderModule",[]);
+expanderModule.directive("expander",function(){
+	return {
+		restrict:"EA",
+		replace:true,
+		transclude:true,
+		scope:{
+			title:"=expanderTitle"
+		},
+		template:"<div>"
+			+"<div class='title' ng-click='toggle()'>{{title}}</div>"
+			+"<div class='body' ng-show='showMe' ng-transclude></div>"
+			+"</div>",
+		link:function(scope,element,attrs){
+			scope.showMe=false;
+			scope.toggle=function(){
+				scope.showMe=!scope.showMe;
+			};
+		}
+	};
+});
+expanderModule.controller("someController",function($scope){
+	$scope.title="点击展开";
+	$scope.text="这里是内部的内容";
+});
+
+========================================案例 according指令 基于expander
+<according>
+	<expander class="expander" ng-repeat="expander in expanders" expander-title="expander.title">
+		{{expander.text}}
+	</expander>
+</according>
+
+
+var expanderModule=angular.module("expanderModule",[]);
+expanderModule.directive("according",function(){
+	return {
+		restrict:"AE",
+		replace:true,
+		transclude:true,
+		template:"<div ng-transclude></div>",
+		controller:function(){
+			var expanders=[];
+			this.gotOpened=function(selectedExpander){
+				angular.forEach(expanders,function(expander){
+					if(selectedExpander!=expander){
+						expander.showMe=false;
+					}
+				});
+			};
+			this.addExpander=function(expander){
+				expanders.push(expander);
+			};
+		}
+	};
+});
+expanderModule.directive("expander",function(){
+	return {
+		restrict:"EA",
+		replace:true,
+		transclude:true,
+		require:"^?according",
+		scope:{
+			title:"=expanderTitle"
+		},
+		template:"<div>"
+			+"<div class='title' ng-click='toggle()'>{{title}}</div>"
+			+"<div class='body' ng-show='showMe' ng-transclude></div>"
+			+"</div>",
+		link:function(scope,element,attrs){
+			scope.showMe=false;
+			accordingController.addExpander(scope);
+			scope.toggle=function(){
+				scope.showMe=!scope.showMe;
+				accordingController.gotOpened(scope);
+			};
+		}
+	};
+});
+
+expanderModule.controller("someController",function($scope){
+	$scope.title="点击展开";
+	$scope.text="这里是内部的内容";
+});
+
+===============================service
+
+===============================路由
+<html ng-app="routerApp">
+<link rel="stylesheet" href="bootstrap.css" />
+<link rel="stylesheet" href="index.css" />
+<script src="angular-1.3.0.js"></script>
+<script src="angular-animate.js"></script>
+<script src="angular-ui-router.js"></script>
+<script src="UIRoute3.js"></script>
+
+<body>
+	<div ui-view></div>
+</body>
+
+var routerApp=angular.module("routerApp",["ui.router"]);
+routerApp.config(function($stateProvider,$urlRouterProvider){
+	$urlRouterProvider.otherwise("/index");
+	$stateProvider
+		.state("index",{
+			url:"/index",
+			views:{
+				"":{
+					templateUrl:"tpls3/index.html"
+				},
+				"topbar@index":{
+					templateUrl:"tpls3/topbar.html"
+				},
+				"main@index":{
+					templateUrl:"tpls3/home.html"
+				}
+			}
+		})
+		.state("index.usermng",{
+			url:"/usermng",
+			views:{
+				"main@index":{
+					templateUrl:"tpls3/usermng.html",
+					controller:function($scope,$state){
+						$scope.addUserType=function(){
+							$state.go("index.usermng.addusertype");
+						};
+					}
+				}
+			}
+		})
+});
+
+
+
+
+
+===============================bookstores案例
+
+
+
+
+

@@ -1,0 +1,1157 @@
+MyEclipse
+Window->Reset Perspective
+
+XML文件分为如下几部分
+	xml文档声明
+		用来声明xml的基本属性，用来指挥解析引擎如何去解析当前xml
+		通常xml都要包含并且只能包含一个文档声明
+		xml文档声明必须在整个xml文档最前面，在文档声明之前不能有任何内容
+	元素
+	属性
+	注释
+	CDATA区/转义字符
+	处理指令	用来指挥解析引擎如何解析xml文件内容，用的很少
+
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?> standalone属性用于指明当前xml是否是一个独立的xml，默认值是yes表明当前文档不需要依赖于其他文档，如果当前文档依赖其他文档而存在则需要将此值设置为no
+
+一个xml里应该只有一个根标签
+
+文档声明之前不可以写注释
+
+CDATA区可以来转义<和>    <![CDATA[内容]]>
+
+转义还可以通过 &amp &lt &gt 来
+
+处理指令
+<?xml-stylesheet type="text/css" href="1.css"?>
+
+可以编写一个文档来约束一个xml的写法，这称之为xml约束 常见的XML约束技术有DTD和Schema
+
+DTD文档类型定义
+<?xml version="1.0" ?>
+<!DOCTYPE 书架 SYSTEM "book.dtd">
+<书架>
+	<书>
+		<书名>Java就业培训</书名>
+	</书>
+</书架>
+
+在xml中引入dtd
+	外部引入：可以将dtd的约束内容写在外置的dtd文件中，这个文件后缀必须为.dtd而文件保存时必须用utf-8编码保存，再在xml文件中使用
+	<!DOCTYPE 根元素名称 SYSTEM 文件的位置>
+	如果写的是SYSTEM表明当前引入的dtd在当前文件系统中，后面指定的文件位置是当前硬盘中的位置
+	
+	<!DOCTYPE 文档根节点 PUBLIC "DTD名称" "DTD文件的URL">
+	如果写的是PUBLIC表明当前引入的dtd在网络公共位置中，后面要指明dtd的名字和dtd所在的网络位置
+	
+	内部引入：直接在xml中书写dtd
+	<!DOCTYPE 根元素名称 [
+		dtd约束
+	]>
+
+DTD文档语法
+	主要约束元素和属性
+	元素：
+		<!ELEMENT 元素名称 元素约束>
+			元素约束：
+				存放类型：ANY/EMPTY
+				元素约束：子元素的列表，将可以包含的子元素用小括号括起来
+						子元素之间可以使用逗号分隔，表明子元素必须按照顺序出现
+						子元素之间可以使用竖线分隔，表明子元素只能出现其中一个
+						#PCDATA 表明包含标签体
+						+ 表示一次或多次
+						* 0次或多次
+						? 0次或1次
+						可以用小括号表示组的操作
+	属性：
+		<!ATTLIST 元素名
+						属性名 属性类型 属性约束
+						属性名 属性类型 属性约束
+						...>
+属性约束 #REQUIRED 表明当前属性是一个必须存在的属性 如果这样的属性不存在则在校验时会报错
+		 #IMPLIED  表明当前属性是一个可选的属性
+		 #FIXED    表明当前属性具有一个固定值
+		 '默认值'
+
+属性类型
+		CDATA 属性值是一个普通字符串
+		ENUMERABLE 属性值是枚举
+		ID 唯一标识，和变量名的命名规则一样
+		ENTITY(实体)
+ENTITY 实体 就是对一大段内容的引用，可以简化代码的复用 分为参数实体和引用实体
+	引用实体 <!ENTITY 实体名称 "实体内容" > 在xml中使用的实体叫做引用实体
+	参数实体 在dtd中引用的实体叫做参数实体
+			<!ENTITY % 实体名称 "实体内容">
+
+JavaEE不仅仅是Socket编程，具体包括13门核心技术
+weblogic websphere支持上述的13种技术
+Tomcat只支持Jsp和Servlet规范
+
+一台Tomcat服务器上可以配置多个站点，各个站点实际上是在这台真实机里面运行着的虚拟主机
+一个tomcat可以认为是一台真实主机
+一台真实主机可以配置多个站点
+这些站点在访问者看来访问他们就像在访问各自独立的主机一样
+所以我们可以认为这些站点都运行在tomcat这台真实主机当中的各自的虚拟虚拟主机中
+一个网站就是一个虚拟主机
+一个虚拟主机中会有很多web资源，但是web资源不能直接交给虚拟主机管理
+需要按照一定的方式组织成web应用虚拟主机才能使用
+一般来说我们会按照功能将某一功能相关的所有web资源组织成一个web应用然后再交给虚拟主机
+
+配置web应用给虚拟主机：
+	方法1：在server.xml的<Host>标签中，配置<Context>标签，就可以为该虚拟主机配置一个web应用了
+		*web应用的虚拟路径映射：就是为web应用的真实存在的路径配置一个浏览器访问的虚拟路径
+		<Host name="localhost">
+			<Context path="/news" docBase="E:\news">
+		</Host>
+		*配置缺省web应用 将path属性设置为空
+		<Host name="localhost">
+			<Context path="" docBase="E:\news">
+		</Host>
+		
+		这种方法得不停的重启tomcat 所以不推荐
+	方法2：在tomcat/conf/[Engine]/[Host]
+		默认的引擎是Catalina，Host是localhost，所以默认路径是tomcat/conf/Catalina/localhost
+		这个目录下写一个xml文件，其中xml文件的名字就是虚拟路径，在这个xml中可以配置一个Context标签，其中配置真实路径
+			<Context docBase="E:\news" />
+
+		如果所配置的虚拟路径中有/ 由于文件名不可以包含/ 需要用#替代
+
+		只要将文件名设置为ROOT.xml则这个xml描述的web应用就成了缺省web应用
+
+		这种配置方式不需要重启服务器，但用的还是不多
+
+	方法3：直接将web应用放置到虚拟主机管理的目录(这个目录默认是webapps)下，虚拟主机就可以找到这个web应用，只要将web应用文件夹的名称改为ROOT，这个web应用就是缺省web应用
+
+web应用目录结构：
+news
+|
+|————静态资源和jsp都可以直接放在web应用的目录下，直接放在web应用下的内容，浏览器可以直接访问到
+|
+|————WEB-INF 可以没有，但是最好有，如果有，一定要和下面的目录结构一样，这个文件夹下的资源无法直接访问
+		|————classes 动态web资源运行时的class文件要放在这个目录下
+		|————lib 动态web资源运行时所依赖的jar包要放在这个目录下
+		|————web.xml 整个web应用的配置文件，配置主页/Servlet的映射/过滤器监听器的配置都需要依赖这个文件进行
+
+配置虚拟主机
+	在conf/server.xml中<Engine>标签下配置<Host>标签就可以为tomcat增加一台虚拟主机了
+	<Host name="www.baidu.com" appBase="E:/game"> game文件夹下面可以有WEB-INF，一旦有的话，里面的内容必须有classes lib web.xml
+
+	缺省虚拟主机：如果来访者是通过ip来访问，这个时候服务器无法判断当前要访问的是哪台虚拟主机中的资源，此时访问缺省虚拟主机，缺省虚拟主机可以在server.xml中engine标签上通过defaultHost来配置
+
+一个web应用可以没有web.xml，如果没有的话会继承conf目录下的web.xml文件
+
+Servlet
+1、Servlet其实就是Sun公司提供的一种动态web资源开发技术 本质上就是Java程序 可以将Servlet加入到Servlet容器中运行
+Servlet容器 能够运行Servlet的环境就叫Servlet容器 例如Tomcat
+web容器 能够运行web应用的环境就叫web容器 例如Tomcat
+
+2、具体做法：写一个类实现Sun公司定义的Servlet接口并将写好的类配置到tomcat中的web应用中
+
+Servlet请求具体过程
+1、分析当前请求的是哪台虚拟主机
+	查看Host请求头分析出访问的是哪台虚拟主机
+	如果没有Host请求头(直接敲IP访问的情况)，访问缺省虚拟主机
+2、分析当前请求访问的是当前虚拟主机中的哪个web资源
+	从请求行中请求的资源部分中分析出当前访问哪个web应用
+3、分析当前请求要访问的是这个web应用中的哪个资源
+	从请求行中的资源部分中分析出访问的是哪个资源
+4、查找web.xml文件，查看有没有对应的虚拟路径，如果有这个虚拟路径对应的资源做响应
+5、服务器从response对象中获取出之前写入的数据，组织成http响应消息给浏览器
+
+Servlet的继承结构
+	Servlet接口：定义了Servlet应该具有的基本方法
+	GenericServlet 通用基本Servlet实现，对于不常用的方法在这个实现类中已经基本实现，没有实现service方法，方便子类实现
+		HttpServlet GenericServlet的子类，在通用Servlet的基础上基于HTTP协议进行了强化(实现了service方法，判断当前的请求方式，调用对应的doXXX(doGet doPost)方法，这样一来我们开发Servlet的过程只需继承HttpServlet，覆盖具体要处理的doXXX方法就可以根据不同的请求方式实现不同的处理) 一般不要覆盖父类的service方法，要覆盖doXXX方法
+
+Servlet细节
+一个<servlet>可以对应多个<servlet-mapping>，也就是可以在浏览器中通过多种路径访问
+url-partten中的路径可以使用*匹配符进行配置，但是要注意只能是/开头/*结尾或*.后缀两种方式
+<servlet-mapping>
+	<servlet-name>MyFirstServlet</servlet-name>
+	<url-pattern>/servlet/My/*</url-pattern>
+</servlet-mapping>
+
+<servlet-mapping>
+	<servlet-name>MyFirstServlet</servlet-name>
+	<url-pattern>*.my</url-pattern> 以my结尾，前面不论是什么都可以匹配
+</servlet-mapping>
+
+由于*的引入有可能一个路径被多个url-pattern匹配，这时优先级判断条件如下：
+哪个最像找哪个，*.后缀匹配级别永远最低
+
+<servlet>可以配置<load-on-startup> 配置了这个元素的servlet在web应用程序启动时就会装载并创建Servlet的实例对象、以及调用Servlet实例对象的init方法 里面放一个int类型值  这个值用来指明servlet启动顺序
+
+如果有一个servlet的url-pattern被配置为一个正斜杠 / 这个servlet就成为了缺省servlet，其他都不处理的请求由缺省servlet来处理，其实对于静态资源的访问就是通过缺省servlet来处理的
+
+设置404页面 500页面也是缺省Servlet配置
+
+通常我们不会自己配置缺省servlet，否则的话可能导致静态资源和404 500页面无法访问
+
+线程安全问题
+	由于默认情况下Servlet在内存中只有一个对象，当多个浏览器并发访问Servlet时有可能产生线程安全问题，SingleThreadModel接口不能真正防止线程安全问题，最终的解决方案还是尽量少用类变量
+
+ServletConfig --代表当前Servlet在web.xml中的配置信息
+	getServletName()
+	String getInitParameter(String name) 获取当前servlet指定名称的初始化参数的值
+	Enummeration getInitParameterNames() 获取当前Servlet所有初始化参数的名字组成的枚举
+	ServletContext getServletContext() 获取代表当前web应用的ServletContext对象
+
+ServletContext --代表当前web应用 web容器启动时，会为每个应用创建一个ServletContext
+	1、作为域对象可以在整个web应用范围内共享数据
+	setAttribute();
+	getAttribute();
+	removeAttribute();
+	2、用来获取整个web应用的初始化参数 配置在<context-param>里面的配置项
+
+	请求参数parameter：浏览器发送过来的请求中的参数信息
+	域属性initparameter：在web.xml中为Servlet或ServletContext配置的初始化时带有的基本参数
+	初始化参数 attribute：四大作用域中存取的键值对
+
+	3、实现Servlet的转发
+		重定向
+		请求转发：服务器内不进行资源流转
+		
+		请求转发是一次请求一次响应实现资源流转，请求重定向两次请求两次响应
+
+	4、加载资源文件
+		在Servlet中读取资源文件时，如果写相对路径和绝对路径，由于路径将会相对于程序的启动目录——在web环境下，就是tomcat启动的目录即tomcat/bin——所以找不到资源
+		
+		ServletContext的getRealPath方法可以得到硬盘路径
+
+		如果在非Servlet环境下要读取资源文件时可以采取类加载器加载文件的方式读取资源
+		例如当前类是Service，就可以通过Service.class.getClassLoader().getResource("").getPath();
+
+response
+	ServletResponse 通用的response提供了一个响应应该具有最基本的属性和方法
+		HttpServletResponse 在ServletResponse基础上针对于HTTP协议增加了很多强化的属性和方法
+
+	1、输出数据
+		response.setContentType("text/html;charset=utf-8");
+		response.getOutputStream().write("".getBytes("utf-8"));
+		
+		response.setCharacterEncoding("utf-8");
+		response.setContentType("text/html";charset=utf-8);
+		response.getWriter().write("");
+
+	2、实现下载
+	3、定时刷新页面
+	4、控制是否缓存资源
+	5、请求重定向
+
+	注：getOutputStream和getWriter这两个方法互相排斥，调用了其中任何一个方法，就不能调用另一个方法，因为缓冲区里面不能既有字节缓冲区，又有字符缓冲区
+
+	response中获取的输出流在service方法结束后服务器会帮我们关闭，一般不要自己在servlet中关
+
+request
+	ServletRequest——通用request，提供一个request应该具有的最基本的方法
+		|
+		|——HttpServletRequest
+
+	1、获取客户机信息
+	2、获取请求头信息
+		具体做法：写一个类实现Sun公司定义的Servlet接口并将写好的类配置到tomcat中的web应用中
+	3、获取请求参数
+	4、利用请求域传递对象
+		作用范围：整个请求链上都可以看到
+		生命周期：当服务器收到一个请求，创建出代表请求的request对象，request开始，当请求结束，服务器销毁代表请求的request对象，request域结束
+	5、实现请求转发和请求包含
+		之前的做法：this.getServletContext("").forward(request,response)
+		request.getRequestDipatcher("").forward(request,response)
+
+		请求转发时如果已经有数据被写入response缓冲区，但这些数据还没被发送到客户端，则请求转发时，会将resonse缓冲区进行清空，但是清空的只是响应中的实体内容部分，头信息并不会被清空
+		
+		而请求转发时已经有数据被打给了浏览器，那么再进行请求转发，将会抛出异常
+		
+		一个Servlet里不可以进行两次请求转发
+		
+		请求包含：将两个资源的输出进行合并，最终输出合并后的资源
+		this.getServletContext().getRequestDispatcher("").include(request,response);
+		request.getRequestDipatcher("").include(request,response);
+		
+		被包含的servlet程序不能改变响应消息的状态码和响应头，如果它里面存在这样的语句，这些语句的执行结果将被忽略
+		
+总结对多个资源操作的方式：
+	请求重定向 response.sendRedirect();
+	请求转发 request.getRequestDispatcher().forward();
+	请求包含 request.getRequestDispatcher().include();
+	
+	如果需要在资源跳转时利用request域传递域属性则必须使用请求转发
+	如果希望资源跳转后修改用户的地址栏则使用请求重定向
+	如果使用请求转发也可以，使用请求重定向也可以，优先使用请求转发，减少请求次数
+
+常用地址的写法：
+	用到路径的地方：
+		<a href="">
+		<form action="">
+		<img src="">
+		response.setHeader("Location","");
+		response.setHeader("refresh","");
+		response.sendRedirect("");
+		request.getRequestDispatcher("");
+		classLoader.getResource("");
+		servletContext.getRealPath("");
+		File file=new File("");
+		new InputStream("");
+	虚拟路径：
+			如果路径是给浏览器用的，这个路径相对于虚拟主机，所以需要写上web应用的名称
+			如果路径是给服务器用的，这个路径相对于web应用，可以省写web应用的名称
+		现假设day04是web应用名称
+		<a href="/day04/...">
+		<form action="/day04/...">
+		<img src="/day04/...">
+		response.setHeader("Location","");
+		response.setHeader("refresh","3;url=/day04/...");
+		response.sendRedirect("/day04/.../");
+		request.getRequestDispatcher("/index.jsp").forward(); //给服务器用的 不写web应用名
+		request.getRequestDispatcher("/index.jsp").include(); //给服务器用的 不写web应用名
+	真实路径
+		servletContext.getRealPath(""); //给一个相对于web应用目录的路径
+		classLoader.getResource(""); //给一个相对于类加载目录的路径
+		File file=new File(""); //相对于程序的启动目录
+		new InputStream(""); //相对于程序的启动目录
+
+写虚拟路径时使用绝对路径 写真实路径时使用相对路径
+
+Jsp
+	Jsp是sun提供的动态web资源开发技术，为了解决在servlet中拼写静态页面不方便的问题
+	
+	在tomcat安装目录下，有一个work目录，打开work/Catalina/localhost/day05/org/apache/jsp 可以看到有xxx_jsp.java文件，这个Java文件就是jsp页面被翻译成的servlet，一个jsp页面在第一次被访问到时，服务器中jsp翻译引擎将会把它翻译成servlet，从此之后对这个页面的访问都会调用这个servlet的执行
+	Jsp页面在第一次访问时会被jsp翻译引擎翻译成一个Servlet，从此对这个Jsp页面的访问都是由这个Servlet执行后进行输出
+	
+	Jsp中可以直接使用out变量的原因是因为翻译成的那个servlet在service方法最前面就定义了这个对象，和out类似的还有其他8个对象：pageContent session application config page request response
+
+Jsp语法
+	1、Jsp模版元素：Jsp页面中书写的HTML内容称作jsp的模版元素，在翻译过来的servlet中直接被out.write()输出到浏览器页面上了
+	2、Jsp表达式 <%= java表达式 %> 表达式没有分号 计算该表达式后被out对象输出到浏览器上
+	3、Jsp脚本片段 <% 若干Java语句 %> 在翻译过来的servlet中直接被复制粘贴到了对应的位置执行
+	4、Jsp声明 <%! 若干Java语句 %> 在翻译过来的Servlet中会被放置到和Service方法同级的位置，变成一个类的成员
+	5、Jsp注释 <%-- 注释 --%>
+	<% i=i+100; %> 这句被翻译成了 out.write("<!--"); i=i+100; out.write("-->");
+	6、Jsp指令 <%@ 指令名称 属性=... %>
+	为Jsp引擎设计，并不直接产生任何可见输出，而只是告诉引擎如何处理Jsp页面的其余部分
+	page指令
+		属性介绍
+		language="java" 没用
+		extends="package.class" 一般不写，如果写的话值得是一个Servlet类
+		import="{package.class|package.*},..." Jsp引擎自动导入了 java.lang.* javax.servlet.* javax.servlet.jsp.* javax.servlet.http.*
+		session="true|false" 如果设置成false的话在Jsp页面就没有session对象可以用了
+		buffer=none|8kb|..kb
+		autoFlush
+		errorPage="relative_url" 在xml中可以配置<error-page><error-code><error-code><location></location></error-page>通用的错误提示页面
+		isErrorPage=true|false 如果该属性设为true，则在该Jsp页面中可以使用exception对象，该对象是出错的那个页面抛出的对象
+		contentType
+		pageEncoding 文件保存时的编码 将jsp翻译成servlet时的编码 服务器向浏览器发送数据时的编码都是这个值，所以jsp中很少出现乱码问题
+		isELIgnored
+	include指令
+		动态包含：
+		<% request.getRequestDispatcher("/include/head.jsp").include(request,response) %>
+		from body...
+		<% request.getRequestDispatcher("/include/foot.jsp").include(request,response) %>
+		
+		静态包含：只有include指令进行的包含，其他的包含都是动态包含
+	taglib指令
+	7、Jsp九大隐式对象：在翻译过来的Servlet中Service方法自动帮我们前置定义的九个对象，可以在页面中直接使用
+		page 当前servlet对象
+		config 当前ServletConfig对象
+		application ServletContext对象
+		response
+		request 
+		session
+		out
+		exception
+		pageContext
+		
+		out
+			相当于是response.getWriter()得到PrintWriter
+			out和response.getWriter获得的流不同在于这个out对象本身就具有一个缓冲区，利用out写出的内容，会先缓冲在out缓冲区中，直到out缓冲区满了或者整个页面结束时out缓冲区中的内容才会被写出到response缓冲区，最终可以带到浏览器页面进行展示
+			page指令中的buffer属性可以用来禁用out缓冲区或设置out缓冲区的大小，默认8kb autoFlush用来设置当out缓冲区满了以后如果再写入数据时out如何处理，如果是true，则先将满了的数据写到response中后再接受新数据，如果是false，则满了再写入数据直接抛异常
+			
+			在jsp页面中输出数据时用out，不要用response.getWriter
+		pageContext 最重要 代表当前Jsp页面
+			1、可以作为入口对象获取其他八大隐式对象的引用
+				getException getPage getRequest getResponse getServletConfig getServletContext getSession getOut
+			2、域对象 四大作用域的入口 可以操作四大作用域的域属性
+				作用范围：当前Jsp页面
+				生命周期：当对Jsp页面的访问开始时创建代表当前Jsp的PageContext，当对当前Jsp页面访问结束时，销毁代表当前Jsp的pageContext，作用：在当前Jsp中共享数据
+				
+				setAttribute
+				getAttribute
+				removeAttribute
+				
+				findAttribute 搜寻四大作用域中的属性，如果找到返回其值，如果找不到返回null，搜寻的顺序是从最小的域到最大的域寻找
+			3、请求转发和请求包含的快捷方法
+				pageContext.include("/index.jsp"); 相当于request.getRequestDispatcher("/index.jsp").include(request,response)
+				
+				pageContext.forward("/index.jsp")
+Jsp杂项
+	Jsp映射，可以在web.xml中配置Jsp的访问路径
+Cookie 客户端技术
+	Cookie是基于Set-Cookie响应头和Cookie请求头工作的，服务器可以发送set-Cookie请求头命令浏览器保存一个cookie信息，浏览器会在访问服务器时以Cookie请求头的方式带回之前保存的信息
+	request.getCookies();
+	response.addCookie(Cookie c);
+	
+	new Cookie(String name,String value);
+	getName();
+	getValue();
+	setValue();
+	
+	如果一个Cookie如果没有设置过MaxAge，则这个Cookie是会话级别的Cookie，这个Cookie信息打给浏览器后浏览器会将它保存在浏览器的内存中，这意味着只要浏览器关闭时Cookie信息就消失了
+	setMaxAge() 单位为秒 值为3600*24*30就是保存一个月
+	getMaxAge()
+	
+	setPath和getPath两个方法通知浏览器在访问服务器中的哪个路径及其子路径时带着当前cookie信息过来，如果不明确设置，则默认的路径是发送Cookie的Servlet所在的路径
+	setPath() setPath(request.getContextPath()); 在访问整个day05应用时都会带着Cookie信息过来
+	getPath()
+	
+	用来通知浏览器在访问哪个域名的时候带着当前的cookie信息，但是要注意现在的浏览器一旦发现cookie设置过domain信息则会拒绝接受这个Cookie，平时不要使用这两个方法
+	setDomain()
+	getDomain()
+session 服务器端技术
+	一个浏览器独占一个session对象
+	session是一个域，有它的作用范围(当前会话范围)和生命周期(当程序第一次调用到request.getSession()方法时说明客户端明确需要用到session，此时才会创建出对应客户端的session对象) 
+	当session超过30分钟(默认，可以在web.xml里面改)没有人使用则认为session超时销毁该session
+	明确调用session.invalidate()方法可以立即杀死session
+	当服务器被非正常关闭时，随着虚拟机的死亡而死亡
+
+	服务器如果正常关闭，还未超时的session会被以文件的形式保存在服务器的work目录下，这个过程叫做session的钝化，下次再正常启动服务器时钝化的session会被恢复到内存中，这个过程是session的活化
+	
+	session作用：在会话范围内共享数据
+
+	session的原理：request.getSession()方法会检查请求中有没有JSESSIONID cookie，如果有就拿出它的值找到对应的session为它服务，如果没有则检查请求的URL后有没有以参数的形式带着JSESSIONID过来，如果有则找到对应的session，如果还找不到则认为这个浏览器没有对应的session，创建一个session然后再在响应中添加JSESSIONID cookie，值就是这个session的id值，默认情况下JSESSIONID的path为当前web应用的名称，并且没有设置过MaxAge，是一个会话级别的cookie，这意味着一旦关闭浏览器，再新开浏览器时，由于JSEESIONID丢失，会找不到之前的session，我们可以手动发送JSESSIONID cookie，名字和path设置的和自动发送时一样，但是设置一下MaxAge，使浏览器除了在内存中保存JSESSIONID信息之外，还在临时文件夹中以文件形式保存，这样即使重开浏览器仍然可以使用之前的session
+	
+URL重写：
+	如果浏览器禁用了cookie，浏览器就没有办法保存JSESSIONID cookie，这样就用不了cookie了，我们可以使用URL重写的方法在所有的超链接后都以参数的形式拼接JSESSIONID信息，从而再点击超链接时，可以使用URL参数的方式带回JSESSIONID，从而使用session将URL进行重写拼接上JSESSIONID的过程就叫做URL重写
+
+	request.getSession() 在URL重写之前一定要先创建出session，才有session id，才能进行重写
+	response.encodURL() 一般的地址都用这个方法重写
+	response.encodeRedirectURL 如果地址是用来重定向的则使用这个方法
+
+	url重写的方法一旦发现浏览器带回了任意cookie信息，则认为客户端没有禁用cookie，就不会再进行重写操作了
+
+cookie特性总结
+	数据保存在客户端，这个信息可以保存很长时间
+	数据随时有可能被清空，所以cookie保存的数据不可靠
+	数据保存在客户端，安全性差
+session特性总结
+	数据保存在服务器端，相对cookie来说比较稳定和安全
+	占用服务器内存，所以一般存活时间不会太长，超过超时时间被销毁，要根据服务器压力和session的使用情况合理设置session超时时间
+
+
+域的总结：
+	servletContext(application)
+	session(session)
+	request(request)
+	pageContext
+
+Jsp标签技术：
+	jsp标签(了解)：sun原生提供的，可以直接在jsp页面中使用
+		<jsp:include> 实现页面包含，动态包含 <jsp:include page="index.jsp"></jsp:include>
+		<jsp:forward> 实现请求转发
+		<jsp:param> 配合上面的两个标签使用，在请求包含和请求转发时用来在路径后拼接一些参数
+	EL表达式(很重要) Expression Language
+		最初出现的目的是用来取代jsp页面中的jsp脚本表达式<%= ... %> 但是随着EL的发展，EL的功能已不限于此
+		${el表达式}
+		获取数据：
+			获取常量
+				字符串/数字/布尔类型 直接写在EL表达式中，EL直接进行输出
+				${"aaa"} ${199} ${true}
+			获取域中的变量
+				如果EL中写的是一个变量的名，则EL会调用pageContext的findAttribute方法，在四大作用域中以给定的名字找对应的属性值，找到后进行输出，如果四个域中都找不到，则什么都不输出
+				<% 
+					String name="aaa";
+					pageContext.setAttribute("name",name);
+				%>
+				${name }
+			获取数组中的数据
+				<%
+					String[] names={"aaa","bbb"};
+					pageContext.setAttribute("names",names);
+				%>
+				${names[0] }
+			获取集合中的数据
+				<%
+					List<String> list=new ArrayList<String>();
+					list.add("aaa");
+					list.add("bbb");
+					list.add("ccc");
+					pageContext.setAttribute("list",list);
+				%>
+				${list[2]}
+			获取Map中的数据
+				<%
+					Map<String,String> map=new HashMap();
+					map.put("name","aaa");
+					map.put("age","20");
+					map.put("gender","男");
+					pageContext.setAttribute("map",map);
+				%>
+				${map["name"] $map.age}
+			获取javabean的属性
+				<%
+					Person p=new Person(); Alt+/ 可以导包
+					p.setName("aaa");
+					p.setAge(17);
+					pageContext.setAttribute("p",p);
+				%>
+				${p.name } EL在底层调用了getXXX方法
+				
+				${pageContext.request.contextPath() }/1.jpg
+		执行运算：
+			${1+"2"} -> 3 如果有非数字，EL表达式会转换成数字
+			${1+"a"} 抛出异常
+			${empty null} true
+			${empty ""} true			
+		获取常用开发对象：EL中内置了11个内置对象
+			pageContext 
+			pageScope page域中属性组成的Map
+			requestScope request域中属性组成的Map
+			sessionScope session域中属性组成的Map
+			applicationScope application域中属性组成的Map
+			param 所有请求参数组成的Map<String,String>
+			paramValues 所有请求参数组成的Map<String,String[]>
+				?name=li&age=19&like=zuqiu&like=lanqiu&like=boliqiu
+				${param.name}
+				${paramValues.like[2]}
+			header 所有请求头组成的Map<String,String>
+			headerValues 所有请求头组成的Map<String,String[]>
+			cookie 所有cookie信息组成的Map<String,Cookie对象> ${cookie.JSESSIONID.value} 这里实际上在底层调用了Cookie对象的getValue方法
+			initParam 所有web应用的初始化参数 web.xml中<context-param>里的参数 {initParam.name1}
+		调用java方法 不需要会写调用方法的过程，只要会调用别人写好的标签库就可以了
+			写一个类，其中要包含要被EL调用的方法，这个方法必须是静态方法
+			写一个tld文件，在其中对要被调用的静态方法进行描述 tld文件必须放到WEB-INF下除lib和classes目录的文件夹下，创建tld文件的过程中Version和Jspversion必须选2.0
+			在jsp页面中用taglib将写好的tld文件引入当前jsp，从而在jsp页面中就可以调用描述好的方法了
+			
+			public class ELFunc{
+				public static String myEncode(String str,String encode){
+					return URLEncoder.encode(str,encode);
+				}
+			}
+			
+			tld文件：
+			<function>
+				<name>URLEnc</name>
+				<function-class>com.itheima.util.ELFunc</function-class> 类的全路径名
+				<function-signature>java.lang.String myEncode(java.lang.String str,java.lang.String encode)</function-signature> 方法的描述，因为类里面可能定义了很多方法，需在这里指出哪个方法
+			</function>
+			
+			jsp文件导入
+			<%@ taglib uri="http://www.itheima.com/MyELFunc" prefix="MyELFunc" %>
+			${MyELFunc:URLEnc("北京","utf-8") }
+			
+			已经有现成的function了：<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+			${fn:toLowerCase("abc") }
+	JSTL(很重要)
+		核心标签库 core
+			引入: <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+			输出常量：<c:out value="aaa"></c:out>
+			输出变量：<c:out value="${name}"></c:out> 变量必须是域对象上的属性
+			输出默认值：<c:out value="${addr}" default="北京"></c:out> 会找addr这个域属性的值，没有这个域属性时输出默认值"北京"
+			HTML转义输出：<c:out value="<a href='javascript:;'></a>" escapeXml="true"></c:out> escapeXml属性表示转义输出，默认是true，true代表转义，设置成false不转义
+			
+			c:set
+			设置或修改域中的属性值
+			<c:set var="name" value="aaa" scope="page"></c:set> var属性代表变量名 value代表变量值 scope是四大作用域：page request session application 默认是page域
+			
+			设置或修改域中的Map值
+			修改域中的JavaBean的属性的值
+			
+			c:remove
+			删除各种域上的属性 如果不加scope属性就会把所有域对象上对应的属性都删掉
+			
+			c:catch
+			用这个标签把一段jsp表达式包起来捕获异常
+			<c:catch var="e">
+				<%
+					int i=1/0;
+				%>
+			</c:catch>
+			如果捕获到异常，就把该异常给e属性，这个e属性会加到page域对象上
+			
+			c:if eclipse对c:if支持不太好，可能会报错
+			<c:if test="${2>1}">
+				...
+			</c:if>
+			
+			c:choose c:when c:otherwise
+			<c:choose>
+				<c:when test="${day==1}">
+					星期一
+				</c:when>
+				<c:when test="${day==2}">
+					星期二
+				</c:when>
+				<c:when test="${day==3}">
+					星期三
+				</c:when>
+				<c:otherwise>
+					默认值
+				</c:otherwise>
+			</c:choose>
+			
+			c:forEach
+			遍历迭代数组中的数据
+			<%
+				String[] city={"bj","sh","gz"};
+				pageContext.setAttribute("city",city);
+			%>
+			<c:forEach items="${city}" var="c">
+				${c}
+			</c:forEach>
+			
+			遍历集合中的数据
+			<%
+				List list=new ArrayList();
+				list.add("zg");
+				list.add("mg");
+				pageContext.setAttribute("list",list);
+			%>
+			<c:forEach items="${list}" var="l">
+				${c}
+			</c:forEach>
+			
+			遍历Map中的数据
+			<%
+				Map map=new HashMap();
+				map.put("name","cc");
+				map.put("age",55);
+				pageContext.setAttribute("map",map);
+			%>
+			<c:forEach items="${map}" var="entry">
+				${entry.key} ${entry.value}
+			</c:forEach>
+			
+			循环执行指定的内容若干次
+			<c:forEach begin="0" end="10" var="i">
+				${i},
+			</c:forEach>
+			
+			c:forTokens
+		国际化标签 fmt 以后再学
+		数据库标签 sql 不学，没人用
+		XML标签 xml 不学，没人用
+		JSTL函数(EL函数)
+	自定义标签(熟悉)
+		传统标签：比较复杂，了解
+			1、写一个类实现Tag接口
+			2、写一个tld文件，描述写好的类
+			3、在jsp页面中引入tld文件，就可以在jsp页面中使用自定义标签
+			
+			<tag>
+				<name>showip</name>
+				<tag-class>com.itheima.tag.ShowIpTag</tag-class>
+				<body-content>empty</body-content> 
+				body-content里面放当前标签所具有的标签体的类型，开始结束标签中间的文本就是标签体，也就是标签里面可以放什么，有4个值可选
+				tagdependent:操作后台、数据库时用，几乎不用，可以忽略
+				JSP:任意的Jsp元素，Jsp表达式，Jsp声明，Java源代码...想写什么就写什么
+				empty:不能包含任何内容，相当于自闭标签
+				scriptless:除了Java源代码之外的任意其他Jsp内容
+			</tag>
+			
+			第一次使用<MyTag:showip/>这个标签时，会创建一个ShowIpTag实例化对象，该对象就一直驻留在内存中
+			之后每次使用这个标签时，会依次调用ShowIpTag类里面的各个成员方法
+			首先会调用void setPageContext(PageContext pc) PageContext代表当前整个Jsp页面
+				有了它，我们可以拿到9大隐式对象，也可以拿到当前页面所依附的4大作用域
+			然后会调用void setParent(Tag t) 参数是父标签，如果没有父标签会传进来null
+				对于c:when和c:others标签来说，c:choose就是它们的父标签，因为有时子标签的行为需要通过父标签确认下来
+			然后会调用doStartTag方法
+			然后会调用doEndTag方法
+			在标签对象被销毁时会调用release方法做一些善后工作
+			
+			所谓的传统标签，分为了doStartTag和doEndTag方法分别处理发现开始标签和发现结束标签时的代码，在doStartTag可以通过返回值来控制标签体是否允许执行，在doEndTag方法里可以通过返回值控制标签之后的剩余页面是否允许执行
+		简单标签：掌握
+			1、写一个类实现SimpleTag接口 或者继承默认实现类SingleTagSupport
+			2、写一个tld文件，描述写好的类
+			3、在jsp页面中引入tld文件，就可以在jsp页面中使用自定义标签
+
+			当jsp在执行的过程中，每当遇到一个简单标签时都会创建一个处理类对象			
+			调用setJspContext传入当前jsp页面的PageContext对象
+			如果当前标签有父标签则调用setParent方法将父标签传入，如果没有父标签则这个方法不会被调用
+			如果该标签具有属性，调用属性的setXXX方法将属性的值传入
+			如果当前标签具有标签体，则会调用setJspBody将封装了标签体信息的JspFragment传入，如果没有标签体，这个方法不执行
+			最后调用doTag方法，在这个方法里，我们可以书写处理标签事件的java代码
+			当自定义标签执行完成后，简单标签对象就销毁掉了
+			
+			控制标签体是否执行<c:if>
+			控制标签之后的内容是否执行
+			控制标签体重复执行<c:foreach>
+			修改标签体后输出<c:out>
+
+			如果通过继承SimpleTagSupport类来自定义标签，那么我们只需要重写doTag方法就可以了
+			public class SimpleDemo1 extends SimpleTagSupport{
+				private int times;
+				public void setTimes(int times){
+					this.times=times;
+				}
+				public void doTag() throws JspException,IOException{
+					//控制标签体是否执行
+						//----控制标签体不执行，这个方法里面什么都不做，标签体就不执行
+						//----控制标签体执行，只要调用封装着标签体的JSPFragment对象的invoke方法就可以执行
+						JspFragment fragment=getJspBody();
+						//fragment.invoke(getJspContext().getOut());
+						//fragment.invoke(null); 上述写法的简写形式，invoke的参数为null时默认把标签体里面的内容输出到out输出流当中去
+					//控制标签之后的内容是否执行
+						//控制标签之后的内容执行，什么都不做，标签体就会执行
+						//控制标签之后的内容不执行，抛出SkipPageException异常就可以
+						throw new SkipPageException();
+					//控制标签体重复执行
+						for(int i=0;i<5;i++){
+							getJspBody().invoke(null);
+						}
+					//修改标签体后输出
+					StringWriter writer=new StringWriter(); //指向字符串的输出流
+					JspFragment fragment=getJspBody();
+					fragment.invoke(writer);
+					String str=writer.toString();
+					str=str.toUpperCase();
+					getJspContext().getOut().write(str);
+				}
+			}
+			
+			<tag>
+				<name>simpleDemo1</name>
+				<tag-class>com.itheima.simpletag.SimpleDemo1</tag-class>
+				<body-content>scriptless</body-content>
+				<attribute>
+					<name>times</name>
+					<required>true</required> 是否必须
+					<rtexprvalue>true</rtexprvalue> 是否支持EL表达式
+					<type>int</type>
+				</attribute>
+			</tag>
+
+			标签之前<MyTag:simpleDemo1>标签中</MyTag:simpleDemo1>标签之后
+
+			为自定义标签来增加一个属性：
+				在标签处理类中增加一个JavaBean属性，这个属性就是要增加的标签的属性，并对外提供setXXX方法
+				在tld文件中这个标签的描述中描述一下该属性
+
+			想要开发一个简单标签，写一个类继承SimpleTagSupport覆盖doTag方法就可以了
+			可以调用getJspContext/getJspBody来获取需要的内容
+			在tld文件中对标签进行描述
+
+数据库
+	每个web应用对应一个库
+	每个JavaBean就对应一张表
+
+JDBC
+	Connection conn=null;
+	Statement stat=null;
+	ResultSet rs=null;
+	try{
+		//注册数据库驱动
+		//由于mysql在Driver类的实现中自己注册了一次，我们又注册了一次，会导致MySQL驱动会注册两次
+		//创建MySQL的Dreiver对象时，导致了程序和具体的MySQL绑定在了一起，在切换数据库的时候需要改动Java源代码
+		//DriverManager.registDriver(new Driver());
+		Class.forName("com.mysql.jdbc.Driver");
+		//获取数据库连接
+		con=DriverManager.getConnection("jdbc:mysql://localhost:3306/day10","root","root");
+		//获取传输器对象
+		stat=conn.createStatement();
+		//利用传输器传输sql语句到数据库中执行获取结果集对象
+		rs=stat.executeQuery("select * from user");
+		//遍历结果集，获取查询结果
+		while(rs.next()){
+			rs.getString("name"); //获取name这一列的值
+			rs.getString(1); //获取第一列的值
+		}
+	}catch(Exception e){
+		e.printStackTrace();
+	}finally{
+		//关闭资源 最晚创建的对象最先关闭
+		//不论上面是否抛了异常，下面三个对象必须关闭，尤其是conn对象，是非常稀缺的资源，应该晚创建早关闭
+		if(rs!=null){
+			try{
+				rs.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+			}finally{
+				//rs.close()有可能抛异常，所以在这里给它赋值为null
+				rs=null;
+			}
+		}
+		if(stat!=null){
+			try{
+				stat.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+			}finally{
+				stat=null;
+			}
+		}
+		if(conn!=null){
+			try{
+				rs.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+			}finally{
+				conn=null;
+			}
+		}
+	}
+	
+=========================
+public class JDBCUtils{
+	private static Properties prop=null;
+	private JDBCUtils{
+		
+	}
+	static{
+		try{
+			Properties prop=new Properties();
+			prop.load(new FileReader(JDBCUtils.class.getClassLoader().getResource("config.properties").getPath()));
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
+	public static Connection getConn(){		
+		Class.forName(prop.getProperty("driver"));
+		return DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"));
+	}
+	public static void close(ResultSet rs,Statement stat,Connection conn){
+		if(rs!=null){
+			try{
+				rs.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+			}finally{
+				//rs.close()有可能抛异常，所以在这里给它赋值为null
+				rs=null;
+			}
+		}
+		if(stat!=null){
+			try{
+				stat.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+			}finally{
+				stat=null;
+			}
+		}
+		if(conn!=null){
+			try{
+				rs.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+			}finally{
+				conn=null;
+			}
+		}
+	}
+}
+
+config.properties配置文件
+driver=com.mysql.jdbc.Driver
+url=jdbc:mysql://localhost:3306/day10
+user=root
+password=root
+
+=======================================================
+PreparedStatement防止sql注入
+相比于Statement，多了预编译的功能
+Connection conn=null;
+PreparedStatement ps=null;
+ResultSet rs=null;
+try{
+	conn=JDBCUtils.getConn();
+	//这一步将会执行预编译
+	ps=conn.prepareStatement("select * from users where username=? and password=?");
+	ps.setString(1,"zhangsan");
+	ps.setString(2,"999");
+	rs=ps.executeQuery();
+	while(rs.next()){
+		System.out.println(rs.getString("email"));
+	}
+}catch(Exception e){
+	e.printStackTrace();
+}finally{
+	JDBCUtils.close(rs,ps,conn);
+}
+
+=======================大文件
+Connection conn=null;
+PreparedStatement ps=null;
+ResultSet rs=null;
+try{
+	conn=JDBCUtils.getConn();
+	ps=conn.prepareStatement("insert into textdemo value(null,?,?)");
+	ps.setString(1,"aaa");
+	File file=new File("1.txt");
+	ps.setCharacterStream(2,new FileReader("1.txt"),file.length());
+	//第3个参数为long型的值的setCharacterStream方法是从1.6版本开始支持的，mysql不支持
+	//第3个参数为int型的值的setCharacterStream方法是从1.2开始支持的，MySQL支持
+	ps.executeUpdate();
+}catch(Exception e){
+	e.printStackTrace();
+}finally{
+	JDBCUtils.close(rs,ps,conn);
+}
+
+==============================JDBC中管理事务
+Connection conn=null;
+PreparedStatement ps=null;
+ResultSet rs=null;
+try{
+	conn=JDBCUtils.getConnection();
+	conn.setAutoCommit(false);//连接不会自动提交，即下面所做的所有sql都在一个事务里面
+	ps=conn.prepareStatement("update account set money=money-100 where name=?");
+	ps.setString(1,"a");
+	ps.executeUpdate();
+	ps=conn.prepareStatement("update account set money=money+100 where name=?");
+	ps.setString(1,"b");
+	ps.executeUpdate();
+	conn.commit();
+}catch(Exception e){
+	try{
+		conn.rollback();
+	}catch(SQLException e1){
+		e1.printStackTrace();
+	}
+	e.printStackTrace();
+}finally{
+	JDBCUtils.close(rs,ps,conn);
+}
+==================设置回滚点
+Savepoint sp=conn.setSavepoint();
+
+事务的四大特性：
+	原子性
+	一致性
+		数据库的完整性状态：当一个数据库中的所有数据都符合数据库中所定义的所有约束，可以称之为是完整性状态
+	隔离性
+	持久性
+
+隔离性：将数据库设计成单线程的数据库，可以防止所有线程的安全问题，但是数据库设计成这样效率就会很低下
+
+	两个线程并发修改，必须利用锁防止并发修改
+	两个线程并发查询，没有线程安全问题
+	两个线程一个修改，一个查询...
+		第三种情况会导致：
+			脏读：
+			不可重复读：
+			虚读(幻读)：
+		四大隔离级别：
+			Read uncommited
+			Read commited
+			Repeatable read
+			Serializable
+		查询当前数据库隔离级别：select @@tx_isolation;
+		设置隔离级别：set [global/session] transaction isolation level xxxx; //session为默认 session的意思是修改当前客户端和数据库交互时的隔离级别，global修改数据库的默认隔离级别
+			
+数据库中的锁机制
+	共享锁：在非Serializable隔离级别做查询不加任何锁，而在Serializable级别下做查询使用共享锁
+	共享锁的特点：共享锁和共享锁可以共存，但共享锁和排他锁不可以共存
+	排他锁：所有隔离级别下进行增删改的操作都会加排他锁
+	排他锁的特点：在所有隔离级别下进行增删改的操作都会加排他锁，排他锁和其他任意锁都不能共存
+
+更新丢失问题：
+	两个线程基于同一个查询结果进行修改，后修改的人会将先修改的人的修改覆盖掉就是更新丢失问题
+	悲观锁：悲观的认为每次操作都会造成更新丢失问题，在每次查询时就加上排他锁
+		select * from account where id=1 for update;//会为本次查询加排他锁
+		如果在该客户端本次查询的同时又有另外一个客户端作查询，也会试图加上一个排他锁，但是排他锁是互斥的，所以这个客户端的排他锁无法加上，只能等着，等着上一个事务完成，才可以查询，上一个客户端事务执行完成之后数据库状态已经改变，所以此时查询得到的就是最新的数据
+		
+		悲观锁的缺点：当查询非常多时后来连接上数据库的客户端只能一直等着，查询效率非常低
+		
+		所以当查询非常多而修改非常少的时候应该使用乐观锁，避免长时间的等待
+	乐观锁：乐观的认为每次查询都不会产生更新丢失，利用一个版本(version)字段进行控制
+		两个客户端都来查询，查询到的支付状态都是0(未支付)，接着再做更新时会执行下面一条sql：
+			update order set stat=1 and version=version+1 where version=0 and id=1;
+			第二个客户端再来查询该记录时上面的update语句返回的所影响的行数应该是0，此时应该回滚当前事务，避免更新丢失
+
+		当修改比较多而查询非常少的时候应该使用悲观锁
+
+连接池
+	Connection conn=null;
+	PreparedStatement ps=null;
+	ResultSet rs=null;
+	MyPool pool=new MyPool();
+	try{
+		conn=JDBCUtils.getConnection();
+		ps=conn.prepareStatement("select * from account");
+		rs=ps.executeQuery();
+		while(rs.next()){
+			String name=rs.getString("name");
+			System.out.println(name);
+		}
+	}catch(Exception e){
+		e.printStackTrace();
+	}finally{
+		//JDBCUtils.close(rs,ps,conn);
+		if(rs!=null){
+			try{
+				rs.close();
+			}catch(Exception e){
+				e.printStackTrace();
+			}finally{
+				rs=null;
+			}
+		}
+		if(ps!=null){
+			try{
+				ps.close();
+			}catch(Exception e){
+				e.printStackTrace();
+			}finally{
+				ps=null;
+			}
+		}
+		if(conn!=null){
+			//try{
+			//	conn.close();
+			//}catch(Exception e){
+			//	e.printStackTrace();
+			//}finally{
+			//	conn=null;
+			//}
+			pool.retConn(conn);
+		}
+	}
+
+	public class MyPool implements DataSource{
+		private List<Connection> list=new LinkedList<Connection>();
+		static{
+			try{
+				Class.forName("com.mysql.jdbc.Driver");
+				for(int i=0;i<5;i++){
+					Connection conn=DriverManager.getConnection("jdbc:mysql///day11","root","root");
+					pool.add(conn);
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+		}
+		public Connection getConnection() throws SQLException{
+			if(pool.size()==0){
+				for(int i=0;i<5;i++){
+					Connection conn=DriverManager.getConnection("jdbc:mysql///day11","root","root");
+					pool.add(conn);
+				}
+			}
+			return pool.remove(0);
+		}
+		public void retConn(Connection conn){
+			try{
+				if(conn!=null&&!conn.isClosed()){
+					pool.add(conn);
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+	}
+
+===================改造Connection的close方法使其的功能变成将conn对象返回回连接池
+方法一：继承
+方法二：装饰
+方法三：动态代理 Proxy类用于生成某个对象的代理对象
+//第二个参数Dog.class.getInterfaces()代表类Dog实现过的所有的接口组成的数组
+//第三个参数 InvocationHaddler实际上是一个接口，我们通过匿名内部类的方式创建出实现了该接口的一个对象，里面需要实现该接口规定的invoke方法
+//proxy就是代理对象
+Animal proxy = (Animal)Proxy.newProxyInstance(Dog.class.getClassLoader(),Dog.class.getInterfaces(),new InvocationHaddler(){
+	public Object invoke(Object proxy,Method method,Object[] args) throws Throwable{
+		if("eat".equals(method.getName())){
+			//重写eat方法的代码
+			return null;
+		}else{
+			return method.invoke(dog,args);//内部类调用外部类的对象，外部类对象必须是final类型的，所以dog必须是final类型才可以
+		}
+	}
+});
+proxy.eat();//代理对象在调用任何方法时都会调用InvocationHaddler实现类中的invoke方法，在该方法中传进了代理对象proxy，当前调用的方法，当前调用方法传入的参数，所以我们可以在invoke方法里面重写当前调用的方法
+
+//利用动态代理改造close方法
+ConectionProxy proxy=(Connection)Proxy.newProxyInstance(conn.getClass().getClassLoader(),conn.getClass().getInterfaces(),new InvocationHaddler(){
+	public Object invoke(Object proxy,Method method,Object[] args) throws Throwable{
+		if("close".equals(method.getName())){
+			//改造close
+			retConn(conn);
+			return null;
+		}else{
+			return method.invoke(conn,args);
+		}
+	}
+});
+
+===================================DBUtils
+DbUtils
+
+QueryRunner runner=new QueryRunner(new ComboPooledDataSource());
+runner.update("update account set money=? where name=?",888,"a");
+
+runner.query("select * from account where money>100",new ResultSetHandler?<List<Account>>(){
+	public List<Account> handle(ResultSet arg0) throws SQLException{
+		List<Account> list=new ArrayList<Account>();
+		while(rs.next()){
+			Account acc=new Account();
+			acc.setId(rs.getInt("id"));
+			acc.setName(rs.getString("name"));
+			acc.setMoney(rs.getDouble("money"));
+			list.add(acc);
+		}
+		return list;
+	}
+},500);
+
+//ArrayHandler:把结果集中的第一行数据转成对象数组
+Object[] objs=runner.query("select * from account where money>?",new ArrayHandler(),500);
+
+//ArrayListHandler:把结果集中的每一行数据都转成一个对象数组，再存放到List中
+List<Object[]> list=runner.query("select * from account where money>?",new ArrayListHandler(),500);
+
+//BeanHandler:将结果集中的第一行数据封装到一个对应的JavaBean实例中
+Account acc=runner.query("select * from account where money>?",new BeanHandler<Account>(Account.class),500);
+
+//BeanListHandler:
+List<Account> list=runner.query("select * from account where money>?",new BeanListHandler<Account>(Account.class),500);
+
+//MapHandler:
+Map<String,Object> map=runner.query("select * from account where money>?",new MapHandler(),500);
+
+//MapListHandler
+List<Map<String,Object>> list=runner.query("select * from account where money>?",new MapListHandler(),500);
+
+//ColumnListHandler
+List<Object> list=runner.query("select * from account where money>?",new ColumnListHandler(3),500);//参数3代表第3列
+
+//KeyedHandler
+Map<Object,Map<String,Object>> map=runner.query("select * from account where money>?",new KeyedHandler("id"),500);//参数"id"代表列名
+
+//ScalarHandler:获取结果集中第一行数据指定列的值，常用来单值查询
+Object o=runner.query("select count(*) from account",new ScalarHandler());
+
+================estore
+用户表
+	id 用户名 密码 邮箱 激活状态 激活码 角色
+商品表
+	id 名称 种类 库存数量单价
+订单表
+	编号 下单时间 收获地址 支付状态 金额
+订单项表
+	订单id 商品id 购买数量
+
+用户-订单 一对多 对于一对多的情况，应该在多的一方加一列外键，订单表中应该有外键指向用户表中的id
+商品-订单 多对多 设计一张第三方表 订单项表
+	
+create database estore;
+use estore;
+
+primary key(order_id,product_id) 联合主键，两列的值加在一起使用
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

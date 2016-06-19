@@ -1,0 +1,84 @@
+p[miaov] 选取含有miaov属性的p标签
+p[miaov="aaa"] 选取miaov属性值为aaa的p标签
+p[miaov~="aaa"] 如果miaov这个属性的值是一个词列表，则该选择器是选定包含aaa这一属性值的p标签，例如p[miaov="aaa bbb ccc"]
+p[miaov^="aaa"] 选取miaov属性是以aaa打头的p标签
+p[miaov$="aaa"] 选取miaov属性是以aaa结尾的p标签
+p[miaov*="aaa"] 只要miaov属性的值包含aaa就可以选中
+p[miaov|="aaa"] 选取miaov属性是aaa或者aaa-开头的p标签，注意这个选择器不选中<p miaov="aaab">这种标签
+
+p:nth-child(1) 选取p标签连同它所有兄弟中的第一个
+p:nth-child(odd) 选取奇数行
+p:nth-child(2n) 选取第2 4 6 8个
+p:nth-child(3n+2) 选取2 5 8个
+p:nth-child(2) 如果p标签连同它所有的兄弟结点的第二个元素不是p标签，那么什么反应都没有，如果想不管标签是什么都想给它设置，可以这样写：body *:nth-child(2)
+
+nth-last-child功能和nth-child一样，唯一区别就是前者是从后往前数
+
+p:nth-of-type(2) 选取p标签父级下的第二个p元素
+body *:nth-of-type(2) 选取body下所有标签的第二个元素，即选择第二个p标签 第二个div 第二个ul等等
+
+与之对应 有nth-last-of-type
+
+p:first-child
+p:last-child
+p:first-of-type
+p:last-of-type
+
+:first-child==:nth-child(1)
+:last-child==:nth-last-child(1)
+:first-of-type==:nth-of-type(1)
+:last-of-type==:nth-last-of-type(1)
+
+p:empty 找到空节点 而且p标签里面还不可以有任何文本，因为该选择器认为文本结点也算
+15min
+
+伪类和伪元素
+div{ display:none;}
+div:target{display:block;}//选中按下的a标签的href对应的div
+<a href="#div1">1</a>
+<a href="#div2">2</a>
+<a href="#div3">3</a>
+<div id="div1"></div>
+<div id="div2"></div>
+<div id="div3"></div>
+
+input:enabled 选中可编辑状态的input
+input:disabled 选中不可编辑状态的input
+input:checked 选中选中的input
+
+p~h1{ background:red;}//选中p后面的h1
+<h1></h1>
+<p></p>
+<h1></h1>
+<h1></h1>
+
+//模拟单选框
+label{ float:left;margin:0 5px; overflow:hidden; position:relative;}
+label input{ position:absolute;left:-50px;top:-50px;}
+span{float:left;width:50px;height:50px;border:3px solid #000;}
+input:checked~span {background:red;}
+</style>
+</head>
+<body>
+<label>
+	<input type="radio" name="tab" />
+    <span></span>
+</label>
+<label>
+	<input type="radio" name="tab" />
+    <span></span>
+</label>
+<label>
+	<input type="radio" name="tab" />
+    <span></span>
+</label>
+
+//文本伪类
+p:first-line 选中p标签内文字的第一行
+p:first-letter 选中p标签内段落的第一个文字
+p::selection 选中时p标签的样式 要写双冒号
+p:after p标签末尾
+p:before p标签开头
+
+h1:not(.h2)选中类名不是h2的h1标题
+

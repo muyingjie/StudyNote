@@ -1,0 +1,267 @@
+双色球
+
+var arr=[];
+for(var i=0;i<6;i++)
+{
+	var n_value=rnd(1,34);
+	var n_index=arr_index_of(arr,);
+	if(arr_index_of(arr,n_value)==-1)
+	{
+		arr.push(rnd(1,34));
+		i--;
+	}
+	
+}
+function arr_index_of(arr,n)
+{
+	for(var i=0;i<arr.length;i++)
+	{
+		if(arr[i]==n)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+次数已知时用for
+次数未知用while
+
+
+
+作用域
+1、全局作用域
+2、局部作用域
+3、闭包		子函数可以使用父函数的局部变量
+
+
+disabled 残废了
+readonly 还可以点
+
+
+setFullYear(2015,6,10);2015年7月10日，有三个参数
+setHours(0,0,0,0);有四个参数，时，分，秒，毫秒
+
+
+2014年7月1日09:40:00
+
+oDate.getDay() 0->周日
+
+
+如果试图访问数组的某一项没有定义的值，默认是undefined
+
+
+//7月1日最后一个课件 百度面试题
+function show(a){  //形参
+	arguments[0]=10;
+	alert(a);	
+}
+show();  //实参
+
+
+undefined
+1、定义了一个变量，但是没有赋值
+2、访问一个不存在的属性
+
+
+getStyle不太善于获取复合样式
+
+
+
+设置样式
+第四种方式 with语句，但是禁用->干扰作用域 太乱 面试有用
+
+
+浏览器信息
+UA:window.navigator.useragent
+
+
+
+
+截取字符串
+str.substring(开始位置,结束位置)//不包含结束位置
+
+str.substring(开始位置)//一直截取到末尾
+
+
+
+后缀名、首字母大写
+
+push从后面添加
+pop从后面删除
+
+unshift从前面添加
+shift从前面删除
+
+
+splice(开始位置，删除长度，元素1，元素2...)
+
+arr.splice(arr.length-1,1)//pop
+arr.splice(0,1)
+
+//添加 arr.splice(添加位置,0,"a","b")
+
+//替换 arr.splice(开始位置,2,"a","b");
+
+var json={};
+alert(json);//返回object
+
+json没有length属性，而json没有length，但是自己可以加这个属性
+
+
+34，"你好"，34，css，str，70，str2,undefined
+
+
+删除json中的值
+delete json.a
+
+
+select下的option必须给value否则IE8-浏览器获取不到value的值
+
+
+获取option的时候可以用oSelect.options就可以得到options的集合
+
+用oSelect.options[0].text得到其innerHTML
+
+用oSelect.selectedIndex得到当前的索引值
+
+添加一个option可以用var oP=new Option('北京','bj');
+
+oS.options.add(oP)
+
+oS.options.remove(2)放索引
+
+
+!function(){
+	alert(1);//课下自己考虑一下!会不会取反
+}();
+
+如果写成
+
+alert( !function(){
+	alert(1);
+}(); );
+
+//先弹出1，再弹出true;
+
+function 
+
+假 0 false '' undefined NaN null
+真 非零 非空字符串 true 非空对象
+
+a=a+1;
+a+=1;
+a++;//a++和a=a+1不等价
+
+隐式转换
+- * / == >=
+
+变量类型//typeof出来的那个值
+
+number string boolean function undefined object
+
+
+
+down先执行、再是up、最后是click
+
+
+物体从中心放大
+margin-left:-放大宽度/2;
+margin-top:-放大高度/2;
+
+
+userAgent 中间的a大写
+
+
+清空数组
+arr.splice(0,arr.length)
+
+
+
+数组去重的两种方法
+1、用findArr
+2、用json
+
+
+整站
+var sinaWeb={
+	common:{},
+	effect:{}
+};
+
+
+预解析需要解析的内容
+
+var 有名字的function 参数
+
+var show=function(){
+	alert(1);//走的是变量的定义
+};
+
+
+
+预解析的范围
+1、在script标签里面
+2、在函数里面
+
+
+
+预解析的目的是为了提高性能
+
+这种类型的函数不会参与预解析
+o_btn.onclick=function(){
+	console.log(1);
+};
+
+
+垃圾回收 GC(java 里面的称呼)garbage collection
+
+
+生存周期
+1、全局变量：生存周期很长，直到浏览器关闭生存周期才会结束，很占资源，性能差
+2、局部变量：生存周期很短，函数执行完毕就没有了，几乎不占资源	封闭空间就相当于将变量包到一个局部作用域里面
+3、闭包
+	function show(){
+		var a=1;
+		oDiv.onclick=function(){
+			alert(a);
+		};
+	}
+此时，变量a生存周期是直到浏览器关闭，因为子函数‘有可能’用到父函数的a变量
+所以闭包的性能也不太好，因为有可能使用的变量浏览器都给保留了
+
+
+
+作用域链：先找自己，再找自己的父级，再找父级的父级，一直往上
+
+
+
+str.charCodeAt();看编码
+
+String.fromCharCode('0x4e00');得到‘一’
+
+
+
+js中的全局函数
+
+alert parseInt parseFloat eval
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

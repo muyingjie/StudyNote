@@ -1,0 +1,216 @@
+种cookie的时候如果不设置路径path，那么只能是下层文件获得上层文件种的cookie，上层文件时不能获得下层文件的cookie的，例如：
+
+cookie1.html
+cookie2.html
+cookie3.html
+cookie(文件夹)
+	cookie4.html
+	cookie5.html
+	cookie6.html
+
+cookie6.html种的cookie在cookie1中是获取不到的，而cookie1种的cookie在cookie6中是可以获取到的，对于同级文件的话，也可以访问彼此种下的cookie
+
+
+种cookie的时候可以像这个样子写：document.cookie='username=aaa;path=/;expires='+oDate;
+
+2014-8-4 20:41:28
+百度下拉框做的时候注意：
+oT.onkeydown=function(ev){
+	var oEvent=ev || event;
+	if(oEvent.keyCode==40){  //按下
+		iNow++;
+		
+		if(iNow==aLi.length){
+			iNow=-1;	
+		}
+		
+		for(var i=0; i<aLi.length; i++){
+			aLi[i].style.background='';
+		}
+		if(iNow==-1){
+			oT.value=oldValue;
+		}else{
+			aLi[iNow].style.background='rgb(238, 238, 238)';
+			oT.value=aLi[iNow].innerHTML;	
+		}
+		
+		document.title=iNow;
+	}
+	if(oEvent.keyCode==38){
+		iNow--;
+		if(iNow==-2){
+			iNow=aLi.length-1;	
+		}
+		for(var i=0; i<aLi.length; i++){
+			aLi[i].style.background='';
+		}
+		if(iNow==-1){
+			oT.value=oldValue;
+		}else{
+			aLi[iNow].style.background='rgb(238, 238, 238)';	
+			oT.value=aLi[iNow].innerHTML;
+		}
+		return false;
+	}
+};
+
+不要自作聪明，感觉oT.value=oldValue和oT.value=aLi[iNow].innerHTML写两遍费事，就把他们都写在两个if判断的外面，这样做实际上埋下了一个隐患，就是按↑键的时候会return false，然后之后的代码就不会被执行了，所以这两句代码也不会被执行，这样自然就错了
+
+
+来电归属地例子中taobao类型接口处理方案
+
+先看下淘宝给的接口长什么样
+__GetZoneResult_ = {
+    mts:'1368468',
+    province:'黑龙江',
+    catName:'中国移动',
+    telString:'13684681254',
+	areaVid:'30496',
+	ispVid:'3236139',
+	carrier:'黑龙江移动'
+}
+
+可以看出，和普通的接口不一样的地方就是这里的数据最外层没有包一个show或者其他函数名来调用，而是直接给了一个变量名，这种数据按照我们普通的jsonp的处理方式来做的话，就会自动生成了一个全局变量，此时动态创建script标签的时候必须监控加载状况，如果数据加载完成才能使用，即：
+
+oBtn.onclick=function(){
+	var oS=document.createElement('script');
+	oS.src='http://tcc.taobao.com/cc/json/mobile_tel_segment.htm?tel='+oT.value;
+	document.getElementsByTagName('head')[0].appendChild(oS);
+
+	oS.onreadystatechange=function(){
+		haddleData(__GetZoneResult_);
+		if(oS.readyState=='complete')
+		{
+			haddleData(__GetZoneResult_);
+		}
+	};
+
+	function haddleData()
+	{...}
+};
+
+注：
+oS.readystatechange  oS.readyState 兼容IE系
+oS.onload  兼容chrome FF IE9+
+
+
+如果我们得到的数据是这样的
+
+数据来源于这个接口http://int.dpool.sina.com.cn/iplookup/iplookup.php?format=js
+
+var remote_ip_info = {"ret":1,"start":"123.112.0.0","end":"123.125.66.255","country":"\u4e2d\u56fd","province":"\u5317\u4eac","city":"\u5317\u4eac","district":"","isp":"\u8054\u901a","type":"","desc":""};
+
+这类数据可以这样处理
+
+if(document.addEventListener)
+{
+	oS.onload=function(){
+		alert(remote_ip_info.province);
+	};
+}
+else
+{
+	oS.onreadystatechange=function(){
+		if(oS.readyState=='complete')
+		{
+			alert(remote_ip_info.province);
+		}
+	};
+}
+
+
+如果我们遇到的数据是这个样子的：
+
+
+{"weatherinfo":{"city":"临潼","city_en":"lintong","date_y":"2014年3月4日","date":"","week":"星期二","fchh":"11","cityid":"101110103","temp1":"13℃~2℃","temp2":"7℃~1℃","temp3":"8℃~2℃","temp4":"8℃~0℃","temp5":"13℃~2℃","temp6":"14℃~3℃","tempF1":"55.4℉~35.6℉","tempF2":"44.6℉~33.8℉","tempF3":"46.4℉~35.6℉","tempF4":"46.4℉~32℉","tempF5":"55.4℉~35.6℉","tempF6":"57.2℉~37.4℉","weather1":"多云","weather2":"小雨","weather3":"阴转小雨","weather4":"小雨转阴","weather5":"多云","weather6":"多云","img1":"1","img2":"99","img3":"7","img4":"99","img5":"2","img6":"7","img7":"7","img8":"2","img9":"1","img10":"99","img11":"1","img12":"99","img_single":"1","img_title1":"多云","img_title2":"多云","img_title3":"小雨","img_title4":"小雨","img_title5":"阴","img_title6":"小雨","img_title7":"小雨","img_title8":"阴","img_title9":"多云","img_title10":"多云","img_title11":"多云","img_title12":"多云","img_title_single":"多云","wind1":"东风小于3级","wind2":"东风小于3级","wind3":"东风小于3级","wind4":"东风小于3级","wind5":"东风小于3级","wind6":"东风小于3级","fx1":"东风","fx2":"东风","fl1":"小于3级","fl2":"小于3级","fl3":"小于3级","fl4":"小于3级","fl5":"小于3级","fl6":"小于3级","index":"冷","index_d":"天气冷，建议着棉服、羽绒服、皮夹克加羊毛衫等冬季服装。年老体弱者宜着厚棉衣、冬大衣或厚羽绒服。","index48":"较冷","index48_d":"建议着厚外套加毛衣等服装。年老体弱者宜着大衣、呢外套加羊毛衫。","index_uv":"最弱","index48_uv":"最弱","index_xc":"不宜","index_tr":"适宜","index_co":"较舒适","st1":"13","st2":"0","st3":"5","st4":"2","st5":"9","st6":"2","index_cl":"不宜","index_ls":"基本适宜","index_ag":"易发"}}
+
+
+这种数据经过分析，既没有函数调用的形式，也没有全局变量或者局部变量将其存起来，这样的数据，js是没有办法处理的，如果想要处理要借助PHP JSP .NET
+
+
+再次提到jsonp的本质是函数的定义和调用
+
+例如：
+function show(a)
+{
+	alert(a);
+}
+window.onload=function(){
+	show(12);
+};
+
+这样就会弹出12，但是如果我们程序写成这样：
+<script>
+window.onload=function(){
+	function show(a){
+		alert(a);
+	}
+};
+</script>
+<script>
+show(12);
+</script>
+
+此时，程序就会挂掉了，因为show函数变成局部的了，于是我们就想到了将show函数挂到window下面定义，于是就有了
+
+<script>
+window.onload=function(){
+	window.show=function(a){
+		alert(a);
+	}
+};
+show(12);
+</script>
+
+
+但是经过测试，仍然报show is not defined的错误，认真分析下原因，其实也很简单，很容易发现show函数的执行时机不对，当浏览器读到script标签的时候window.onload和show(12)几乎是同时读到的，换句话说在show(12)这句执行的时候onload还没有加载完毕，所以自然show也就没有定义了，我们可以通过如下程序验证我们的猜想
+
+<script>
+function show2(){
+	window.show=function(){
+		alert(1);	
+	}	
+}
+show2();//这个地方必须写
+</script>
+<script>
+show();//弹出1
+</script>
+
+
+//由上述推导可得我们的jsonp可以写成如下格式
+window.onload=function(){
+	var oT=document.getElementById('t1');
+	
+	oT.onkeyup=function(){
+		window.show=function(json){
+			alert(json.s);	
+		}
+		var oS=document.createElement('script');
+		oS.src='http://suggestion.baidu.com/su?wd='+oT.value+'&cb=show';
+		var oHead=document.getElementsByTagName('head')[0];
+		oHead.appendChild(oS);
+	};
+};
+
+
+或者
+
+window.onload=function(){
+	var oT=document.getElementById('t1');
+	
+	oT.onkeyup=function(){
+		var a='show';
+		window[a]=function(json){
+			alert(json.s);	
+		}
+		var oS=document.createElement('script');
+		oS.src='http://suggestion.baidu.com/su?wd='+oT.value+'&cb='+a;
+		var oHead=document.getElementsByTagName('head')[0];
+		oHead.appendChild(oS);
+	};
+};
+
+
+
+

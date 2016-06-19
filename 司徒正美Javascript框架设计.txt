@@ -1,0 +1,80 @@
+jQuery多库共存原理
+var _jQuery=window.jQuery,
+    _$=window.$;//将可能存在的同名变量保存起来
+
+jQuery.extend({
+	noConflict:function(deep){
+		window.$=_$;
+		if(deep)
+		{
+			window.jQuery=_jQuery;
+		}
+		return jQuery;
+	}
+});
+
+对象扩展
+//最简单的实现方式
+function extend(destination,source)
+{
+	for(var property in source)
+	{
+		destination[property]=source[property];
+	}
+	return destination;
+}
+//但是这样做在旧版本的IE有个问题，它认为像Object这样的原型方法就是不应该被遍历出来，因此for in循环无法遍历名为valueOf、toString的属性名。这导致后来人们模拟Object.keys方法实现时也遇到了这个问题。
+Object.keys=Object.keys||function(obj){
+	var a=[];
+	for(a[a.length] in obj);
+	return a;
+};
+
+不同的框架这个方法有不同的实现 a下面是mass framework的mix方法
+function mix(target,source)//最后一个参数是布尔类型时判断是否覆盖同名属性
+{
+	var args=[].slice.call(arguments),
+	    i=1,
+	    key,
+	    ride=typeof args[args.length-1]=="boolean"?args.pop():true;
+	if(args.length===1){
+		target=!this.window?this:{};//处理$.mix(hash)的情况
+		i=0;
+	}
+	while(source=args[i++]){
+		for(key in source){
+			if(ride||!(key in target)){
+				target[key]=source[key];
+			}
+		}
+	}
+	return target;
+}
+
+jQuery中的makeArray方法
+var makeArray=function(array){
+	var ret=[];
+	if(array!=null){
+		var i=array.length;
+		//window对象 字符串 函数都有length属性
+		//最后一个判断是为解决Safari 2的一个bug
+		//i==null排除了undefined和null两种情况
+		if(i==null||typeof array==="string"||jQuery.isFunction(array)||array.setInterval){
+			ret[0]=array;
+		}
+		else
+		{
+			while(i){
+				ret[--i]=array[i];
+			}
+		}
+	}
+	return ret;
+};
+
+
+
+
+
+
+

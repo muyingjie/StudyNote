@@ -1,0 +1,64 @@
+XML语法
+<?xml version="1.0" ?> version属性必须写上，按照1.0版本标准来解析该文档
+
+如果写了下面一个XML文件
+<?xml version="1.0" ?>
+<中国></中国>
+
+在中文的windows版本下，按下Ctrl+S保存的时候，编码是GBK GBK里面2个字节表示一个字符 UTF-8里面3个字节表示一个字符
+如果我们为这个XML文件指定了编码的话(即给xml标签加了encoding这个属性的话)，在用浏览器打开文件的时候就会按照指定编码去解析该文档，但如果没有指定的话会用iso8859-1编码打开，此时就会产生乱码，但是浏览器并没有为我们展示乱码，而是在控制台给了警告，如果希望在标签中输入中文，还希望能正常打开它，那么我们可以给它的encoding属性赋值为gbk，这样一来，保存文件的时候用的gbk编码，浏览器解析的时候也告诉它用gbk解析，乱码问题就得以解决
+但是，在日常开发中用的最多的是UTF-8编码，所以encoding这个属性通常会写成utf-8，这时文件存储是用gbk，浏览器解析用utf-8，就会出现乱码
+
+standalone属性用来指明当前html是否是一个独立的html 默认是yes，表明当前文档不需要依赖于其他文档
+
+xml标签区分大小写 不能以数字标点下划线开头 不能以xml开头 不能包含空格 名字中间不能有冒号
+
+xml注释不能写在开头
+
+xml的CDATA区里面用来放需要转义的内容<![CDATA[xxxxx]]> xxxx为需要转义的内容，例如<![CDATA[<name>]]>
+
+xml里面还可以包含处理指令PI processing instruction 处理指令可以指挥解析引擎如何解析xml文档 用的很少
+<?xml-stylesheet type="text/css" href="1.css" ?>
+
+xml约束
+在xml技术里，可以编写一个文档来约束一个xml文件的写法，这称之为xml约束
+常见的XML约束技术有DTD Schema
+
+DTD：
+<!DOCTYPE 书架 SYSTEM "book.dtd">
+文件清单 book.dtd
+<!ELEMENT 书架(书+)>		书架标签下可以放一个或多个书标签
+<!ELEMENT 书(书名,作者,售价)>	书标签下只能放书名 作者 售价标签，而且必须按照这个顺序来
+<!ELEMENT 书名(#PCDATA)>	书名标签里面可以包含标签体
+<!ELEMENT 作者(#PCDATA)>	作者标签里面可以包含标签体
+<!ELEMENT 售价(#PCDATA)>	售价标签里面可以包含标签体
+
+浏览器里面默认是没办法做校验的，需要借助js脚本来实现
+var xmldoc=new ActiveXObject("Microsoft.XMLDOM");//IE内置解析器对象
+xmldoc.validateOnParse=true;//将xml解析器的dtd校验打开
+xmldoc.load("book.xml");//载入需要校验的文档
+var lin=xmldoc.parseError.line;//错误行号
+var reason=xmldoc.parseError.reason;//错误原因
+
+DTD文档必须是UTF-8编码
+
+xml引入dtd的方法
+1、外部引入
+	可以将dtd的约束内容写在外置的dtd文件种，这个文件后缀必须为.dtd，文件保存时必须用UTF-8编码
+	再在xml中使用<!DOCTYPE 根元素名称 SYSTEM/PUBLIC 文件的位置 />
+	如果写的是SYSTEM表明当前引入的dtd在当前文件系统中，后面写的文件的位置指的是当前硬盘中的位置
+	如果写的是PUBLIC表明当前引入的dtd在网络公共位置中，后面要指明dtd的名字和所在网络的URL地址
+2、内部引入
+	直接在xml中写dtd
+	<!DOCTYPE 根元素名称[
+		dtd约束...
+	]>
+
+解压完成tomcat之后需要配置环境变量，告诉tomcat jdk的路径
+
+
+
+
+
+
+

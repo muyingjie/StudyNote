@@ -1,0 +1,105 @@
+引例：
+方法1：
+function startAnimation(){
+
+}
+
+
+function stopAnimation(){
+
+}
+方法2：
+var Anim=function(){
+
+};
+Anim.prototype.start=function(){};
+Anim.prototype.stop=function(){};
+
+var myAnim=new Anim();
+myAnim.start();
+myAnim.stop();
+方法3：
+var Anim=function(){
+
+};
+Anim.prototype={
+	start:function(){
+		
+	},
+	stop:function(){
+		
+	},
+};
+方法4：
+Function.prototype.method=function(name,fn){
+	this.prototype[name]=fn;
+};
+var Anim=function(){
+
+};
+Anim.method("start",function(){
+
+});
+
+Anim.method("stop",function(){
+
+});
+方法5：
+Function.prototype.method=function(name,fn){
+	this.prototype[name]=fn;
+	return this;
+};
+var Anim=function(){
+	
+};
+Anim.method("start",function(){
+	
+}).method("stop",function(){
+	
+});
+
+第二章 接口
+
+第四章 继承
+extend函数
+function extend(subClass,superClass){
+	var F=function(){};
+	F.prototype=superClass.prototype;
+	subClass.prototype=new F();
+	subClass.prototype.constructor=subClass;
+}
+
+function Person(){
+	this.name=name;
+}
+
+Person.prototype.getName=function(){
+	return this.name;
+};
+
+function Author(name,books){
+	Person.call(this,name);
+	this.books=books;
+}
+
+extend(Author,Person);
+
+Author.prototype.getBooks=function(){
+	return this.books;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

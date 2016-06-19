@@ -1,0 +1,114 @@
+人机交互的三种方式
+图形交互界面
+命令行交互界面
+自然交互界面：也就是触控、声控、手势识别的界面，例如iPhone的siri
+
+所有的图形化操作都可以转换为命令行指令，但是命令行指令不一定都能转换成图形指令，例如windows系统里面的ipconfig
+
+CPU主要解决计算和控制的问题，所谓控制就是调度或指挥显卡、声卡、内存、硬盘等等去做事
+
+宽带厂商所说的1M带宽实际上是1MB bit，而不是1MB Byte，所以我们平常听到的10M带宽下载速度最多也就是10/8=1.25MB/S了
+同样，硬盘的厂商所说的500G硬盘，不是按照1024进制来算的，而是按照1000来计算的，因此500G的硬盘就只有500*1000*1000/1024/1024=476.837G
+
+指令是对计算机进行程序控制的最小单位
+所有的指令的集合成为计算机的指令系统，电脑是X86，手机是ARM
+每个机器指令分为操作码和操作数两部分，操作码告诉机器执行什么操作，操作数告诉计算机执行的对象
+程序是为了完成一项特定任务而用某种语言编写的一组指令序列
+
+对计算机的任何操作都依赖于CPU
+
+汇编语言和机器语言的速度基本一致，对于时间控制非常严格的场合需要汇编
+
+#include<stdlib.h>
+void main(){
+	system("echo hello");//system函数就是调用系统的shell脚本
+}
+
+Linux下main函数返回值类型强制为int
+
+//C编辑器会自动查找外部库
+//C++编辑器不会自动查找，必须#include
+但是作为标准的程序，还是要通过#include引入
+
+#include等价于将文件拷贝过来，当做文本文件解析
+#include<stdio> 尖括号会查找系统目录
+#include"stdio" 双引号会先在当前目录下查找，再去系统目录下查找
+因此<>可以用""代替，但是""不可以用<>代替
+#include语句不需要分号
+
+当前解决方案下，源文件不可以重名
+
+void main(void) 代表参数为空
+
+main函数可以有返回值，也可以没有返回值
+C语言编译环境下普通的函数如果没有返回值编译时会有警告，而C++编译环境直接报错
+C语言的编译比较松散，很容易出错，例如普通函数如果没有返回值的话调用时接收到的就是一个垃圾值
+C++的编译严格一些，但是保证了结果的正确性
+
+printf("%p",&num);//查看内存地址
+
+函数名不是关键字
+
+#define _CRT_SECURE_NO_WARNING //关闭系统的安全检查
+#include<stdio.h>
+#include<stdlib.h>
+int main(){
+	char str[100]={0};
+	scanf("%s",str);//注意字符串不需要加&符号
+	printf("your input is %s"str);
+	system(str);
+}
+
+#include<stdlib.h>
+#include<Windows.h>//Sleep函数在Windows库里面
+int main(){
+	system("notepad");
+	Sleep(5);
+	system("taskkill /f /m notepad.exe");
+}
+运行这个程序过5s之后并没有
+
+system指令的特点是后面的语句必须要等待当前的程序退出才往后执行，如果我们将代码改为system("start notepad");那么就可以不等待当前notepad退出往后执行
+
+像include和define这种通过#定义或引入的是不需要加分号结尾的
+
+#include<stdlib.h>
+#include<windows.h>
+#include<stdio.h>
+#define _CRT_SECURE_NO_WARNING
+//注意这里用一个start再跟上一个路径希望open函数能够异步执行，这种做法是不可以的，start后面不能跟路径，这时可以借用ShellExecute函数
+//void open(){
+//	system("start \"D:\\Program Files (x86)\\Tencent\\QQ\\QQProtect\\Bin\\QQProtect.exe\"");
+//	//注意这里的路径一定要将引号一起复制过来，并且加上\转义
+//}
+void openqq(){
+	ShellExecuteA(0,"open","\"D:\\Program Files (x86)\\Tencent\\QQ\\QQProtect\\Bin\\QQProtect.exe\"",0,0,0);
+	//第一个参数0代表由系统打开QQ
+	//最后一个参数0代表隐藏的打开QQ，写成1代表正常打开QQ，3代表最大化打开，6代表最小化打开
+}
+void close(){
+	system("taskkill /f /im QQ.exe");
+}
+void times(){
+	int num=0;
+	scanf(%d,&num);
+	while(i<num){
+		sleep(1000);
+		i++;
+	}
+}
+int main(){
+	openqq();
+	//open();
+	times();
+	close();
+}
+
+
+
+
+
+
+1.8已完
+缺24 32 35 36
+300972799

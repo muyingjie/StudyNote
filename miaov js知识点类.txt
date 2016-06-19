@@ -1,0 +1,384 @@
+DOM	用来操作XML和HTML文档的应用程序
+
+DOM与js
+浏览器会把dom与js独立实现---像两个独立的小岛
+
+js操作dom就好比从一个岛到另一个岛，这样一来一回就容易引起性能问题
+
+var oDiv=document.getElementById('div1');
+console.time('hello');
+for(var i=0;i<5000;i++)
+{
+	oDiv.innerHTML+='a';
+}
+console.timeEnd('hello');
+
+----------------------------------------
+
+var str='';
+console.time('hello');
+for(var i=0;i<5000;i++)
+{
+	str+='a';
+}
+oDiv.innerHTML=str;
+console.timeEnd('hello');
+
+--------------------------------------------
+
+innerHTML和dom的方法对比
+<ul id='ul1'>
+
+</ul>
+
+
+var oUl=document.getElementById('ul1');
+
+console.time('hello');
+for(var i=0;i<5000;i++)
+{
+	var oLi=document.createElement('li');
+	oUl.appendChild(oLi);
+}
+console.timeEnd('hello');
+
+
+var str='';
+console.time('hello');
+for(var i=0;i<5000;i++)
+{
+	str='<li></li>';
+}
+oUl.innerHTML=str;
+console.timeEnd('hello');
+
+
+//对于webkit内核浏览器:dom方法要比innerHTML性能好 前者11ms 后者33ms左右
+//对于moz内核浏览器:正好相反 350ms 290ms
+
+--------------------------------------------------------
+结点的复制
+//创建元素的方法
+console.time('hello');
+for(var i=0;i<5000;i++)
+{
+	var oLi=document.createElement('li');
+	oLi.innerHTML='li';
+	oUl.appendChild(oLi);
+}
+console.timeEnd('hello');
+//440ms左右
+
+//cloneNode方法性能略好
+console.time('hello');
+var oLi=document.createElement('li');
+oLi.innerHTML='li';
+for(var i=0;i<5000;i++)
+{
+	var newLi=oLi.cloneNode(true);
+	oUl.appendChild(oLi);
+}
+console.timeEnd('hello');
+
+------------------------------------------------------------
+//访问元素集合
+for(var i=0;i<5000;i++)
+{
+	var oLi=document.createElement('li');
+	oUl.appendChild(oLi);
+}
+console.time('hello');
+for(var i=0;i<aLi.length;i++)//这里的aLi.length会损耗性能
+{
+	aLi[i].innerHTML='li';
+}
+console.timeEnd('hello');
+
+//用局部变量
+
+console.time('hello');
+var len=aLi.length;
+for(var i=0;i<len;i++)//这里的aLi.length会损耗性能，但是快的不多
+{
+	aLi[i].innerHTML='li';
+}
+console.timeEnd('hello');
+
+-------------------------------------------------
+元素结点
+
+用children而不用childNodes，前者更高
+
+同理firstElementChild比firstChild性能高
+
+
+
+var aLi=document.querySelectorAll('#ul1 li');//IE9+ 可以考虑移动端使用
+
+
+-------------------------------------
+dom改变页面中元素的位置，形状
+
+例如：重排 重绘
+
+添加顺序：尽量在appendChild前添加操作
+合并dom操作：利用cssText
+缓存布局信息
+文档碎片 createDocumentFragment();
+
+console
+for(var i=0;i<5000;i++)
+{
+	var oLi=document.createElement('li');
+	oUl.appendChild(oLi);
+	oLi.innerHTML='li';
+}
+console
+
+750ms左右
+
+console
+for(var i=0;i<5000;i++)
+{
+	var oLi=document.createElement('li');
+	oLi.innerHTML='li';
+	oUl.appendChild(oLi);
+}
+console
+
+440ms左右
+
+-----------
+console
+for(var i=0;i<5000;i++)
+{
+	var oLi=document.createElement('li');
+	oLi.style.width='100px';
+	oLi.style.height='100px';
+	oLi.background='red';
+	oUl.appendChild(oLi);
+}
+console
+530ms
+
+
+
+console
+for(var i=0;i<5000;i++)
+{
+	var oLi=document.createElement('li');
+	oLi.style.cssText='width:100px; height:100px;';
+	oUl.appendChild(oLi);
+}
+console
+
+490ms
+
+-----------------
+setInterval(function(){
+	oDiv.style.left=oDiv.offsetLeft+1+'px';
+	oDiv.style.top=oDIv.offsetTop+1+'px';
+},30);
+
+
+通过变量保存
+
+var l=oDiv.offsetLeft;
+
+setInterval(function(){
+	l++;
+
+	oDiv.style.left=l+'px';
+},30);
+这样性能好一点
+
+
+------------------
+
+console
+for(var i=0;i<5000;i++)
+{
+	//5000次重排
+	var oLi=document.createElement('li');
+	oUl.appendChild(oLi);
+}
+console
+
+360ms左右
+
+var oFrag=document.createDocumentFragment();
+console
+for(var i=0;i<5000;i++)
+{
+	//5000次重排
+	var oLi=document.createElement('li');
+	oFrag.appendChild(oLi);
+}
+oUl.appendChild(oFrag);
+console
+300左右
+
+---------------------------------
+dom与事件
+事件委托
+
+-----------------------
+dom与前端模板
+能更好的对逻辑和视图分离，MVC架构的基础
+
+jQuery tmpl()这个API
+
+
+-----------------------------------
+快排
+
+
+12 5 37 6 22 40
+以37为基准点，小于37的放在左边，大于37的放在右边
+
+
+//1、找基准点
+//2、建立两个数组，分别存储左边和右边的数组
+//3、利用递归进行下次比较
+
+function quickSort(arr)
+{
+	if(arr.length<=1)
+	{
+		return arr;
+	}
+
+	var num=Math.floor(arr.length/2);
+
+	var numValue=arr.splice(num,1);//得到6
+
+	var left=[];
+	var right=[];
+
+	for(var i=0;i<arr.length;i++)
+	{
+		if(arr[i]<numValue)
+		{
+			left.push(arr[i]);
+		}
+		else
+		{
+			right.push(arr[i]);
+		}
+	}
+
+	return quickSort(left).concat([numValue],quickSort(right));
+}
+
+quickSort([12,5,37,6,22,40]);
+
+
+-----------------------------------------------------
+函数声明:function 函数名(){};
+
+函数表达式:function 函数名(可写可不写)(){}:命名/匿名函数表达式
+
+那么判断是函数声明还是函数表达式就看函数的上下文
+
+function aaa(){}//函数声明
+
+var a=function aaa(){}:命名函数表达式
+var a=function(){}:匿名函数表达式
+
+(function aaa(){}):表达式
+~function aaa(){}
+-function aaa(){}
++function aaa(){}
+!function aaa(){}
+
+二者区别
+1、函数表达式可以直接后面加括号执行，而函数声明是不可以的
+2、函数声明可以被提前解析出来的，即参与预解析
+
+
+function aaa(){alert(1);}();//报语法错误
+
+var a=function aaa(){alert(1);}();//会弹出1
+
+~function aaa(){alert(1);}();
+
+if(true)
+{
+	function aaa()
+	{
+		alert(1);
+	}
+}
+else
+{
+	function aaa()
+	{
+		alert(2);
+	}
+}
+
+aaa();//火狐下有bug，在火狐下这种写法没有参与预解析，但在IE下由于预解析，后面的aaa函数会覆盖前面的aaa函数，所以最后弹出2；
+
+//改成函数表达式
+if(true)
+{
+	var a=function aaa(){
+		alert(1);
+	};
+}
+else
+{
+	var a=function aaa(){
+		alert(2);
+	};
+}
+
+a();
+就不会出现上述问题，即在任何浏览器下执行都是弹出2
+
+程序如果写成这样：
+if(true)
+{
+	var a=function aaa(){
+		alert(1);
+	};
+}
+else
+{
+	var a=function aaa(){
+		alert(2);
+	};
+}
+
+aaa();//IE下还可以弹出值来，但是火狐下就会报错，aaa is not defined
+IE的解析式有问题的，IE8以下的浏览器会解析成a和aaa两个函数，在其他浏览器中直解析成一个a函数
+
+但是在函数内部是可以访问到的，例如
+
+var a=function aaa(){
+	alert(1);
+	alert(typeof aaa);
+};
+
+a();//得到1,function
+
+综上所述，命名函数表达式，不推荐使用
+
+面试题
+(function aaa(){alert});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

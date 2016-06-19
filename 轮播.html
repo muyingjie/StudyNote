@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>move</title>
+	<style>
+		*{ margin: 0; padding: 0; list-style: none; text-decoration: none; }
+		.clear:after{ clear: both; display: block; content: ""; }
+
+		.outwrap{ margin: 100px; }
+		.wrap{ width: 400px; height: 150px; border: 1px solid #000; position: relative; overflow: hidden; }
+		.list{ position: absolute; left: 0; }
+		.list li{ width: 400px; height: 150px; float: left; position: relative; left: 0; }
+
+		.btn{ margin-top: 20px; }
+		.btn li{ float: left; }
+		.btn li a{ display: block; width: 20px; height: 20px; background: #ccc; margin: 10px; }
+	</style>
+	<script>
+		window.onload=function(){
+			var oWrap=document.querySelectorAll(".wrap")[0];
+			var oList=document.querySelectorAll(".wrap .list")[0];
+			var aList=document.querySelectorAll(".wrap .list li");
+			var aBtn=document.querySelectorAll(".btn li a");
+
+			var cur=0;
+
+			var zIndex=2;
+
+			oList.style.width=aList[0].offsetWidth*aList.length+"px";
+
+			for(var i=0;i<aBtn.length;i++){
+				(function(i){
+					aBtn[i].onclick=function(){
+						if(i>cur){
+							//往后走
+							//点击哪一个就让aList里面哪一个放到后面(relative定位的方式)
+							aList[i].style.left=-(i-cur-1)*400+"px";
+							//让当前运动的li层级提升
+							aList[i].style.zIndex=zIndex++;
+							//运动，完成之后需要做样式调整
+							move(oList,-(cur+1)*400,function(){
+								aList[i].style.left=0;
+								oList.style.left=-i*400+"px";
+								//改变cur的值
+								cur=i;
+							});
+						}else if(i<cur){
+							//往前走
+							aList[i].style.left=(cur-i-1)*400+"px";
+							aList[i].style.zIndex=zIndex++;
+							move(oList,-(cur-1)*400,function(){
+								aList[i].style.left=0;
+								oList.style.left=-i*400+"px";
+								cur=i;
+							});
+						}else{
+							return;
+						}
+					};
+				})(i);				
+			}
+
+			function move(obj,target,fn){
+				clearInterval(obj.timer);
+				var speed;
+				if(obj.offsetLeft>target){
+					speed=-20;
+				}else{
+					speed=20;
+				}
+				obj.timer=setInterval(function(){
+					obj.style.left=obj.offsetLeft+speed+"px";
+					if(obj.offsetLeft==target){
+						clearInterval(obj.timer);
+						fn&&fn();
+					}
+				},30);
+			}
+		};
+	</script>
+</head>
+<body>
+	<div class="outwrap">
+		<div class="wrap">
+			<ul class="list clear">
+				<li style="background: #f00;">1</li>
+				<li style="background: #0f0;">2</li>
+				<li style="background: #00f;">3</li>
+				<li style="background: #ff0;">4</li>
+				<li style="background: #f0f;">5</li>
+			</ul>
+		</div>
+		<ul class="btn clear">
+			<li><a href="javascript:;">1</a></li>
+			<li><a href="javascript:;">2</a></li>
+			<li><a href="javascript:;">3</a></li>
+			<li><a href="javascript:;">4</a></li>
+			<li><a href="javascript:;">5</a></li>
+		</ul>
+	</div>	
+</body>
+</html>

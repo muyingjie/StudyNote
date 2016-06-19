@@ -1,0 +1,88 @@
+www.timexz.com
+
+PHP:Hypertext Preprocessor 超文本预处理器
+PHP是嵌入式脚本语言
+
+httpd d代表deamon，意思是后台运行的程序
+
+x86 代表适合32位操作系统
+No_ssl 不支持https
+msi 是Windows下的一种可执行文件
+
+www.baidu.com是二级域名
+baidu.com是一级域名
+baidu是域名，.com代表属于com组织的
+
+Network Domain 域名
+Server Name 服务器名
+
+服务器：安装了特定服务器软件的计算机称为服务器
+
+php-5.3.28-win32-vc9-x86.zip
+win32 windows平台
+vc9 使用visual studio 2008编译的
+
+可以编写定时运行的php程序，在Linux下加入到crontab，在Windows下加入到计划任务
+
+整合Apache和PHP
+1、将PHP加入到Apache的模块中
+LoadModule 模块名 模块文件名
+
+在php压缩包中有php5apache2_2.dll和php5apache2_4，2_2代表Apache2.2，2_4代表Apache2_4
+
+dll是动态链接库文件
+
+2、告诉Apache何时调用PHP预处理器
+我们使用一个标签
+<FilesMatch 匹配文件后缀>
+	SetHandler PHP的模块句柄
+</FilesMatch>
+
+如果在一个php文件中调用系统函数phpinfo得到php的相关配置信息，里面显示
+Configuration File(php.ini) Path为C:/Windows 这个不用管，这个是php建议放在C:/Windows下，但是我们不这样做
+Loaded Configuration File为none 这个是需要重点关注的
+
+PHPIniDir "D:/wamp/php/php.ini"
+
+手动解决时区错误
+Warning: phpinfo() [function.phpinfo]: It is not safe to rely on the system's timezone settings.
+
+date.timezone = Asia/Shanghai
+
+修改php配置文件也需要重启Apache
+
+浏览器里面直接输入localhost域名，会默认访问index.html，当自己配置虚拟主机时需要进行如下配置
+<Directory "D:/wamp/apache/htdocs">
+    Options Indexes FollowSymLinks
+    AllowOverride None
+    Order allow,deny
+    Allow from all
+	
+	DirectoryIndex index.html  //在这里设置一个页面
+</Directory>
+
+分布式配置文件
+分布在站点目录中的配置文件：.htaccess文件
+分布式配置文件可以设置Apache及虚拟主机的一些参数，而且分布式配置文件等级最高，可以覆盖主配置文件的配置
+
+可以通过新建一个文件保存成.htaccess文件来创建以点开头的文件
+此时要注意将Directory里面的AllowOverride设置为All
+
+
+在分布式配置文件中修改PHP的配置参数
+有两个选项可以修改PHP的配置
+PHP flag开关类型配置选项 on|off|1|0
+PHP value字符串类型的配置选项
+
+php_flag session.auto_start on
+php_value include_path "f:/php0421/shop"
+
+纯php文件一定要将最后的结束标识省略
+
+
+
+
+
+
+
+

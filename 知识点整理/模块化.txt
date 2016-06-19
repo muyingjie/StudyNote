@@ -1,0 +1,7 @@
+file:///E本地环境
+
+服务器环境
+
+集成环境
+1、Wamp	需要手动开启
+2、Appserv	用户名 密码 admin admin

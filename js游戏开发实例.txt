@@ -1,0 +1,145 @@
+小蜜蜂游戏
+
+用单体模式写
+
+游戏中需要实现的功能和解决办法
+
+元素生成(createElement)
+敌人的移动(定时器)
+碰撞检测
+敌人跟随玩家(运动算法)
+关卡设计(实现多关的操作)
+其他(积分、血量等)
+
+#bee{ position:relative;}
+.enemy1{ width:40px; height:28px; background:url(images/mf1.png) no-repeat; float:left;}
+.enemy1{ width:40px; height:28px; background:url(images/mf2.png) no-repeat; float:left;}
+.enemy1{ width:40px; height:28px; background:url(images/mf3.png) no-repeat; float:left;}
+
+.air{ position:absolute;}
+.bullet{ position:absolute;}
+
+window.onload=function(){
+	var oBtn=document.getElementById('btn');
+
+	oBtn.onclick=function(){
+		this.style.display='none';
+		Game.init('div1');		//游戏开始
+	};
+};
+
+var Game={
+	oEnemy:{//敌人的样式
+		e1:{
+			style:'enemy1',
+			blood:1,
+			speed:5,
+			score:1
+		}
+		e2:{
+			style:'enemy1',
+			blood:1,
+			speed:5,
+			score:1
+		}
+		e3:{
+			style:'enemy1',
+			blood:1,
+			speed:5,
+			score:1
+		}
+	},
+	gk:[//关卡数组
+		{
+			eMap:[
+				'e1','e1','e1','e1','e1','e1','e1','e1','e1','e1',
+				'e1','e1','e1','e1','e1','e1','e1','e1','e1','e1',
+				'e1','e1','e1','e1','e1','e1','e1','e1','e1','e1',
+				'e1','e1','e1','e1','e1','e1','e1','e1','e1','e1',
+				'e1','e1','e1','e1','e1','e1','e1','e1','e1','e1',
+				'e1','e1','e1','e1','e1','e1','e1','e1','e1','e1',
+			],
+			colNum:10,
+			iSpeedX:10,
+			iSpeedY:10,
+			time:2000
+		},
+		{
+			eMap:[
+				'e1','e1','e1','e1','e1','e1','e1','e1','e1','e1',
+				'e1','e1','e1','e1','e1','e1','e1','e1','e1','e1',
+				'e1','e1','e1','e1','e1','e1','e1','e1','e1','e1',
+				'e1','e1','e1','e1','e1','e1','e1','e1','e1','e1',
+				'e1','e1','e1','e1','e1','e1','e1','e1','e1','e1',
+				'e1','e1','e1','e1','e1','e1','e1','e1','e1','e1',
+			],
+			colNum:10,
+			iSpeedX:10,
+			iSpeedY:10,
+			time:2000
+		}
+	],
+	init:function(id){	//初始化
+		this.oParent=document.getElementById(id);
+		this.createScore();
+		this.createEnemy();
+	},
+	createScore:function(){
+		var oS=document.createElement('div');
+		oS.id='score';
+		oS.innerHTML='积分:<span>0</span>';
+		this.oParent.appendChild(oS);
+
+		this.oSNum=oS.getElementsByTagName('span')[0];
+	},
+	createEnemy:function(iNow){//敌人的创建，iNow代表关数
+		var gk=this.gk[iNow],
+		var oUl=document.createElement('ul');
+		oUl.id='bee';
+		oUl.style.width=gk.colNum*40+'px';
+		this.oParent.appendChild(oUl);
+		oUl.style.left=(this.oParent.offsetWidth-oUl.offsetWidth)/2+'px';
+		this.oUl=oUl;
+		for(var i=0;i<gk.eMap.length;i++)
+		{
+			var oLi=document.createElement('li');
+			oLi.className=this.oEnemy[gk.eMap[i]].style;
+			oLi.blood=this.oEnemy[gk.eMap[i]].blood;
+			oLi.speed=this.oEnemy[gk.eMap[i]].speed;
+			oLi.score=this.oEnemy[gk.eMap[i]].score;
+			oUl.appendChild(oLi);
+		}
+		this.runEnemy(gk);
+	},
+	runEnemy:function(gk){//整体移动敌人
+		var _this=this;
+		var l=0;
+		var r=this.oParent.offsetWidth-this.oUl.offsetWidth;
+		setInterval(function(){
+			if(_this.oUl.offsetLeft>r)
+			{
+				gk.iSpeed*=-1;
+				_this.oUl.style.top=_this.oUl.offsetTop+gk.iSpeedY+'px';
+			}
+			else if(_this.oUl.offsetLeft<l)
+			{
+				gk.iSpeed*=-1;
+				_this.oUl.style.top=_this.oUl.offsetTop+gk.iSpeedY+'px';
+			}
+			_this.oUl.style.left=_this.oUl.offsetLeft+gk.iSpeedX+'px';
+		},200);
+	},
+};
+
+
+
+
+
+
+
+
+
+
+
+
+

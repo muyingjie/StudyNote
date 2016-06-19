@@ -1,0 +1,149 @@
+高效的StringBuilder
+StringBuilder sb=new StringBuilder();
+sb.Append("zs");
+sb.Append("ls");
+sb.Append("ww");
+sb.Insert(1,123);//得到z123slsww
+sb.Replace('ls','ysw');//z123syswww
+
+
+StringBuilder拼html表格
+StringBuilder sb=new StringBuilder();
+sb.Append("<html>");
+...
+webBrowser1.DocumentText=sb.ToString();
+
+//集合类
+4种集合 ArrayList HashTable List<T> Dictionary<TKey,TValue>
+
+
+ArrayList list=new ArrayList();
+list.Add();
+Hashtable ht=new Hashtable();
+ht.Add();
+
+List<int> list=new List<int>();
+list.Add(); AddRange Insert InsertRange Remove RemoveAt RemoveRange RemoveAll Contains
+
+
+Dictionary<int,string> dic=new Dictionary<int,string>();
+dic.Add(); ContainsKey
+
+foreach(KeyValuePair<int,string> kv in dic)
+{
+	Console.WriteLine("{0}--{1}",kv.Key,kv.Value);
+}
+
+//{1,2,3,4,5} 分拣奇偶，奇数在左，偶数在右
+int[] nums={1,2,3,4,5};
+List<int> listJi=new List<int>();
+List<int> listOu=new List<int>();
+
+for(int i=0;i<nums.Length;i++)
+{
+	if(nums[i]%2)
+	{
+		listJi.Add(nums[1]);
+	}
+	else
+	{
+		listOu.Add(nums[i]);
+	}
+}
+listJi.AddRange(listOu);
+foreach(var i in listJi)
+{
+	Console.WriteLine(i);
+}
+
+//找到集合中的最大值
+List<int> list=new List<int>(){1,2,3,4,5};//集合初始化器
+int max=list[0];
+for(int i=0;i<list.Length;i++)
+{
+	if(list[i]>max)
+	{
+		max=list[i];
+	}
+}
+
+
+初始化对象的时候也可以这样
+Person p=new Person(){Name="zhangsan",Age=13,Gender='男'};//集合初始化器，这样的话就不用写构造函数了，但是并不推荐这样写
+
+Person p=new Person("lisi",15,'女'){Name="zhangsan",Age=13,Gender='男'};
+//按照后面的走
+
+/// 123 转换为 一二三
+string str="1一 2二 3三";
+//小写作为键，大写作为值
+Dictionary<char,char> dic=Dictionary<char,char>();
+string[] strNew=str.Split(new char[]{' '},StringSplitOptions.RemoveEmpties);
+
+for(int i=0;i<strNew.Length;i++)
+{
+	dic.Add(strNew[i][0],strNew[i][1]);
+}
+
+Console.WriteLine("输入阿拉伯数字");
+string input=Console.ReadLine();
+for(int i=0;i<input.Length;i++)
+{
+	if(dic.ContainsKey(input[i]))
+	{
+		Console.Write(dic[input[i]]);
+	}
+	else
+	{
+		Console.Write(input[i]);
+	}
+}
+
+统计每个字符出现的次数
+Dictionary<char,int> dic=new Dictionary<char,int>();
+string str="Welcome to Beijing";
+
+for(int i=0;i<str.Length;i++)
+{
+	if(dic.ContainsKey(str[i]))
+	{
+		dic[str[i]]++;
+	}
+	else
+	{
+		dic[str[i]]=1;
+	}
+}
+
+foreach(KeyValuePair<char,int> kv in dic)
+{
+	Console.WriteLine("{0}出现了{1}次",kv.Key,kv.Value);
+}
+
+
+静态方法中，可以访问静态成员
+实例方法中，可以访问静态成员和非静态成员
+
+
+public class Person
+{
+
+}
+
+静态类中不允许有访问修饰符
+静态类中不允许有实例构造函数，换言之，构造函数前必须加static
+
+//结合以上两点在以下静态类中，构造函数只能写成这样
+public static class Student//静态类中只能有静态成员
+{
+	static Student();//调用静态类之前就已经初始化了，并且静态类的构造函数只初始化一次
+}
+
+string path=@"C:\a.txt"
+Console.WriteLine(Path.ChangeExtension(path,"jpg"));
+
+
+
+
+
+

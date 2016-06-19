@@ -1,0 +1,278 @@
+矩形的绘制
+fillRect();
+strokeRect();
+
+设置样式
+fillStyle();
+strokeStyle();
+lineWidth
+
+通常这样写：
+oCxt.fillRect(50.5,50.5,100,100);
+
+
+
+oCxt.fillRect(50,50,100,100);
+oCxt.strokeRect(50.5,50.5,100,100);
+
+这两条语句写的顺序不一样，出来的效果也不一样，覆盖顺序不同
+
+
+边界绘制
+lineJoin:round bevel(斜角)
+lineCap:butt(默认) round(圆角) square(高度多出宽度一半的值，没用)
+
+绘制路径
+beginPath
+closePath
+moveTo
+lineTo
+
+例如：
+oCxt.beginPath();
+oCxt.moveTo(100,100);
+oCxt.lineTo(200,200);
+oCxt.lineTo(200,300);
+oCxt.closePath();//自动闭合当前路径(moveTo和最后一个lineTo连起来)
+oCxt.stroke();//对于上面的一个绘制路径有效
+
+oCxt.beginPath();
+oCxt.moveTo(100,100);
+oCxt.lineTo(200,200);
+oCxt.lineTo(200,300);
+oCxt.closePath();//自动闭合当前路径(moveTo和最后一个lineTo连起来)
+oCxt.stroke();//对于上面的一个绘制路径有效
+
+绘制
+stroke()
+fill()
+rect()
+clearRect()
+save()
+restore()
+
+oCxt.clearRect(0,0,oCxt.width,oCxt.height);//画布清空
+
+
+
+
+oCxt.fillStyle='red';
+oCxt.beginPath();
+oCxt.moveTo(100,100);
+oCxt.lineTo(200,200);
+oCxt.lineTo(200,300);
+oCxt.closePath();//自动闭合当前路径(moveTo和最后一个lineTo连起来)
+oCxt.fill();//对于上面的一个绘制路径有效
+
+oCxt.beginPath();
+oCxt.moveTo(100,100);
+oCxt.lineTo(200,200);
+oCxt.lineTo(200,300);
+oCxt.closePath();//自动闭合当前路径(moveTo和最后一个lineTo连起来)
+oCxt.fill();//对于上面的一个绘制路径有效
+
+
+这样一来，两个三角形都会填充红色，如果只想让第一个填充，就要用到save
+
+oCxt.save();
+oCxt.fillStyle='red';
+oCxt.beginPath();
+oCxt.moveTo(100,100);
+oCxt.lineTo(200,200);
+oCxt.lineTo(200,300);
+oCxt.closePath();//自动闭合当前路径(moveTo和最后一个lineTo连起来)
+oCxt.fill();//对于上面的一个绘制路径有效
+oCxt.restore();//恢复之后就不会影响到下面的
+
+oCxt.beginPath();
+oCxt.moveTo(100,100);
+oCxt.lineTo(200,200);
+oCxt.lineTo(200,300);
+oCxt.closePath();//自动闭合当前路径(moveTo和最后一个lineTo连起来)
+oCxt.fill();//对于上面的一个绘制路径有效
+
+
+canvas划线
+
+oCanvas.onmousedown=function(ev){
+	var oEvent=ev||event;
+	oCxt.moveTo(oEvent.clientX-oCanvas.offsetLeft,oEvent.clientY-oCanvas.offsetTop);
+	document.onmousemove=function(ev){
+		var oEvent=ev||event;
+		oCxt.lineTo(oEvent.clientX-oCanvas.offsetLeft,oEvent.clientY-oCanvas.offsetTop);
+		oCxt.stroke();
+	};
+	document.onmouseup=document.onmousemove=null;
+};
+
+方块移动
+
+var num=0;
+oCxt.fillRect(0,0,100,100);
+setInterval(function(){
+	num++;
+	oCxt.clearRect(0,0,oCanvas.width,oCanvas.height);
+	oCxt.fillRect(num,num,100,100);
+},100);
+
+第二课时
+
+用canvas画钟表
+
+quadraticCurveTo(x1,y1,x2,y2,);
+
+oCxt.moveTo(100,200);
+oCxt.quadraticCurveTo(100,100,200,100);
+oCxt.stroke();
+
+这样出来的效果相当于(100,100)这一点有一个力拉着(100,200)和(200,100)两个点连成的直线形成一条曲线
+
+oCxt.moveTo(100,200);
+oCxt.bezierCurveTo(100,100,200,200,200,100);
+oCxt.stroke();
+bezierCurveTo的六个参数分别为第一组控制点、第二组控制点、第三组结束点
+
+
+canvas变换
+
+translate
+rotate
+scale
+
+oCxt.translate(100,100);//相当于起始点坐标移动到了100,100
+
+oCxt.rotate(45*Math.PI/180);//相对于左上角顶点顺时针旋转45度
+
+oCxt.scale(2,2);
+oCxt.fillRect(0,0,100,100);//相对于画布来说是在100,100处画的
+
+绕中心旋转的正方形,并且不断放大缩小
+
+oCxt.translate(100,100);
+var value=1;
+var num=0;
+var num2=0;
+setInterval(function(){
+	num++;
+	oCxt.save();
+	oCxt.clearRect(0,0,oCanvas.width,oCanvas.height);
+	if(num2==100)
+	{
+		value=-1;
+	}
+	else if(num2==0)
+	{
+		value=1;
+	}
+
+	num2+=value;
+	oCxt.scale(num2*1/50,num2*1/50);
+	oCxt.rotate(num*Math.PI/180);
+	oCxt.translate(-50,-50);
+	oCxt.fillRect(0,0,100,100);
+	oCxt.restore();
+},30);
+
+
+Canvas中插入图片
+
+drawImage(oPixels,x,y,w,h);
+-----------
+var oPixels=new Image();
+
+oPixels.onload=function(){
+	draw(this);
+};
+oPixels.src='2.png';
+
+function draw(obj){
+	oCxt.drawImage(obj,0,0,100,100);
+}
+
+drawImage也可以这样用drawImage(obj,0,0,400,400);但是由于图片可能不一定是400*400的所以会导致图片失真
+
+微博图片旋转效果
+
+createPattern
+
+渐变
+//线性渐变
+createLinearGradient
+
+var obj=oCxt.createLinearGradient(150,100,150,200);//渐变起点和终点
+obj.addColorStop(0,'red');
+obj.addColorStop(1,'blue');
+
+oCxt.fillStyle=obj;
+
+oCxt.fillRect(150,100,100,100);
+
+//放射渐变
+createRadialGradient(x1,y1,r1,x2,y2,r2)
+
+//文本
+
+oCxt.font='60px impact';//第二个参数是文字样式，必须要写，该属性在canvas中可以选择的余地比较小，只有几个值
+oCxt.strokeText('文字',x,y);
+oCxt.fillText('文字',x,y);
+
+oCxt.textAlign水平对齐方式
+oCxt.textBaseline='top';
+
+oCxt.measureText(str).width//只有宽度，没有高度
+
+可以通过这个方法来做水平居中
+oCxt.font=''60px impact;
+oCxt.textBaseline='top';
+var w=oCxt.measureText(str).width;
+oCxt.fillText('妙味课堂',(oC.width-w)/2,(oC.height-60)/2);
+
+//阴影，颜色默认为黑色透明的
+oCxt.shadowOffsetX=10;
+oCxt.shadowOffsetY=10;
+oCxt.shadowBlur=3;
+oCxt.shadowColor='yellow';
+
+
+canvas中的像素操作
+oCxt.fillRect(0,0,100,100);
+var oPixels=oCxt.getImageData(0,0,100,100);//获得像素信息
+
+oPixels.width//所有像素一行的个数
+oPixels.height//所有像素一列的个数
+oPixels.data//整体像素的数组集合，长度为4W，注：像素数为1W，可以推测每四个值代表一个像素，而实际上也的确如此，四个值分别代表每个像素的r、g、b、a
+
+
+putImageData(获取图像,x,y);
+
+for(var i=0;i<oPixels.width*oPixels.height;i++)
+{
+	oPixels.data[4*i]=255;
+	oPixels.data[4*i+1]=0;
+	oPixels.data[4*i+2]=0;
+	oPixels.data[4*i+3]=100;
+}
+//这样将得到一个透明度为100的红色正方形
+putImageData(oPixels,100,100);
+
+createImageData(w,h);//生成新的像素矩阵
+
+aPixels=oCxt.createImageData(100,100);
+
+for(var i=0;i<oPixels.width*oPixels.height;i++)
+{
+	oPixels.data[4*i]=255;
+	oPixels.data[4*i+1]=0;
+	oPixels.data[4*i+2]=0;
+	oPixels.data[4*i+3]=100;
+}
+//这样将得到一个透明度为100的红色正方形
+putImageData(oPixels,100,100);
+
+
+//像素显字的效果
+
+
+
+
+

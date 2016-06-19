@@ -1,0 +1,630 @@
+每天一点语言特性
+--------------------------------------------------------------------------------------------------
+function show()
+{
+	var a=b=1;
+}
+b=12;
+alert(b);//得到1
+
+
+,
+
+数组中、json中、声明变量的时候、函数传参的时候
+
+
+逗号运算符
+
+var a=[1,2,3,4]*2;
+alert(a);//NaN
+
+alert(1,2,3);//alert是一个全局函数，这时进去的1,2,3相当于参数，而alert只接受第一个参数，所以得到1；
+
+--------------------------------------------------------------------------------------------------
+
+DOM
+
+---------------------------------------------------------------------------------------------------
+
+obj.tagName 查看标签名 标签名都是大写的
+
+
+obj.nextSibling
+
+var a=null||0;
+alert(a);//0
+
+
+
+var oNext=oLi.nextElementSibling||oLi.nextSibling;
+var oPre=oLi.previousElementSibling||oLi.previousSibling;
+
+
+getStyle(obj,'height') 可以获取display为none的元素的宽度，但是offsetHeight不可以
+
+
+window.open(地址，打开方式);
+打开的方式 _blank _self _blank用的更多
+
+body->document.body
+html->document.documentElement
+
+window.open()的返回值是新打开那个窗口的window
+
+
+document.write()禁止放在window.onload里面
+
+
+想要打开一个新页面的时候约定俗成的写成window.open('about:blank');
+
+
+在线运行代码不能用，修复--------作业
+
+获取当前地址
+window.location
+
+
+打开页面直接跳转
+1、通过meta
+2、js------window.location
+
+
+setTimeout(function(){
+	window.location='www.baidu.com';
+},2000);
+
+
+alert(typeof window.location);//object
+alert(typeof window.location.href);//string
+
+window.location.search 获取问号后面的数据
+
+window.location.hash 获取井号后面的数据
+
+body的offsetParent是null，所以根定位元素就是body
+
+
+
+document.createElement('div1');//可以创建自定义标签，但是并不推荐
+
+
+宽:document.documentElement.clientWidth
+高:document.documentElement.clientHeight//这两个一般情况下没有问题
+
+如果这两个有问题，可以用window.screen.width
+
+document.documentElement.scrollTop 兼容IE系列 FF
+document.body.scrollTop 兼容chrome
+
+document.documentElement.scrollTop||document.body.scrollTop//兼容的写法
+
+通过setAttribute设置的自定义属性如果用obj.aaa获取是错误的，  .  不能获取自定义属性，获取自定义属性一般用 obj.getAtribute('abc'); 设置 obj.setAttribute('index','1');
+
+用setAttribute设置的属性必须用getAttribute获取
+用.在js中设置的自定义属性不能用getAttribute获取
+
+obj.scrollHeight是获取内容高度，obj.offsetHeight是获取盒模型高度，而scrollHeight如果小于offsetHeight那值就是offsetHeight，超出了才是总高度
+
+
+2014年7月10日21:04:52 全局函数总结
+
+目前学过的全局函数
+alert()
+parseInt()
+parseFloat()
+eval()
+isNaN()
+
+-----------------------------------------------------------
+escape()
+isFinite()
+
+克隆节点(一般不用)
+要复制的obj.cloneNode(true);//里面加true可以克隆子元素，不写或者写成false只克隆一个空的obj，里面的东西没有克隆
+但是如果obj加了id属性，克隆出来的元素的id和obj一样，这样就不好了，可以克隆出来之后将id去掉
+
+innerHTML可以创建元素，但是会覆盖原来的事件，不建议使用
+
+img.onerror当图片加载失败的时候触发
+
+oEvent.cancelBubble=true;
+
+obj.blur()只是用来解决a标签的虚框问题，其他地方很少使用
+
+//主要记住图片的两个事件，onload和onerror
+var oImg=new Image();
+
+oImg.onload=function(){
+	alert('图片加载成功');	
+};
+
+oImg.onerror=function(){
+	alert('失败');
+};
+
+oImg.src='http://www.zhineng.com/images/logo.png';
+
+
+event兼容 chrome IE系
+ev兼容 chrome FF IE9+高级浏览器
+
+保留两位小数：
+n.toFixed(2)
+
+
+
+offsetHeight不包含margin
+
+
+关于在线运行代码的bug
+记住：在载入页面后，浏览器输出流自动关闭
+
+
+getAttribute通常用来获取自定义属性
+
+在js里面键码不能组合用
+
+oEvent.ctrlKey ctrl
+oEvent.shiftKey shift
+oEvent.altKey alt
+
+存为web格式 ctrl+shift+alt+s 就需要这样作判断：
+
+if(oEvent.ctrlKey&&oEvent.altKey&&oEvent.shiftKey&&oEvent.keyCode==83)
+
+
+默认行为(事件):浏览器自带的功能
+阻止默认行为：return false
+
+oncontextmenu 右击事件
+
+window.location.reload();刷新,也可以写成
+window.location.href=window.location.href;
+
+
+
+//此时如果页面加载完就按下enter，空的留言会直接加进去，所以事件不能加给document，要加给oTxt。其次，如果留言是在textarea中，那么留言完了之后还会换一下行，这是浏览器的默认行为，所以要return false阻止掉
+	document.onkeydown=function(ev){
+		var oEvent=ev||event;
+		if(oEvent.keyCode==13)
+		{
+			add();
+			return false;
+		}
+	};
+
+拖拽的时候oDiv.onmouseup=null;就是为了把没用的东西干掉，但是onmousedown不能干掉，因为这是入口，把入口掐掉自然不行
+
+由于拖动的太快的时候就不会触发onmousemove，所以就会脱离，但是再怎么move也不会move出document，所以没问题了
+
+解决选中文字onmousedown里面加return false不能兼容IE8-;
+
+IE中特有的捕获oBtn.setCapture();//点屏幕任何位置都可以发生点击oBtn发生的事件
+
+IE中的这个捕获只有解决拖拽选中文字这个地方有用，别的地方没用
+
+down下去的时候设置捕获，up的时候释放捕获
+oDiv.setCapture&&oDiv.setCapture();
+
+解绑定事件不能解除匿名函数
+
+
+行间事件用this弹出window
+
+this出问题的时候
+1、定时器
+2、行间事件
+3、再包一层函数
+4、事件绑定 IE8-有问题 即attachEvent有问题
+
+
+事件冒泡和事件捕获统称事件流
+
+detach
+
+oEvent.cancelBubble=true;
+
+
+到后面我们会知道，把aLi.length写到循环外面，性能会更差
+
+定时器开的个数上限根据不同浏览器不同，间隔是1ms，chrome上限是10万个
+
+t<0&&(t=0);//必须加括号
+
+onscroll是滚动条滚动的时候触发，但是不是滚轮事件
+
+onmousewheel滚轮事件，可以加给任何对象 不兼容火狐，但是在火狐下不会报错，相当于访问一个不存在的事件(属性)
+
+DOM事件(必须绑定来加)
+DOMMouseScroll解决FF兼容问题 只有火狐兼容
+
+给obj加滚轮事件，封装成如下函数
+function addWheel(obj,fn)
+{
+	if(window.navigator.userAgent.toLowerCase().indexOf('firefox')!=-1)
+	{
+		oDiv.addEventListener('DOMMouseScroll',mouseScr,false);
+	}
+	else
+	{
+		addEvent(oDiv,'mousewheel',mouseSrc);
+	}
+	function mouseScr(ev)
+	{
+		var oEvent=ev||event;
+		var bDown=false;
+		if(oEvent.wheelDelta)//chrome IE
+		{
+			if(oEvent.wheelDelta>0)//↑
+			{
+				bDown=false;
+			}
+			else//↓
+			{
+				bDown=true;
+			}
+		}
+		else
+		{
+			if(oEvent.detail<0)//↑
+			{
+				bDown=false;
+			}
+			else//↓
+			{
+				bDown=true;
+			}
+		}
+		fn&&fn(bDown);
+		oEvent.preventDefault&&oEvent.preventDefault();
+		return false;
+	}
+}
+
+function addEvent(obj,sEv,fn)
+{
+	if(obj.addEventListener)
+	{
+		obj.addEventListener(sEv,fn,false);
+	}
+	else
+	{
+		obj.attachEvent('on'+sEv,fn);
+	}
+}
+
+//wheelDelta	>0上	<0下	bDown=oEvent.wheelDelta<0
+//detail	>0下	<0上	bDown=oEvent.detail>0
+//写成三目:	bDown=oEvent.wheelDelta?oEvent.wheelDelta<0:oEvent.detail>0;
+
+return false碰见绑定会失效(具体的说是碰见addEventListener不好使，但是对于attachEvent还是好使的)，改用oEvent.preventDefault();但是该属性IE不支持，所以用的时候要写成oEvent.preventDefault&&oEvent.preventDefault();
+
+oninput统计字数的事件，只兼容IE10+ chrome FF
+
+oTxt.oninput也就是说oninput这个事件所要加给的对象是要统计字数的对象，onpropertychange同理
+
+onpropertychange兼容IE系列(除IE9)的事件
+
+IE9下oninput虽然可以用，但是有bug，字数只能增，不能减，也就是说删除文字的时候就不管用了
+
+事件的兼容
+
+onkeyup onkeydown的做法只能看，不能用，因为这两个事件还要用来回车提交等用途
+
+最兼容的方法是用定时器做
+
+var timer=null;
+if(window.navigator.userAgent.toLowerCase().indexOf('MSIE 9.0')!=-1)
+{
+	oT.onfocus=function(){
+		timer=setInterval(function(){
+			oP.innerHTML='还剩'+(200-oT.value.length)+'字';
+		},30);
+	};
+	oT.onblur=function(){
+		clearInterval(timer);
+	};
+}
+else
+{
+	oT.oninput=oT.onpropertychange=function(){
+		oP.innerHTML='还剩'+(200-oT.value.length)+'字';
+	};
+}
+
+DOMContentLoaded 兼容IE9+ chrome FF
+
+IE6,7,8 用onreadystatechange模拟 readyState=='complete'
+
+//加载完成之后要做的事情就是fn，相当于window.onload后面的那个函数
+function domReady(fn)
+{
+	if(document.addEventListener)
+	{
+		document.addEventListener('DOMContentLoaded',function(){
+			fn&&fn();
+		},false);
+	}
+	else
+	{
+		/*document.onreadystatechange=function(){
+			if(document.readystate=='complete')
+			{
+				fn&&fn();
+			}
+		};*/
+		document.attachEvent('onreadystatechange',function(){
+			if(document.readyState=='complete')
+			{
+				fn&&fn();
+			}
+		});
+	}
+}
+
+domReady这个函数可以多次调用，但是window.onload只能调一次
+
+事件委托：子元素的事件委托给父级执行
+
+作用：给未来的元素加事件
+
+入门案例 发表留言
+	<ul id="ul1">
+		<li>1111111<a href="javascript:;">删除</a></li>
+		<li>1111111<a href="javascript:;">删除</a></li>
+		<li>1111111<a href="javascript:;">删除</a></li>
+		<li>1111111<a href="javascript:;">删除</a></li>
+		<li>1111111<a href="javascript:;">删除</a></li>
+	</ul>
+	<textarea name="txt" id="txt" cols="30" rows="10"></textarea>
+	<input type="button" id="btn" value="留言" />
+
+window.onload=function(){
+	oUl.onclick=function(ev){
+		var oEvent=ev||event;
+		var target=oEvent.srcElement||oEvent.target;
+
+		if(target.tagName.toLowerCase()=='a')
+		{
+			oUl.removeChild(target.parentNode);
+		}
+	};
+
+	oBtn.onclick=function(){
+		var oLi=document.createElement('li');
+		var content=oTxt.value;
+		oLi.innerHTML=content+'<a href="javascript:;">删除</a>';
+		oUl1.appendChild(oLi);
+	};
+};
+
+onmouseover onmouseout 的bug
+移到子元素上就移出了
+
+mouseout的bug
+toElement relatedTarget
+
+mouseover
+fromElement relatedTarget
+
+放大镜完美版
+
+<div id="box">
+    <div id="small">
+        <img src="img/small.jpg">
+        <span></span>
+    </div>
+    <div id="big">
+    	<img src="img/big.jpg" id="img1">
+    </div>
+</div>
+
+js部分
+oSmall.onmouseover=function(){
+	oSpan.style.display='block';
+	oBig.style.display='block';
+};
+
+oSmall.onmousemove=function(ev){
+	var Event=ev||event;
+
+	var l=oEvent.clientX-getPos(oSmall).left-oSpan.offsetWidth/2;
+	var t=oEvent.clientY-getPos(oSmall).top-oSpan.offsetHeight/2;
+
+	if(l<0)
+	{
+		l=0;
+	}
+	if(l>oSmall.offsetWidth-oSpan.offsetWidth)
+	{
+		l=oSmall.offsetWidth-oSpan.offsetWidth;
+	}
+	if(t<0)
+	{
+		t=0;
+	}
+	if(t>oSmall.offsetHeight-oSpan.offsetHeight)
+	{
+		t=oSmall.offsetHeight-oSpan.offsetHeight;
+	}
+
+	oSpan.style.left=l+'px';
+	oSpan.style.top=t+'px';
+};
+
+oSmall.onmouseout=function(ev){
+	var oEvent=ev||event;
+	var to=oEvent.toElement||oEvent.relatedTarget;
+	if(isChild(oSmall,to))return;
+	oSpan.style.display='none';
+	oBig.style.display='none';
+};
+
+function getPos(obj)
+{
+	var l=0;
+	var t=0;
+	while(obj)
+	{
+		l+=obj.offsetLeft;
+		t+=obj.offsetTop;
+	}
+	return {"left":l,"top":t};
+}
+
+function isChild(oParent,obj)
+{
+	while(obj)
+	{
+		if(obj==oParent)return true;
+		obj=obj.parentNode;
+	}
+	return false;
+}
+----------------------------------------------------------------------------------------------------------
+用到的工具函数 isChild
+function isChild(oParent,obj)//判断obj是不是oParent的子元素
+{
+	while(obj)
+	{
+		if(oParent==obj)return true;
+		obj=obj.parentNode;
+	}
+	return false;
+}
+
+百度 五面题
+1、光标自动聚焦到文字末尾
+//高版本浏览器
+oT.setSelectionRange(开始位置，结束位置);
+
+火狐下需要加oT.focus()配合，火狐认为只有聚焦了才能选中文字，这样就兼容了IE9+ chrome FF
+
+综上，兼容高版本浏览器要写成
+oT.setSelectionRange(oT.value.length,oT.value.length);
+oT.focus();
+
+//低版本浏览器兼容，略微麻烦
+
+先介绍一个新对象
+var range=oT.createTextRange();//创建选定域对象
+range.collapse(true);//选定的顺序 true代表从左往右选择，false代表直接到最后
+range.moveStart('character',1);//选定范围起始位置是第一个
+range.moveEnd('character',3);//选定范围终止位置是第三个
+range.select();//选定
+oT.focus();//为了IE6加的
+
+利用这个来做兼容
+var range=oT.createTextRange();//创建选定域对象
+range.collapse(false);//选定的顺序 true代表从左往右选择，false代表直接到最后
+range.moveStart('character',0);//选定范围起始位置是第一个
+range.moveEnd('character',0);//选定范围终止位置是第三个
+range.select();//选定
+oT.focus();//为了IE6加的
+
+兼容写法
+if(oT.setSelectionRange)
+{
+	oT.setSelectionRange(oT.value.length,oT.value.length);
+	oT.focus();
+}
+else
+{
+	var range=oT.createTextRange();
+	range.collapse(false);
+	range.moveStart('character',0);
+	range.moveEnd('character',0);
+	range.select();
+	oT.focus();
+}
+
+2、弹出选中文字
+getSelection兼容IE9+ FF chrome
+document.getSelection();
+
+//低版本浏览器
+var range=document.selection.createRange();
+alert(range.text);
+//这种写法兼容IE整个家族
+
+appendChild和insertBefore有剪切功能
+
+<ul id="ul1">
+	<li>1111</li>
+	<li>1111</li>
+	<li>1111</li>
+	<li>1111</li>
+</ul>
+<input type="button" value="添加" id="btn">
+<ul id="ul2"></ul>
+
+oBtn.onclick=function(){
+	oUl2.appendChild(oUl1.children[0]);
+};
+
+
+表格相关操作
+oTable.tBodies[0].rows[0].cells[0]
+
+//总结
+事件：用户操作(21+2)
+onclick
+onmouseover
+onmouseout
+onmousedown
+onmousemove
+onmouseup
+onmousewheel
+ondblclick
+onchange
+onfocus
+onblur
+onload
+onerror
+onscroll
+onresize
+onkeydown
+onkeyup
+oncontextmenu
+onreadystatechange
+oninput
+onpropertychange
+
+DOM事件
+DOMMouseScroll
+DOMContentLoaded
+
+事件对象：描述了事件详细信息(13)
+oEvent.clientX
+oEvent.clientY
+oEvent.cancelBubble=true;
+oEvent.preventDefault();  
+oEvent.keyCode
+oEvent.ctrlKey/shiftKey/altKey
+oEvent.wheelDelta  -> onmousewheel
+oEvent.detail   ->  DOMMouseScroll
+oEvent.toElement
+oEvent.fromElement
+oEvent.relatedTarget
+oEvent.srcElement
+oEvent.target
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

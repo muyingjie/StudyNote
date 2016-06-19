@@ -1,0 +1,309 @@
+http://pan.baidu.com/s/1sjJyHyd
+wzbw
+
+字节码文件.class文件是平台无关的
+
+环境变量需要配置JAVA_HOME PATH CLASSPATH
+
+java源文件(.java)->编译器编译->字节码文件(.class)->解释器执行
+
+public class HelloWorld//必须与java源文件的名字相同
+{
+	public static void main(String[] args)
+	{
+		System.out.println("Hello,world");
+	}
+}
+
+java命令后不能跟文件后缀
+
+新建java项目->新建程序包->新建并编写java源程序->运行java程序
+
+程序的移植 包管理器中右击->导入
+
+成员变量在类中定义，用来描述对象将要有什么
+局部变量定义在方法中
+
+成员变量可以没有初始值
+局部变量不可以没有初始值
+
+构造方法没有返回值
+
+static可以修饰变量、方法和代码块
+Java中静态成员可以使用类名直接访问，也可以使用对象名进行访问
+
+静态方法中可以直接调用同类中的静态成员，但不能直接调用非静态成员
+如果希望在静态方法中调用非静态成员，可以通过创建类的对象，然后通过对象来访问非静态成员
+
+普通成员方法中，可以直接访问同类的非静态变量和静态变量
+
+静态初始化块只在类加载时执行，且只会执行一次，同时静态初始化块只能给静态变量赋值，不能初始化普通的成员变量
+
+程序运行时静态初始化块最先被执行，然后执行普通初始化块，最后执行构造方法
+
+封装 的实现步骤
+	1、修改属性的可见性 增加private修饰符
+	2、创建getter/setter方法
+	3、在getter/setter方法中加入控制性语句
+
+系统中的包
+	java.(功能).(类)
+	java.lang.(类)	包含java语言基础的类
+	java.util.(类)	包含java语言中各种工具类
+	java.io.(类)	包含输入、输出相关功能的类
+
+通过import关键字，在某个文件使用其他文件种的类
+	import com.imooc.music.MyClass
+
+对于修饰类里面属性和方法的访问修饰符
+加了private的成员只能在当前类中访问
+不加访问修饰符的成员可以可以在当前类和同包中访问
+加了protected的成员可以在当前类、同包、子类中访问
+加了public的成员比protected权限更高
+
+类里面的属性通常用private修饰，方法通常用public修饰
+
+封装对象属性的时候经常用到this关键字
+public class Telphone{
+	private float screen;
+	public void setScreen(float screen){
+		this.screen=screen;
+	}
+	public float getScreen(){
+		return this.screen;
+	}
+}
+
+源码->生成getter and setter可以自动生成setter和个getter
+
+内部类————定义在另外一个类里面的类。与之对应，包含内部类的类被称为外部类。
+内部类的主要作用如下
+1、内部类提供了更好的封装，可以把内部类隐藏在外部类之内，不允许同一个包中的其他类访问该类
+2、内部类的方法可以直接访问外部类的所有数据，包括私有数据
+3、内部类所实现的功能使用外部类同样可以实现，只是有时使用内部类更方便
+
+内部类有以下几种
+1、成员内部类
+2、静态内部类
+3、方法内部类
+4、匿名内部类
+
+成员内部类(普通内部类)：
+public class Outer{
+	private String a="外部的a";
+	private String b="外部的b";
+	public class Inner{
+		private String b="内部的b";
+		public void test(){
+			//Inner内部类中没有与外部变量a同名的变量，可以直接访问
+			System.out.println(a);
+			//访问内部的b
+			System.out.println(b);
+			//访问外部的b
+			System.out.println(Outer.this.b);
+		}
+	}
+	public static void main(String[] args){
+		Outer o=new Outer();
+		Inner i=o.new Inner();
+		i.test();
+	}
+}
+定义了成员内部类后，必须使用外部类对象来创建内部类对象，而不能直接去 new 一个内部类对象，即：内部类 对象名 = 外部类对象.new 内部类( );
+
+编译上面的程序后，会发现产生了两个 .class 文件
+Outer$Inner.class//内部类的.class问件
+Outer.class//外部类的.class问件
+
+注：外部类不能直接使用内部类的成员和方法，可先创建内部类的对象，然后通过内部类的对象来访问其成员变量和方法。
+
+如果外部类和内部类具有相同的成员变量或方法，内部类默认访问自己的成员变量或方法，如果要访问外部类的成员变量，可以使用 this 关键字。
+
+================================================================
+
+Object的equals方法用来比较两个值的地址
+如果希望比较两个对象各个属性方法是否一样，可以重写equals方法
+Source->Generate hashCode() and equals()
+public boolean equals(Object obj){
+	if(this=obj){
+		return true;
+	}
+	if(obj==null){
+		return false;
+	}
+	if(getClass()!=obj.getClass()){
+		//getClass是类对象的方法，返回对象的代码信息
+		return false;
+	}
+	Dog other=(Dog)obj;
+	if(age!=other.age){
+		return false;
+	}
+	return true;
+}
+
+UML 
+用例图
+序列图
+类图
+
+UML建模工具
+
+Throwable是Error和Exception的父类
+Error是很严重的错误，一般很少遇到
+Exception分为非检查异常(RuntimeException即运行时异常)和检查异常
+RuntimeException又可以分为空指针异常NullPointerException 数组下标越界异常ArrayIndexOutOfBoundsException 类型转换异常ClassCastException 算数异常ArithmeticException等等多种，非检查异常一般由Java虚拟机自动抛出捕获
+检查异常又分为文件异常IOException SQL异常SQLException 检查异常需要手动添加捕获处理语句
+
+String s1="aaa";
+String s2="aaa";
+String s3=new String("aaa");
+String s4=new String("aaa");
+s1==s2 //true 多次出现的字符常量只创建一个
+s1==s3 //false
+s3==s4 //false
+
+Java中的集合分为Collection和Map两大接口
+Collection又有List Queue Set子接口 List和Queue是有序可以重复的，Set是无序不可重复的，List和Set较为常用
+ArrayList是List接口的一个实现类
+LinkedList是Queue接口的一个实现类
+LinkedList同时也是List接口的一个实现类
+HashSet是Set的实现类
+
+HashMap是Map的实现类
+Collection里面存储的都是一个个的对象，而Map里面存储的是键值对
+Map类内部以key value的形式存储若干实例
+
+ArrayList HashSet HashMap是使用频率很高的三个类
+
+List是元素有序并且可以重复的集合，被称为序列
+List可以精确的控制每个元素的插入位置，或删除某个位置元素
+ArrayList是数组序列，是List的一个重要实现类
+ArrayList底层是由数组实现的
+
+实例：模拟学生选课
+选择课程
+删除课程
+查看课程
+修改课程
+
+添加到List中的对象都变成了Object类型，换句话说，不论是什么类型的对象都可以添加到List里面，但是在遍历强转类型的时候就会出问题，例如往Course类型的List里面添加了一个String类型的对象，那么将String类型强转成Course类型就会报ClassCastException异常，这时就可以通过泛型来控制传入集合众元素的类型
+
+泛型集合众除了可以存放泛型类型的实例，还可以存放泛型子类型的实例
+
+泛型不能是基本类型的，必须是引用类型的，如果希望使用，要用它们的包装类
+
+Set是元素无序并且不可以重复的集合
+HashSet是Set的一个重要的实现类
+由于Set是无序的，所以没有和List一样的get方法或set方法去获取或修改Set里面某个元素
+如果向Set中添加了重复的对象，那么只会保留一份该对象的引用
+Set里面可以添加空对象null
+
+Map中的键值对以Entry类型的对象实例存在
+
+Map支持泛型形如 Map<K,V>
+
+
+我们无法直接new出来InetAddress对象，但是可以通过其静态方法返回的InetAddress对象来间接得到
+
+JSP
+软件开发的三大方向
+桌面应用程序 C/S
+Web应用程序 B/S
+嵌入式应用程序 Android iOS
+
+Tomcat是Servlet和JSP的一个容器
+
+Java读写文件可以以字节为单位，也可以字符为单位
+字节流
+1 	InputStream OutputStream是两个抽象父类
+	InputStream抽象了应用程序读数据的方式
+	OutputStream抽象了应用程序写数据的方式
+2 EOF=End 读到-1就读到结尾
+3 输入流基本方法 主要是读
+	int b=in.read();//读取一个字节，无符号填充到整型的低8位 -1是EOF 单字节读取对于大文件而言效率比较低
+	in.read(byte[] buf);//读取的数据直接填充到字节数组buf里面
+	in.read(byte[] buf,int start,int size);//读取数据到字节数组buf 从buf的start位置开始存放长度为size的数据
+4 输出流基本方法 主要是写
+	out.write(int b); 写入一个byte到流，b的低8位
+	out.write(byte[] buf); 将buf字节数组都写入到流
+	out.write(byte[] buf,int start,int size);
+5 FileInputStream继承了InputStream类 --具体实现了在文件上读取数据
+6 FileOutputStream继承了OutputStream类 --实现了向文件中写进byte数据的方法
+7 DataOutputStream/DataInputStream 对流功能的扩展，可以更加方便的读取int long 字符等类型的数据
+	DataOutputStream
+		writeInt
+		writeDouble
+		writeUTF
+8 BufferedInputStream/BufferedOutputStream 这两个流类为IO提供了带缓冲区的操作，一般打开文件写入或读取操作时，都会加上缓冲，这种流模式提高了IO性能
+	FileOutputStream->write 方法 一个字节一个字节写入
+	DataOutputStream->writeXxx 方法 几个字节几个字节写入
+	BufferedOutputStream->write 方法 先将几个字节放入缓冲区中，再从缓冲区写入文件 性能更高
+
+字符流
+1 编码问题
+2 认识文本和文本文件
+	Java的文本(char)是16位无符号整数，是字符的unicode编码(双字节编码)
+	文件是byte byte byte的数据序列
+	文本文件是文本(char)序列按照某种编码方案(UTF-8 UTF-16BE GBK)序列化成的存储结构
+3 字符流(Reader Writer)-------主要操作文本文件，对于mp3文件没有字符的概念
+	字符的处理，一次处理一个字符
+	字符的底层，仍然只基本的字节序列
+	字符流的基本实现
+		InputStreamReader 完成byte流解析成char流 按照编码解析
+		OutputStreamWriter 提供char流到byte流 按照编码处理
+
+		FileReader
+		FileWriter
+
+		字符流的过滤器
+		BufferedReader ->readLine一次读一行
+		BufferedWriter/PrintWriter ->写一行
+
+
+对象的序列化和反序列化
+对象序列化就是将Object对象转换成byte序列，反之叫对象的反序列化
+	序列化流(ObjectOutputStream)，是过滤流 ->writeObject
+	反序列化流(ObjectInputStream)，		->readObject
+序列化接口(Serializable)
+	对象必须实现序列化接口，才能进行序列化，否则将出现异常
+	这个接口没有任何方法，只是一个规定
+
+Socket通信实现步骤
+1 创建ServerSocket和Socket 
+	ServerSocket实现服务器端套接字 较为常用的构造方法是传入端口号的方法
+	Socket实现客户端套接字 
+2 打开连接到Socket的输入/输出流
+3 按照协议对Socket进行读/写操作
+4 关闭输入输出流 关闭Socket
+
+进程：程序的执行过程(动态性) 持有资源(共享内存 共享文件)和线程
+线程：可以理解为任务
+
+线程之间交互分为互斥和同步
+
+Thread类 Runnable接口
+
+创建
+Thread()
+Thread(String name)
+Thread(Runnable target)
+Thread(Runnable,String name)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

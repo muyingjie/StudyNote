@@ -1,0 +1,118 @@
+div{ display:none;}
+
+<ul>
+	<li><a href='javascript:;' data-hash='index'>首页</a></li>
+	<li><a href='javascript:;' data-hash='student'>学员</a></li>
+	<li><a href='javascript:;' data-hash='message'>留言</a></li>
+</ul>
+<div data-hash='index'>首页的内容</div>
+<div data-hash='student'>学员的内容</div>
+<div data-hash='message'>留言的内容</div>
+
+$(function(){
+	for(var i=0;i<aA.length;i++)
+	{
+		aA[i].onclick=function(){
+			var hash=this.dataset.hash;
+			window.location.hash=hash;
+			for(var i=0;i<aDiv.length;i++)
+			{
+				aDiv[i].style.display='none';
+				if(hash==aDiv[i].dataset.hash){
+					aDiv[i].style.display='block';
+				}
+			}
+		};
+	}
+	var firstHash=window.location.hash.substring(1)||'index';
+	
+	for(var i=0;i<aDiv.length;i++)
+	{
+		if(firstHash==aDiv.length)
+		{
+			aDiv[i].style.display='block';
+		}
+	}
+});
+目前为止我们的程序还是有一个问题，这也是hash本身的问题，就是当我们在浏览器的井号后面修改hash值再回车的时候，页面不会跳到我们修改之后的那个页面，只有摁F5的时候才可以，这是hash的特性，但是对于我们的用户体验有影响，这要用onhashchange这个事件来解决，这个事件是html5新增的一个事件
+window.onhashchange=function(){
+	window.location.reload();
+};
+
+
+架构分析
+<script src='sea.js'></script>
+<script src='move.js'></script>
+
+//main.js主体的js文件
+define(function(require,exports,module){
+	require('logo.js').init();
+	require('menu.js').init();
+	require('foot.js').init();
+	require('logo.js').init();
+});
+
+//进场动画show.js
+//出场动画hide.js
+//main.js中
+define(function(require,exports,module){
+	var aA=$('a');
+	var aDiv=$('div');
+
+	window.onhashchange=function(){
+		window.location.reload();
+	};
+
+	require('show.js').show(aA,aDiv);
+	require('hide.js').hide(aA,aDiv);
+});
+
+//show.js文件
+define(function(require,exports,module){
+	function show(aA,aDiv)
+	{
+		var firstHash=window.location.hash.substring(1)||'index';
+		for(var i=0;i<aDiv.length;i++)
+		{
+			if(firstHash==aDiv[i].dataset.hash){
+				switch(firstHash){
+					case 'index':
+						require('indexIn.js').init();
+						break;
+					case 'student':
+						require('studentIn').init();
+						break;
+					case 'message':
+						require('messageIn').init();
+						break;
+				}
+			}
+		}
+	}
+
+	exports.show=show;
+});
+
+//hide.js文件
+define(function(require,exports,module){
+	function hide(aA,aDiv)
+	{
+		for(var i=0;i<aA.length;i++)
+		{
+			aA[i].onclick=function(){
+				var hash=this.dataset.hash;
+				//window.location.hash=hash;
+				switch()
+			};
+		}
+	}
+	exports.hide=hide;
+});
+
+//indexIn.js
+define(function(require,exports,module){
+	function show(obj){
+		startMove(obj,{width:100,height:100});
+	}
+	exports.show=show;
+});

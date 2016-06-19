@@ -1,0 +1,169 @@
+ajax在utf-8编码格式表现较好
+
+封装库-连缀
+
+
+base.js文件
+var $=function(_this){
+	return new Base(_this);
+};
+function Base(_this)
+{
+	//创建一个数组来保存结点或者结点数组
+	this.elements=[];
+	if(_this!=undefined)
+	{
+		this.elements[0]=_this;
+	}
+}
+
+//获取Id
+Base.prototype.getId=function(id){
+	this.elements.push(document.getElementById(id));
+	return this;
+}
+//获取元素结点
+Base.prototype.getTagName=function(tag){
+	var tags=document.getElementsByTagName(tag);
+	for(var i=0;i<tags.length;i++)
+	{
+		this.elements.push(tags[i]);
+	}
+	return this;
+};
+
+Base.prototype.getByClass=function(className,idName){
+	var node=null;
+	if(arguments.length==2){
+		node=document.getElementById(idName);
+	}else{
+		node=document;
+	}
+	var all=node.getElementsByTagName(className);
+	for(var i=0;i<all.length;i++)
+	{
+		if(all[i].className=className)
+		{
+			this.elements.push(all[i]);
+		}
+	}
+	return this;
+};
+
+Base.prototype.getElement(num){
+	var element=this.elements[num];
+	this.elements=[];
+	this.elements=element;
+	return this;
+};
+Base.prototype.css=function(attr,value){
+	for(var i=0;i<this.elements.length;i++)
+	{
+		if(arguments.length==1)
+		{
+			return this.elements[i].currentStyle?this.elements[i].currentStyle[attr]:getComputedStyle(this.elements[i],false)[attr];
+		}
+		this.elements[i].style[attr]=value;
+	}
+	return this;
+};
+
+Base.prototype.addClass=function(className){
+	for(var i=0;i<this.elements.length;i++)
+	{
+		if(!this.elements[i].className.match(new RegExp('(\\s|^)'+className+'(\\s|$)')))
+		this.elements[i].className+=className;
+	}
+};
+
+Base.prototype.removeClass=function(className){
+	for(var i=0;i<this.elements.length;i++)
+	{
+		if(this.elements[i].className.match(new RegExp('\\s|^'+className+'\\s|$')))
+		{
+			this.elements[i].className=this.elements[i].className.replace(new RegExp('\\s|^'+className+'\\s|$'),'');
+		}
+	}
+};
+
+//添加CSS规则
+Base.prototype.addRule=function(num,selectorText,cssText,position){
+	var sheet=document.styleSheets[num];
+	if(typeof sheet.insertRule!='undefined'){
+		sheet.insertRule(selectorText+'{'+cssText+'}',position);
+	}else{
+		sheet.addRule(selectorText,cssText,position);
+	}
+	return this;
+};
+
+Base.prototype.removeRule=function(num,index){
+	var sheet=document.styleSheets[num];
+	if(typeof sheet.deleteRule!='undefined')
+	{
+		sheet.deleteRule(index);
+	}
+	else
+	{
+		sheet.removeRule(index);
+	}
+	return this;
+};
+
+Base.prototype.html=function(str){
+	for(var i=0;i<this.elements.length;i++)
+	{
+		if(arguments.length==0){
+			return this.elements[i].innerHTML;
+		}
+		this.elements[i].innerHTML=str;
+	}
+	return this;
+}
+
+Base.prototype.click=function(fn){
+	for(var i=0;i<this.elements.length;i++)
+	{
+		this.elements[i].onclick=fn;
+	}
+	return this;
+}
+
+Base.prototype.hover=function(over,out){
+	for(var i=0;i<this.elements.length;i++)
+	{
+		this.elements[i].onmouseover=over;
+		this.elements[i].onmouseout=out;
+	}
+	return this;
+};
+
+Base.prototype.show=function(){
+	for(var i=0;i<this.elements.length;i++)
+	{
+		this.elements[i].style.display='block';
+	}
+	return this;
+};
+
+Base.prototype.hide=function(){
+	for(var i=0;i<this.elements.length;i++)
+	{
+		this.elements[i].style.display='none';
+	}
+	return this;
+};
+
+
+demo.js
+window.onload=function(){
+	var base=new Base();
+	base.getId("box");
+};
+
+
+
+
+
+
+

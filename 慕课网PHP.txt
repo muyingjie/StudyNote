@@ -1,0 +1,7 @@
+<?php
+	if($con=mysql_connect("localhost","root","123")){
+		echo "链接成功";
+	}else{
+		echo "链接失败";
+	}
+?>

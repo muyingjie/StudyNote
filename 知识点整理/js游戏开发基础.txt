@@ -1,0 +1,48 @@
+第三章
+
+number guessing game
+
+<p id="output">I am thinking of a number between 0 and 99.</p> 
+<input id="input" type="text" placeholder="Enter your guess..."> 
+<button>guess</button>
+
+var mysteryNumber=50;
+var playerGuess=0;
+
+var input=document.querySelector('#input'); 
+var output=document.querySelector('#output');
+
+var button=document.querySelector('button');
+button.style.cursor='pointer';
+button.addEventListener('click',clickHandler,false);
+
+function clickHandler()
+{
+	playGame();
+}
+
+function playGame()
+{
+	playersGuess=parseInt(input.value);
+
+	if(playerGuess>mysteryNumber)
+	{
+		output.innerHTML="That's too high";
+	}
+	else if(playerGuess<mysteryNumber)
+	{
+		output.innerHTML="That's too low";
+	}
+	else if(playerGuess==mysteryNumber)
+	{
+		output.innerHTML="You got it";
+	}
+}
+
+作者解释道：clickHandler这个函数只做了一件事情就是调用playGame这个函数，那么为什么我们不直接把playGame这个函数里面的代码直接扔进clickHandler这个函数里面呢？这样做是为了接下来进一步扩展这个游戏时能保证一定的灵活性，比如，你可能想通过键盘触发playGame这个函数。通过将给按钮的事件分离开来，在后期你的程序就会更灵活而增强可维护性。
+
+利用函数将独立的功能分成小的模块，这叫模块化。如果你将你的程序通过这种方法来划分模块，那么后期的扩展、维护就会非常方便
+
+
+第十一章 平台游戏以及物理学
+

@@ -1,0 +1,1119 @@
+try里面的代码越少越好
+
+JDK7出现了一个新的异常方案
+try{
+	
+}catch(ArithmeticException|ArrayIndexOutOfBoundsException e){//可以把异常类或起来，但是或起来的类必须是平级关系
+	
+}
+
+在try里面发现问题后，jvm会帮我们生成一个异常对象，然后把这个对象抛出，和catch里面的类进行匹配
+如果该对象是某个类型的，就会执行该catch里面的处理信息
+
+异常对象e的几个重要方法
+e.getMessage();
+e.toString(); 对象类名 + ':' + o.getLocalizedMessage()
+e.printStackTrace();
+
+
+有些时候，我们可以对异常进行处理，但有时候我们根本没有权限去处理某个异常
+或者说我处理不了，我就不处理了
+为解决出错问题，Java针对这种情况，就提出了throws方法
+
+注：尽量不要在main方法上抛出异常
+
+如果在执行到finally之前jvm退出了，就不能执行了
+try{
+	
+}catch(Exception e){
+	System.exit(0);//jvm会退出，下面的finally也不会执行
+}finally{
+
+}
+
+如果catch里面有return语句，finally将会在return之前执行，准确的说应该是在中间
+System.out.println(getInt());//30
+public static int getInt(){
+	int a=10;
+	try{
+		System.out.println(a/10);
+		a=20;
+	}catch(ArithmeticException e){
+		a=30;
+		return a;//走到这一步的时候，这里不是return a，而是return 30
+		//但是它发现后面还有finally，所以继续执行finally的内容，a=40
+		//再次回到以前的返回路径，继续走return 30
+	}finally{
+		a=40;
+	}
+	return a;
+}
+
+//自定义异常 要是定义编译期异常就继承Exception 运行时异常就继承RuntimeException
+public class MyException extends Exception{
+	//什么都不用写，继承自Exception类的方法已经够用了
+	public MyException(){}
+	public MyException(msg){
+		//带参构造是为了把消息显示在控制台
+	}
+}
+
+异常注意事项
+子类重写父类方法时，子类的方法必须抛出相同的异常或父类异常的子类
+如果被重写的方法没有异常抛出，那么子类的方法绝对不可以抛出异常，如果子类方法内有异常发生，那么子类只能try，不能throws
+
+IO的应用场合：一张图片上传到服务器上，从服务器上将图片读取到客户端，如果图片有问题，就可能会出异常
+IO的主要应用就在上传和下载 设备之间的数据传输问题
+
+文件
+File类：文件和目录(文件夹)路径名的抽象表示形式，未必真实存在
+File类的构造方法
+File(String pathname) 根据一个路径的到File对象
+File(String parent,String child) 根据一个目录和一个子文件/文件夹得到File对象
+File(File parent,String child) 根据父File对象和一个子文件/文件夹得到File对象
+
+输入流 输出流参照物是Java程序，Java程序往硬盘中写数据时，其实是数据从Java程序中出去了，而Java程序从硬盘中读取数据时，其实是数据进入了Java程序，所以是输入流
+
+public class FileOutputStream{
+	public static void main(String[] args) throws IOException{
+		//File file=new File("file.txt");
+		//FileOutputStream fos=new FileOutputStream(file);
+		//下面的写法等效于上面的写法
+		FileOutputStream fos=new FileOutputStream("file.txt");
+		
+		fos.write("hello,IO".getBytes());
+		
+		//释放资源 close之后让fos对象变成垃圾，等待回收，除此之外还通知系统去释放跟该文件相关的资源
+		fos.close();
+	}
+}
+
+//write方法的三种用法
+FileOutputStream fos=new FileOutputStream("fos2.txt");
+//写一个字节
+fos.write(97);//写入了一个字符a
+
+//写一个字节数组
+byte[] bys={97,98,99,100,101};
+fos.write(bys);//写入了abcde
+
+//写一个字节数组的一部分
+fos.write(bys,1,3);//写入了bcd
+
+==============================换行的实现===================================
+for(int i=0;i<10;i++){
+	fos.write(("hello"+x).getBytes());
+	//实际上应该判断当前是什么操作系统从而判断写什么换行符
+	fos.write("\r\n");
+}
+打开文件方式为notepad++时可以看到换行，Windows自带的notepad不可以
+原因很简单，因为不同的系统针对不同的换行符号识别是不一样的
+Windows自带的记事本识别 \r\n
+Linux \n
+Mac \r
+一些常见的高级记事本软件是可以识别任意换行符号的
+==============================追加写入
+构造方法第二个参数设置为true FileOutputStream fos=new FileOutputStream("fos.txt",true);
+
+===============增加异常处理
+FileOutputStream fos=null;//这里如果直接写成FileOutputStream fos;的话会报错，因为fos可能不会被赋值，所以要手动赋值null
+try{
+	fos=new FileOutputStream("fos.txt");
+}catch(FileNotFoundException e){
+	e.printStackTrace();
+}
+
+try{
+	fos.write("java".getBytes());
+}catch(IOException e){
+	e.printStackTrace();
+}
+
+try{
+	fos.close();
+}catch(IOException e){
+	e.printStackTrace();
+}
+
+================上面的异常的护理代码可读性很差 优化之后的异常处理
+FileOutputStream fos=null;
+try{
+	fos=new FileOutputStream("fos.txt");
+	fos.write("java".getBytes());
+}catch(FileNotFoundException e){
+	e.printStackTrace();
+}catch(IOException e){
+	e.printStackTrace();
+}finally{
+	if(fos!=null){
+		try{
+			//为了保证close一定执行，就放到了这里
+			fos.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+}
+
+==================FileInputStream
+public class FileInputStream{
+	public static void main(String[] args){
+		FileInputStream fis=new FileInputStream("fis.txt"); //假设文件中存了abc
+		
+		//读取数据
+		int by=fis.read();
+		System.out.println(by);//97
+		System.out.println((char)by);//a
+		
+		by=fis.read();
+		System.out.println(by);//98
+		System.out.println((char)by);//b
+		
+		by=fis.read();
+		System.out.println(by);//99
+		System.out.println((char)by);//c
+		
+		by=fis.read();
+		System.out.println(by);//-1 只有3个字符，但是这里尝试读第4个字符，返回了-1，证明如果读取到了-1就证明读取完毕
+		
+		fis.close();
+	}
+}
+
+改用循环改进
+int by=0;
+while(by=fis.read() == -1){
+	System.out.print((char)by);// 不要用println 文件中原有的换行符也会读出来，所以自己加的话是多余的
+	by=fis.read();
+}
+fis.close();
+
+===================字节流复制文本文件
+public class CopyFileDemo{
+	public static void main(String[] args){
+		//封装数据源 如果没有a.txt的话直接报FileNotFoundException异常
+		FileInputStream fis=new FileInputStream("a.txt");
+		//目的地 如果当前目录下没有b.txt的话会自动创建一个
+		FileOutputStream fos=new FileOutputStream("b.txt");
+		
+		int by=0;
+		while((by=fis.read())!=-1){
+			fos.write(by);
+		}
+		
+		//释放资源 先关谁都行
+		fos.close();
+		fis.close();
+	}
+}
+
+============每次读取一个字节数组
+FileInputStream fis=new FileInputStream("a.txt");
+//假设a.txt文件里面存储的内容为
+//hello
+//world
+//java
+FileOutputStream fos=new FileOutputStream("b.txt");
+
+byte[] bys=new byte[5];
+int len=fis.read(bys);
+System.out.println(len);//5
+System.out.println(new String(bys));// hello
+
+len=fis.read(bys);
+System.out.println(len);//5
+System.out.println(new String(bys));// \r\nwor
+
+len=fis.read(bys);
+System.out.println(len);//5
+System.out.println(new String(bys));// ld\r\nj
+
+len=fis.read(bys);
+System.out.println(len);//3 从这里可以看出read方法返回的是每次实际读到的字符的个数 而下面这一句输出实际上应该写成System.out.print(new String(bys,0,len));
+System.out.println(new String(bys));// ava\nj bys数组每次都会被覆盖 由于第四次只读到了3个字符，后面两个字符没有被覆盖掉
+
+fis.close();
+fos.close();
+
+====================用循环改进
+byte[] bys=new byte[1024];//数组的长度一般是1024或1024的整数倍
+int len=0;
+while((len=fis.read(bys))!=-1){
+	System.out.print(new String(bys,0,len));
+}
+
+===================Java中实际上已经有和上面一次读取一个数组的类
+//BufferedInputStream BufferedOutputStream
+public class BufferedOutputStreamDemo{
+	public static void main(String[] args){
+		BufferedOutputStream bos=new BufferedOutputStream(new FileOutputStream("bos.txt"));
+		
+		bos.write("hello".getBytes());
+		
+		bos.close();
+	}
+}
+
+public class BufferedInputStreamDemo{
+	public static void main(String[] args){
+		BufferedInputStream bis=new BufferedInputStream(new FileInputStream("bos.txt"));
+		
+		int by=0;
+		while((by=bis.read())!=-1){
+			System.out.print((char)by);
+		}
+		
+		//或者
+		//byte[] bys=new byte[1024];
+		//int len=0;
+		//while((len=bis.read(bys))!=-1){
+		//	System.out.print(new String(bys,0,len));
+		//}
+	}
+}
+
+由于字节流操作中文不是特别方便，所以Java提供了转换流
+
+String(byte[] bytes,String charsetName) 通过指定的字符集解码字符串
+byte[] getBytes(String charsetName) 使用指定的字符集合把字符串编码为字节数组
+
+String s="你好";
+byte[] bys=s.getBytes();//如果没有指定编码的话，使用平台默认编码
+Arrays.toString(bys);//-60 -29 -70 -61 
+
+
+String s="你好";
+byte[] bys=s.getBytes("UTF-8");
+System.out.println(Arrays.toString());//-28 -67 -96 -27 -91 -67
+
+
+String s="你好";
+byte[] bys=s.getBytes();//通过默认编码转换成了字节数组
+String ss=new String(bys);//没有传第二个参数，通过默认编码又转换成了字符串
+System.out.println(ss);//正常显示
+
+
+转换流 OutputStreamWriter
+//无参构造函数是把默认编码把字节流转换为字符流
+public class OutputStreamWriter{
+	public static void main(String[] args){
+		OutputStreamWriter osw=new OutputStreamWriter(new FileOutputStream("osw.txt"));
+		//OutputStreamWriter osw=new OutputStreamWriter(new FileOutputStream("osw.txt"),"utf-8"); 指定编码为utf-8
+		osw.write("中国");
+		
+		//写一个字符 注意不是写一个字节
+		osw.write('a'); //这里的参数既可以是一个汉字 也可以是整数 也可以是字母
+		//如果不写close的话 是不会写进osw.txt文件中的
+		//原因是 1字符=2字节
+		//文件中数据存储的基本单位是字节
+		//每个字符两个字节 即osw.write('a');这一句写了两个字节
+		//事实上此时这两个字节在缓冲区内，调用一下flush就可以了
+		
+		//写一个字符数组
+		char[] chs={'a','b','c','d','e'};
+		osw.write(chs);
+		
+		//写一个字符数组的一部分
+		osw.write(chs,1,3);//bcd
+		
+		//写一个字符串的一部分
+		osw.write("abcde",2,3);//cde
+		
+		//close和flush的区别
+		//close关闭流对象，但是先刷新一次缓冲区，关闭之后，流对象不可以再次使用了
+		//flush仅仅刷新缓冲区，刷新之后，流对象还可以继续使用
+		//在数据量不是很大的时候直接close即可，如果
+	}
+}
+
+public class InputStreamReaderDemo{
+	public static void main(String[] args){
+		InputStreamReader isr=new InputStreamReader(new FileInputStream("osw.txt"));
+		//InputStreamReader isr=new InputStreamReader(new FileInputStream("osw.txt"),"utf-8");
+		
+		//每次读取一个字符
+		int ch = 0;
+		while((ch=isr.read())!=-1){
+			System.out.print((char)ch);
+		}
+		isr.close();
+		
+		//每次读取一个字符数组
+		char[] chs=new char[1024];
+		int len=0;
+		while((len=isr.read(chs))!=-1){
+			System.out.print(new String(chs,0,len));
+		}
+		
+		isr.close();
+	}
+}
+
+//字符流复制文本文件
+public class CopyFileDemo{
+	public static void main(String[] args){
+		InputStreamReader isr=new InputStreamReader(new InputFileStream("a.txt"));//读的时候源文件必须存在
+		OutputStreamWriter osw=new OutputStreamWriter(new OutputFileStream("b.txt"));//目标文件可以不存在
+		
+		//方式一
+		int ch=0;
+		while((ch=isr.read())!=-1){
+			osw.write(ch);
+		}
+		
+		//方式二
+		char[] chs=new char[1024];
+		int len=0;
+		while((len=isr.read(chs))!=-1){
+			osw.write(chs,0,len);
+		}
+		
+		osw.close();
+		isr.close();
+	}
+}
+
+转换流的名字太长，我们常见的操作都是按照本地默认的编码实现的，所以为了简化我们的书写，转换流对应的子类
+FileWriter
+FileReader
+
+由于我们常见的操作都是使用本地默认编码，所以不用指定编码
+而转换流的名称有点长，所以Java就提供了其子类供我们使用
+OutputStreamWriter = FileOutputStream + 编码表
+FileWriter = FileOutputStream + 编码表
+
+
+//由于我们常见的操作都是使用本地默认编码，所以，不用指定编码
+//而转换流的名称有点长，所以Java就提供了其子类供我们使用
+//OutputStreamWriter = FileOutputStream + 编码表(GBK)
+//FileWriter = FileOutputStream + 编码表(GBK)
+
+//InputStreamWriter = FileInputStream + 编码表(GBK)
+//FileReader = FileInputStream + 编码表(GBK)
+
+public class CopyFileDemo{
+	public static void main(String[] args){
+		FileReader fr=new FileReader("a.txt");
+		FileWriter fw=new FileWriter("b.txt");
+		
+		//一次一个字符
+		int ch=0;
+		while((ch=fr.read())!-1){
+			fw.write(ch);
+		}
+		
+		//一次一个字符数组
+		char[] chs=new char[1024];
+		int len=0;
+		while((len=fr.read(chs))!=-1){
+			fw.write(chs,0,len);
+		}
+		
+		fw.close();
+		fr.close();
+	}
+}
+
+//字符缓冲流
+//字符流为了高效读写，也提供了对应的字符缓冲流
+//BufferedWriter 字符缓冲输出流
+//BufferedReader 字符缓冲输入流
+//将文本写入字符输出流，缓冲各个字符，从而提供单个字符 数组和字符串的高效写入
+//可以指定缓冲区的大小 或者接受默认的大小 在大多数情况下默认值就足够大了
+public class BufferedWriterDemo{
+	public static void main(String[] args){
+		//BufferedWriter bw=new BufferedWriter(
+		//	new OutputStreamWriter(
+		//		new FileOutputStream("bw.txt")
+		//	)
+		//);
+		
+		//上面的写法太长了，所以简写成如下形式
+		BufferedWriter bw=new BufferedWriter(new FileWriter("bw.txt"));
+		
+		bw.write("hello");
+		bw.write("world");
+		
+		bw.close();
+	}
+}
+
+public class BufferedReader{
+	public static void main(String[] args){
+		BufferedReader br=new BufferedReader(new FileReader("bw.txt"));
+		
+		//int ch=0;
+		//while((ch=br.read())!=-1){
+		//	System.out.print(ch);
+		//}
+		
+		char[] chs=new char[1024];
+		int len=0;
+		while((len=br.read(chs))!=-1){
+			System.out.print(new String(chs,0,len));
+		}
+		
+		br.close();
+	}
+}
+
+//缓冲流复制文件
+public class CopyFileDemo{
+	public static void main(String[] args){
+		BufferedReader br=new BufferedReader(new FileReader("bw.txt"));
+		BufferedWriter bw=new BufferedWriter(new FileWriter("dstbw.txt"));
+		
+		char[] chs=new char[1024];
+		int len=0;
+		while((len=br.read(chs))!=-1){
+			bw.write(new String(chs,0,len));
+		}
+		
+		br.close();
+		bw.close();
+	}
+}
+
+//字符缓冲流的特殊方法
+//BufferedWriter newLine:根据系统来决定换行符
+//BufferedReader readLine:一次读取一行数据
+//BufferedDemo
+public class BufferedDemo{
+	public static void main(String[] args){
+		BufferedWriter bw=new BufferedWriter(new FileWriter("a.txt"));
+		for(int i=0;i<10;i++){
+			bw.write("hello"+i);
+			//bw.write("\r\n");
+			bw.newLine();//根据系统来决定插入哪一种换行符
+		}
+		
+		BufferedReader br=new BufferedReader(new FileReader("b.txt"));
+		//String line=br.readLine();//读取一行，不包含换行的结束符
+		//System.out.println(line);
+		
+		String line=null;
+		while((line=br.readLine())!=null){
+			System.out.println(line);
+		}
+		br.close();
+	}
+}
+
+
+//以行为单位复制文件
+public class FileCopyDemo{
+	public static void main(String[] args){
+		BufferedReader br=new BufferedReader(new FileReader("a.txt"));
+		BufferedWriter bw=new BufferedWriter(new FileWriter("b.txt"));
+		
+		String line=null;
+		while((line=br.readLine())!=null){
+			bw.write(line);
+			bw.newLine();//根据操作系统插入换行符
+			bw.flush();
+		}
+		
+		bw.close();
+		br.close();
+	}
+}
+
+//把ArrayList里面的字符串存到文本文件中
+public class ArrayListToFileDemo{
+	public static void main(String[] args){
+		ArrayList<String> array=new ArrayList<String>();
+		array.add("hello");
+		array.add("world");
+		array.add("java");
+		
+		BufferedWriter bw=new BufferedWriter(new FileWriter("a.txt"));
+		
+		for(String s:array){
+			bw.write(s);
+			bw.newLine();
+			bw.flush();
+		}
+		
+		bw.close();
+	}
+}
+
+public class FileToArrayListDemo{
+	public static void main(String[] args){
+		BufferedReader br=new BufferedReader(new FileReader("a.txt"));
+		ArrayList<String> array=ArrayList<String>();
+		
+		String line=null;
+		while((line=br.readLine())!=null){
+			array.add(line);
+		}
+		
+		br.close();
+		
+		for(String s:array){
+			System.out.println(s);
+		}
+	}
+}
+
+//复制单级文件夹
+public class CopyFolder{
+	public static void main(String[] args){
+		File srcf=new File("e:\\demo");
+		File dstf=new File("e:\\test");
+		if(!dstf.exist()){
+			dstf.mkdir();
+		}
+		File[] fileArray=srcf.listFiles();
+		for(File file:fileArray){
+			String name=file.getName();//文件名
+			File newFile=new File(dstf,name);
+			copyFile(file,newFile);
+		}
+	}
+	private static void copyFile(File f,File nf){		
+		BufferedInputStream bis=new BufferedInputStream(new FileInputStream(f));
+		BufferedOutputStream bos=new BufferedOutputStream(new FileOutputStream(nf));
+		byte[] bys=new byte[1024];
+		int len=0;
+		while((len=bis.read(bys))!=-1){
+			bos.write(bys,0,len);
+		}
+		
+		bos.close();
+		bis.close();
+	}
+}
+//复制指定目录下的.java文件，并修改后缀名
+public class CopyFolder{
+	public static void main(String[] args){
+		File sf=new File("E:\\java");
+		File df=new File("E:\\jad");
+		
+		if(!df.exist()){
+			df.mkdir();
+		}
+		
+		File[] fileArray=sf.listFiles(new FilenameFilter(){
+			public boolean accept(File dir,String name){
+				return new File(dir,name).isFile() && name.endsWith("java");
+			}
+		});
+		
+		for(File f:fileArray){
+			String name=f.getName();
+			File nf=new File(df,name);
+			copyFile(f,nf);
+		}
+		
+		//在目的地目录下改名
+		File[] dfArray=df.listFiles();
+		for(File df2:dfArray){
+			String name=df2.getName();
+			String newName=name.replace(".java",".jad");
+			File newFile=new File(df,newName);
+			destFile.renameTo(newFile);
+		}
+	}
+}
+
+//复制多级文件夹
+public class CopyFolders{
+	public static void main(String[] args){
+		File srcFile=new File("e:\\javase\\day21\\code\\demos");
+		File dstFile=new File("e:\\");
+		
+		copyFolder(srcFile,dstFile);
+	}
+	
+	private static void copyFolder(File srcFile,File dstFile){
+		if(srcFile.isDirectory()){
+			File newFolder=new File(dstFile,srcFile.getName());
+			newFolder.mkdir();
+			
+			File[] fileArray=srcFile.listFiles();
+			for(File file:fileArray){
+				copyFolder(file,newFolder);
+			}
+		}else{
+			File newFile=new File(dstFile,srcFile.getName());
+			copyFile(srcFile,newFile);
+		}
+	}
+}
+//键盘录入学生信息按照总分排序并写入文本文件
+public class StudentDemo{
+	public static void main(String[] args){
+		TreeSet<Student> ts=new TreeSet<Student>(new Comparator<Student>(){
+			public int compare(Student s1,Student s2){
+				int num=s2.getSum()-s1.getSum();
+			}
+		});
+		
+		for(int i=1;i<=5;i++){
+			Scanner sc=new Scanner(System.in);
+			System.out.println("请录入第"+i+"个学生的信息");
+			System.out.println("姓名：");
+			String name=sc.nextLine();
+			
+			System.out.println("语文成绩：");
+			int chinese=sc.nextInt();
+			
+			System.out.println("数学成绩：");
+			int math=sc.nextInt();
+			
+			System.out.println("英语成绩：");
+			int english=sc.nextInt();
+			
+			Student s=new Student(name,chinese,math,english);
+			
+			ts.add(s);
+		}
+		
+		BufferedWriter bw=new BufferedWriter(new FileWriter("student.txt"));
+		bw.write("姓名 语文成绩 数学成绩 英语成绩");
+		bw.newLine();
+		bw.flush();
+		for(Student s:ts){
+			StringBuilder sb=new StringBuilder();
+			sb.append(s.name).append(s.chinese).append(s.math).append(s.english);
+			bw.write(sb.toString());
+		}
+		bw.close();
+		System.out.println("存储完毕");
+	}
+}
+public class Student{
+	private String name;
+	private int chinese;
+	private int math;
+	private int english;
+	public Student(){
+		super();
+	}
+	public Student(String name,int chinese,int math,int english){
+		super();
+		this.name=name;
+		this.chinese=chinese;
+		this.math=math;
+		this.english=english;
+	}
+	//get set方法省略
+	public int getSum(){
+		return this.chinese+this.math+this.english;
+	}
+}
+
+//把一个文件中的字符串排序后再写入另一个文件案例
+public class StringDemo{
+	public static void main(String[] args){
+		BufferedReader br=new BufferedReader(new FileReader("s.txt"));
+		String line=br.readLine();
+		br.close();
+		
+		char[] chs=line.toCharArray();
+		
+		Arrays.sort(chs);
+		
+		String s=new String(chs);
+		BufferedWriter bw=new BufferedWriter(new FileReader(s));
+		bw.write(s);
+		bw.newLine();
+		bw.flush();
+		bw.close();
+	}
+}
+
+//自定义类模拟BufferedReader的readLine功能
+//readLine 只读出本行内容，不会读出行结束符
+public class MyBufferedReader{
+	private Reader r;
+	public MyBufferedReader(r){
+		this.r=r;
+	}
+	public void close(){
+		this.r.close();
+	}
+	public String readLine(){
+		/*
+		 * 我要返回一个字符串，我该怎么办呢? 我们必须去看看r对象能够读取什么东西呢? 两个读取方法，一次读取一个字符或者一次读取一个字符数组
+		 * 那么，我们要返回一个字符串，用哪个方法比较好呢? 我们很容易想到字符数组比较好，但是问题来了，就是这个数组的长度是多长呢?
+		 * 根本就没有办法定义数组的长度，你定义多长都不合适。 所以，只能选择一次读取一个字符。
+		 * 但是呢，这种方式的时候，我们再读取下一个字符的时候，上一个字符就丢失了 所以，我们又应该定义一个临时存储空间把读取过的字符给存储起来。
+		 * 这个用谁比较和是呢?数组，集合，字符串缓冲区三个可供选择。
+		 * 经过简单的分析，最终选择使用字符串缓冲区对象。并且使用的是StringBuilder
+		 */
+		StringBuilder sb=new StringBuilder();
+		int ch=0;
+		while((ch=r.read())!=-1){
+			if(ch=='\r'){
+				continue;
+			}
+			if(ch=='\n'){
+				return sb.toString();
+			}else{
+				sb.append(ch);
+			}
+		}
+		
+		//最后一行可能没有回车换行符
+		if(sb.length>0){
+			return sb.toString();
+		}
+		//最后加上返回null是因为如果不加null的话没有数据时就不走while循环，返回值就不是字符串了
+		return null;
+	}
+}
+public class MyBufferedReaderDemo{
+	public static void main(String[] args){
+		MyBufferedReader mbr=new MyBufferedReader(new FileReader("my.txt"));
+		String line=null;
+		while((line=mbr.readLine())!=null){
+			System.out.println(line);
+		}
+		mbr.close();
+	}	
+}
+
+//自定义类模拟LineNumberReader(BufferedReader类的子类) 该类有获取和设置行号的方法
+
+
+//登陆注册案例
+
+
+//操作基本数据类型的流 DataInputStream DataOutputStream
+public class DataStreamDemo{
+	public static void main(String[] args){
+		write();
+		
+		read();
+	}
+	private static void write(){
+		DataOutputStream dos=new DataOutputStream(new FileOutputStream("dos.txt"));
+		dos.writeByte(10);
+		dos.writeShort(100);
+		dos.writeInt(1000);
+		dos.writeLong(10000);
+		dos.writeFloat(12.34f);
+		dos.writeDouble(56.78);
+		dos.writeChar('a');
+		dos.writeBoolean(true);
+	}
+	private static void read(){
+		DataInputStream dis=new DataInputStream(new FileInputStream("dos.txt"));
+		
+		byte b=dis.readByte();
+		short s=dis.readShort();
+		int i=dis.readInt();
+		... //顺序一定要和write的时候一样
+	}
+	dos.close();
+}
+
+//内存操作流 用于处理临时存储信息的，程序结束，数据就从内存中消失
+	操作字节数组 ByteArrayInputStream BufferedOutputStream 这个流不需要关闭
+	操作字符数组 CharArrayReader CharArrayWriter
+	操作字符串   StringReader StringWriter
+public class ByteArrayStreamDemo{
+	public static void main(String[] args){
+		ByteArrayOutputStream baos=new ByteArrayOutputStream();
+		for(int i=0;i<10;i++){
+			baos.write(("hello"+x).getBytes());
+		}
+		//baos.close(); 通过查看源码，里面的实现什么都没有，所以这一步没有必要
+		
+		byte[] bys=baos.toByteArray();
+		ByteArrayInputStream bais=new ByteArrayInputStream(bys);
+		int by=0;
+		while((by=bais.read())!=-1){
+			System.out.print((char)by);
+		}
+	}
+}
+
+//打印流
+字符流打印流 PrintStream
+字符打印流   PrintWriter
+
+打印流的特点：
+1 只有写数据的，没有读取数据，只能操作目的地，不能操作数据源
+2 可以操作任意类型的数据
+3 如果启动了自动刷新，能够自动刷新
+4 该流是可以直接操作文本文件的
+	哪些流对象是可以直接操作文本文件的？
+	可以通过看API查看流对象的构造方法，如果同时有File类型和String类型的参数，一般来说是可以直接操作文件的
+public class PrintWriterDemo{
+	public static void main(String[] args){
+		PrintWriter pw=new PrintWriter("pw.txt");
+		
+		pw.write("hello");
+		pw.write("world");
+		pw.write("java");
+		
+		pw.close();
+	}
+}
+
+public class PrintWriterDemo2{
+	public static void main(String[] args){
+		//PrintWriter pw=new PrintWriter("pw.txt");
+		//当第二个参数为true时启用自动刷新，此时调用println printf format会体现自动刷新的功能
+		PrintWriter pw=new PrintWriter(new FileWriter("pw2.txt"),true);
+		
+		pw.println(true);
+		pw.println(100);
+		pw.println("hello");
+		
+		pw.close();
+	}
+}
+
+//打印流实现文本文件复制
+//读取数据 FileReader BufferedReader
+//写入数据 FileWriter BufferedWriter PrintWriter
+public class CopyFileDemo{
+	public static void main(String[] args){
+		BufferedReader br=new BufferedReader(new FileReader("a.txt"));
+		PrintWriter pw=new PrintWriter(new FileWriter("b.txt"),true);
+		
+		String line=null;
+		while((line=br.readLine())!=null){
+			pw.println(line);
+		}
+		
+		pw.close();
+		br.close();
+	}
+}
+
+//标准输入输出流
+System类中的字段有in out
+它们各代表了系统标准的输入和输出设备
+默认输入设备是键盘，输出设备是显示器
+System类中的两个成员变量：
+	public static final InputStream in 标准输入流
+	public static final PrintStream out 标准输出流
+	
+	InputStream is=System.in;
+	PrintStream ps=System.out;
+	
+	System.out.println的本质是IO流操作，把数据输出到控制台
+
+
+三种方式实现键盘录入
+	main方法的args接收参数
+	Scanner JDK5之后才有
+		Scanner sc=new Scanner(System.in);
+		String s=sc.nextLine();
+		int x=sc.nextInt();
+public class SystemDemo{
+	public static void main(String[] args){
+		InputStream is=System.in;
+		
+		//一次读取一行数据 但是is需要接收字符流对象，现在is是字节流
+		//所以需要转换流
+		InputStreamReader isr=new InputStreamReader(is);
+		BufferedReader br=new BufferedReader(isr);
+		
+		//可以简写为
+		//BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
+		
+		String line=br.readLine();
+		
+		int i=Integer.parseInt(br.readLine());
+	}
+}
+
+//输出语句用字符缓冲流改进
+OutputStream os=System.out;
+OutputStreamWriter osw=new OutputStreamWriter(os);
+BufferedWriter bw=new BufferedWriter(osw);
+
+//连写为一句
+BufferedWriter bw=new BufferedWriter(new OutputStreamWriter(System.out));
+bw.write("hello");
+bw.flush();
+
+随机访问流RandomAccessFile 不属于流 支持对随机访问文件的读取和写入 既可以读又可以写
+构造方法中第一个参数是文件路径，第二个参数是操作文件的模式
+public class RandomAccessFileDemo{
+	public static void main(String[] args){
+		write();
+	}
+	
+	private static void read(){
+		RandomAccessFile raf=new RandomAccessFile("a.txt","rw");
+		
+		int i=raf.readInt();
+		System.out.println(i);
+		
+		//获取当前文件指针位置
+		raf.getFilePointer(); //4 单位是字节 因为int类型是4个字节
+		
+		char ch=raf.readChar();
+		raf.getFilePointer(); //6 char类型是2个字节
+		
+		String s=raf.readUTF();
+		raf.getFilePointer(); //14 在最后多读了2个字节
+		
+		//seek设置指针位置
+		raf.seek(4);
+		ch=raf.readChar();//'a'
+	}
+	
+	private static void write(){
+		RandomAccessFile raf=new RandomAccessFile("a.txt","rw");
+		
+		raf.writeInt(100);
+		raf.writeChar('a');
+		raf.writeUTF("中国");
+		
+		raf.close();
+	}
+}
+
+//SequenceInputStream表示其他输入流的逻辑串联
+public class SequenceInputStreamDemo{
+	public static void main(String[] args){
+		//将两个文件里面的内容放到一个文件里面
+		InputStream is1=new FileInputStream("a.txt");
+		InputStream is2=new FileInputStream("b.txt");
+		
+		SequenceInputStream sis=new SequenceInputStream(is1,is2);
+		
+		BufferedOutputStream bos=new BufferedOutputStream(new FileOutputStream("c.txt"));
+		byte[] bys=new byte[1024];
+		int len=0;
+		while((len=sis.read())!=-1){
+			bos.write(bys,0,len);
+		}
+		bos.close();
+		sis.close();
+	}
+}
+
+
+
+
+静态的东西一般不会用private修饰，反而要用private修饰
+内部类用static修饰是因为内部类可以看作外部类的成员
+静态内部类中只能访问外部类的静态成员
+
+成员内部类被静态修饰后的访问方式是
+外部类名.内部类名 对象名=new 外部类名.内部类名();
+
+类的加载
+当程序要使用某个类时，如果该类还没有被加载到内存中，则系统会通过加载，连续，初始化三步来实现对这个类进行初始化
+
+加载
+加载就是指将class文件读入内存，并为之创建一个class对象
+任何类被使用时系统都会建立一个Class对象
+
+连接
+验证 是否有正确的内部结构，并和其他类协调一致
+准备 负责为类的静态成员分配内存，并设置默认初始化值
+解析 将类的二进制数据中的符号引用替换为直接引用
+
+初始化 就是我们以前讲过的初始化步骤
+
+类的初始化时机
+创建类的实例
+访问类的静态变量或为静态变量赋值
+调用类的静态方法
+使用反射方式来强制创建某个类或接口对应的java.lang.Class对象
+初始化某个类的子类
+直接使用java.exe命令来运行某个主类
+
+
+类加载器负责将class文件加载到内存中，并为之生成对应的Class对象
+类加载器的组成
+Bootstrap ClassLoader 引导类加载器 负责Java核心类的加载 比如System String等，在JDK中JRE的lib目录下rt.jar文件中
+Extension ClassLoader 扩展类加载器 JRE扩展目录中jar包的加载 比如在JDK中JRE的lib目录下ext目录
+System ClassLoader 系统类加载器 负责在JVM启动时加载来自java命令的class文件，以及classpath环境变量所指定的jar包和类路径
+
+
+反射就是通过class文件对象去使用该文件中的成员变量 构造方法 成员方法
+这样的话必须得到class文件对象，其实也就是得到Class类的对象
+Class类
+	成员变量 Field
+	构造方法 Constructor
+	成员方法 Method
+	
+获取class文件对象的方式
+
+public class ReflectDemo{
+	public static void main(String[] args){
+		//方式一
+		Person p=new Person();
+		Class c=p.getClass();
+		
+		Person p2=new Person();
+		Class c2=p2.getClass();
+		
+		System.out.println(c==c2);//true getClass方法拿到的是Person.class文件对象，因为Person.class文件只有一个，所以c和c2是一样的
+		
+		//方式二
+		Class c3=Person.class;
+		
+		//方式三 forName的参数必须写全路径
+		//开发中通常使用第三种，因为第三种是一个字符串，而不是一个具体的类名，这样我们就可以把这样的字符串配置到配置文件中
+		Class c4=Class.forName("cn.itcast_01.Person");
+	}
+}
+
+//通过反射获取构造方法并使用
+public class ReflectDemo{
+	public static void main(String args[]){
+		Class c=Class.forName("cn.itcast_01.Person");
+		
+		Constructor[] cons=c.getConstructors(); //返回的是公共public的构造方法
+		//getDeclaredConstructors 返回的是所有构造方法
+		
+		for(Constructor con:cons){
+			Syso(con);
+		}
+		
+		//获取单个构造方法
+		Constructor con=c.getConstructor();//返回构造方法对象
+		
+		Object obj=con.newInstance();//创建出Person类对象
+	}
+}
+
+//需求：通过反射获取该构造方法并使用:
+
+Class c=Class.forName("cn.itcast_01.Person");
+//获取带参构造器
+Constructor con = c.getConstructor(String.class,int.class,String.class);
+//通过带参构造方法对象创建对象
+Object obj=con.newInstance("abc",12,"beijing");
+System.out.println(obj);
+
+
+//通过反射获取私有构造方法
+Class c=Class.forName("cn.itcast_01.Person");
+//getConstructor只能得到public的构造方法 getDeclaredConstructor可以得到任意访问修饰符的构造方法
+Constructor con=c.getDeclaredConstructor(String.class);
+//setAccessible的参数设置为true就忽略访问修饰符
+con.setAccessible(true);
+Object obj=con.newInstance("风清扬");
+
+//通过反射获取成员变量
+Class c=Class.forName("cn.itcast_01.Person");
+
+Fields[] fields=c.getFields();//获取所有公共成员变量
+//getDeclaredFields();//获取所有的公共成员变量
+
+Constructor con=c.getConstructor();
+Object obj=con.newInstance();
+Field addressField=c.getField("address");
+
+addressField.set(obj,"beijing");
+
+
+
+
+
+
+
+

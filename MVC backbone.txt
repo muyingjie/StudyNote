@@ -1,0 +1,141 @@
+backbone依赖underscore库，underscore库实现了数组、对象、事件等的很多方法，针对模型和集合
+
+//创建对象
+var model=new Backbone.Model();
+var models=new Backbone.Collection();
+var view=new Backbone.View();
+-----------------------------------------------------------------------
+var model=new Backbone.Model();
+model.set('name','hello');//键值对
+alert(model.get('name'));//得到hello
+-----------------------------------------------------------------------
+var model1=new Backbone.Model({'name':'hello'});
+var model2=new Backbone.Model({'name':'hello'});
+
+var models=new Backbone.Collection();
+models.add(model_1);
+models.add(model_2);
+
+alert(JSON.stringify(models));得到类似数组的字符串[{"name":"hello"},{"name":"hello"}]
+-----------------------------------------------------------------------
+//extend第一个参数扩展实例方法，第二个参数扩展静态方法
+var M=Backbone.Model.extend({
+	aaa:function(){
+		alert(123);
+	}
+},{
+	bbb:function(){
+		alert(456);
+	}
+});
+var model=new M;
+model.aaa();//实例方法
+M.bbb();//静态方法
+-----------------------------------------------------------------------
+var M=Backbone.Model.extend({
+	defaults:{
+		name:'hello'
+	}
+});
+var model=new M;
+alert(model.get('name'));
+-----------------------------------------------------------------------
+//继承
+var M=Backbone.Model.extend({
+	aaa:function(){
+		alert(123);
+	}
+});
+var ChildM=new ChildM;
+model.aaa();
+-----------------------------------------------------------------------
+//自定义事件
+var M=Backbone.Model.extend({
+	defaults:{
+		name:'hello'
+	},
+	initialize:function(){
+		this.on('change',function(){
+			alert(123);
+		});
+	}
+});
+-----------------------------------------------------------------------
+//自定义事件
+var M=Backbone.Model.extend({
+	defaults:{
+		name:'hello'
+	},
+	initialize:function(){
+		this.on('change:name',function(){
+			console.log(model);
+		});
+	}
+});
+var model=new M;
+model.set('name','hi');
+
+-----------------------------------------------------------------------
+$(function(){
+	var M=Backbone.Model.extend({
+		defaults:{
+			name:'hello'
+		}
+	});
+	var V=Backbone.View.extend({
+		initialize:function(){
+			this.listenTo(this.model,'change',this.show);
+		},
+		show:function(){
+			$('body').append('<div>'+model.get('name')+'</div>');
+		}
+	});
+
+	var m=new M;
+	var v=new M({model:m});
+	m.set('name':'hi');
+});
+-----------------------------------------------------------------------
+数据和服务器之间的操作
+Backbone.sync=function(method,model){
+	alert(method+":"+JSON.stringify(model));
+	model.id=1;
+};
+var M=Backbone.Model.extend({
+	defaults:{
+		name:'hello'
+	},
+	url:'/user'
+});
+var m=new M;
+m.save();//save方法就是将现在的模型保存到服务器上
+m.save({name:'hi'});
+-----------------------------------------------------------------------
+从服务器上获取数据
+Backbone.sync=function(method,model){
+	alert(method+":"+JSON.stringify(model));
+};
+var C=Backbone.Collection.extend({
+	initialize:function(){
+		this.on('reset',function(){
+			alert(123);
+		});
+	},
+	url:'/user'
+});
+var models=new C;
+models.fetch();
+
+-----------------------------------------------------------------------
+例子分析Todos
+
+
+
+
+
+
+
+
+
+
+

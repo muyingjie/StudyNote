@@ -1,0 +1,1029 @@
+(function(){
+	//里面写什么东西在外面都是找不到的，防止和其他代码冲突
+	function $()
+	{}
+	//在这里我们将jQuery对象挂到window下面这样在这个闭包外部就可以访问到$这个函数
+	window.jQuery=window.$=jQuery;
+})();
+
+
+$.trim();
+$.proxy();//$是一个函数，函授后面跟一个方法，其实这个方法就是静态方法(或工具方法)工具方法既可以给jQuery对象用，也可以给原生对象用，像$("#div").css()这样的方法是实例方法，因为$("#div")是一个对象实例
+
+静态方法可以理解为是实例方法的基础，也就是说在实现实例方法的时候用了静态方法
+
+最外层闭包里面还传入了undefined参数
+undefined是浏览器window对象的一个属性，并不是关键字，所以可以作为变量名，也就是说undefined如果作为变量名其值是可以被修改的(仅限于IE低版本，高版本浏览器已经作了处理，undefined的值不可以修改)，所以为了防止在外面修改了undefined的值，传入了undefined参数
+var undefined=10;
+alert(undefined);//10
+
+jQuery不推荐使用use strict
+
+var rootjQuery,//这个变量就是jQuery的根目录，在866行可以看到为其赋值了://rootjQuery=jQuery(document);
+var readyList这个变量是和DOM加载有关的
+
+core_strundefined=typeof undefined;//存储一个字符串形式的undefined
+
+//接下来通过一个小例子看看字符串的undefined和直接写undefined有什么区别
+window.a==undefined;
+typeof window.a=='undefined';
+两种形式都可以判断window对象下有没有a这个属性，但是在一些很少见的情况下通过第一种方式判断是有一定问题的，在IE6-IE9中，加入我们判断的是XML结点的方法或者属性的时候，这样就会有问题，所以为了全兼容，jQuery使用了第二种方式判断
+
+
+	location = window.location,
+	document = window.document,
+	docElem = document.documentElement,//实质上指的是html标签
+
+//这些对象不存也可以，但是存储完了之后压缩的时候方便
+
+	_jQuery = window.jQuery,
+	_$ = window.$,
+//这两个变量和防止冲突有关系
+//jQuery对外提供的接口只有$()，但是其他一些库也可能会用到$这个符号，例如
+
+var $=9;//这个$可以理解为window.$，当window.$被赋值的时候，这两句话就会起作用
+$("a").html("aaa");
+
+	class2type = {},
+//这个变量是我们在使用$.type的时候用的，最终会存成class2type = {'[Object String]':'string','[Object Array]':'array},这种形式，由于存了两个格式的字符串，所以名字里面有一个2
+
+	core_deletedIds = [],
+//与缓存数据有关，在2.0.3中已经没有用了
+
+
+	core_concat = core_deletedIds.concat,
+	core_push = core_deletedIds.push,
+	core_slice = core_deletedIds.slice,
+	core_indexOf = core_deletedIds.indexOf,
+	core_toString = class2type.toString,
+	core_hasOwn = class2type.hasOwnProperty,
+	core_trim = core_version.trim,
+//方便后面的使用，也方便压缩
+
+
+	jQuery = function( selector, context ) {
+		return new jQuery.fn.init( selector, context, rootjQuery );
+	},
+
+//外边调的时候 $()这个样子调用实际上调用的就是这个方法，这个方法返回一个对象，因为只有返回了对象才能在后面接着写一系列方法
+
+
+//一般普通写面向对象的时候会这样写：
+function Aaa()
+{}
+Aaa.prototype.init=function(){}
+Aaa.prototype.css=function(){}
+
+var a1=new Aaa();
+a1.init();
+a1.css();
+
+但是jQuery中并不是这样做的
+function jQuery(){
+	return new jQuery.prototype.init();//这样写jQuery.prototype.init就会将对象初始化的一系列工作都做好了，而且jQuery.prototype.init也返回一个对象，这个对象下就会有各种方法了，而这样写的话，就默认为jQuery.prototype.init是构造函数了，但是function jQuery(){}又表明了jQuery才是构造函数，这样一来就会矛盾了，所以直接这样写是不对的，因此在283行，有这样一句话：
+
+jQuery.fn.init.prototype=jQuery.prototype; 我们把jQuery的原型赋给了jQuery.fn.init的原型
+}
+
+jQuery.prototype.init=function(){}
+jQuery.prototype.css=function(){}
+
+
+
+
+	core_pnum = /[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|)/.source,
+//这个是匹配数字的正则
+
+
+	core_rnotwhite = /\S+/g,
+//这个是匹配单词的正则
+
+
+	rquickExpr = /^(?:\s*(<[\w\W]+>)[^>]*|#([\w-]*))$/,
+//这个正则匹配各种选择器，可以匹配$("<li>aaa") $("#div1")
+
+	rsingleTag = /^<(\w+)\s*\/?>(?:<\/\1>|)$/,
+//这个正则匹配单标签
+
+
+
+	rmsPrefix = /^-ms-/,
+//匹配IE浏览器的前缀
+//-webkit-transform-origin-->webkitTransformOrigin 其他浏览器首字母都是小写
+//-ms-transform-origin-->MsTransformOrigin IE浏览器首字母要大写
+
+
+	rdashAlpha = /-([\da-z])/gi,
+//转大小写 转数字的时候会用
+
+
+96-283给jQuery对象添加属性和方法
+
+101行 init函数
+
+$('li','ul')//第二个参数就是第一个参数的一个上下文
+
+	init: function( selector, context, rootjQuery ) {
+		var match, elem;
+
+		// HANDLE: $(""), $(null), $(undefined), $(false)
+		if ( !selector ) {
+			return this;//this是jQuery实例化对象
+		}
+		//接下来又判断了字符串类型的，包括$('#div1') $('.box') $('div') $('#div div.box') $('<div>') $('<li class="aaa"></li><li style="color:#fff;"></li>')
+		if ( typeof selector === "string" ) {
+		.......................
+		}
+		//处理DOM元素，包括$(this) $(document)
+		else if(selector.nodeType)
+		{
+			
+		}
+		//处理函数
+		else if ( jQuery.isFunction( selector ) )
+		{
+			
+		}
+		//处理传入数组 json的形式，例如$([]) $({})
+		if ( selector.selector !== undefined ) {
+			this.selector = selector.selector;
+			this.context = selector.context;
+		}
+
+
+//当selector参数为字符串类型的时候
+$('li').css({'background':'#f00'});
+
+实际上$('li')就是var aLi=document.getElementsByTagName('li');
+css({'background':'#f00'})就是
+for(var i=0;i<aLi.length;i++)
+{
+	aLi[i].style.background='#f00';
+}
+
+选择到的li实际上会被放到$的一个属性下 暂且假设这个属性是selectors
+那么selectors里面就会存储下面的值
+this.selectors={
+	0:<li></li>
+	1:<li></li>
+	2:<li></li>
+	length:3
+};
+
+所以css方法内部运行是这样的
+for(var i=0;i<this.selectors.length;i++)
+{
+	this.selectors[i].style.background='#f00';
+}
+
+既然这样的话this.selectors[0]就是一个原生对象了
+
+
+if(typeof selector=='string'){
+	if(selector.charAt(0)==='<'&&selector.charAt(selector.length-1)==='>'&&selector.length>=3)
+	{
+		//进入这个条件的是匹配$('<div>') $('<li class="aaa"></li><li style="color:#fff;"></li>')，具体如下
+		match=[null,selector,null];
+		//单标签的时候会是 match=[null,'<div>',null];
+		//多标签的时候会是 match=[null,'<li>1</li><li>2</li>',null]
+	}
+	else
+	{
+		//进入这个条件的是匹配$('#div1') $('.box') $('div') $('#div div.box')，具体如下
+		match=rquickExpr.exec(selector);//rquickExpr这个正则可以匹配$('<li>aaa') $('#div1')
+		//匹配$('.box') $('div') $('#div div.box')的时候得到
+		//match=null;
+		//匹配id的时候得到
+		//match=['#div1',null,'div1'];
+		//匹配$('<li>aaa')的时候得到
+		//match=['<li>hello','<li>',null];
+	}
+}
+
+//&&左边的match为真时是除了匹配$('.box') $('div') $('#div div.box')的时候的情况，也就是创建标签或者获取Id
+//&&右边的(match[1])为真时就是创建标签
+//&&右边的!content为真时是没有上下文，那么就是Id的情况了
+//综上，能进入的有$('<div>') $('#div1')
+if(match&&(match[1]||!content))
+{
+	if(match[1])//处理$('<div>')
+	{
+		//$("<li>",document) 第二个参数是执行的上下文，例如在iframe的情况下可以写成$("<li>",contentWindow.document)
+		//但是用的很少 基本上没什么意义
+		context=context instanceof jQuery?context[0]:context;//这里就是要得到原生的document
+		jQuery.merge(this,jQuery.parseHTML(
+			match[1],
+			context&&context.nodeType?context.ownerDocument||context:document,
+			true
+		));
+		//parseHTML的作用就是将字符串转为形如['li','li']结点数组，注意不是我们平时看到的类数组json(即{0:li,1:li,length:2})
+		//$.parseHTML(str) 该方法指定一个参数的时候就可以转为节点数组
+		//$.parseHTML(str,document)//第二个参数就是执行的上下文 第三个参数是布尔值 默认false 而这true和false的区别就在于是否是在创建script标签，在此需要注意，和创建别的标签不同，创建script标签的时候需要写成这样$("<script><\/script>");即需要转义一下，否则容易与已有的script标签冲突，再回到我们的第三个参数，如果是false的话即使在字符串中写了script也不能创建script标签，而如果写成了true就可以了
+		//merge方法
+		//merge方法通常用来合并数组 例如$.merge([1,2],[3,4]); 得到了[1,2,3,4] 该方法对外只具有合并数组的功能，而对内则既具有合并数组又具有合并json的能力 即：
+		var json={
+			0:'a',
+			1:'b',
+			length:2
+		};
+		var arr2=['c','d'];
+		$.merge(json,arr2);
+		//最终得到
+		{
+			0:'a',
+			1:'b',
+			2:'c',
+			3:'d',
+			length:4
+		}
+		//这就是我们想要的形式
+		//具体的merge和parseHTML怎么实现，遇到两个方法的时候再说
+		/////////////////////////////////////////////////
+		if ( rsingleTag.test( match[1] ) && jQuery.isPlainObject( context ) ){
+			for ( match in context ) {
+				// Properties of context are called as methods if possible
+				if ( jQuery.isFunction( this[ match ] ) ) {
+					this[ match ]( context[ match ] );
+
+				// ...and otherwise set as attributes
+				} else {
+					this.attr( match, context[ match ] );
+				}
+			}
+		}
+		//以上代码部分处理了类似$("<li>",{title:"hi",html:"abcd"}).appendTo("ul");的情况 用得也不多
+		//rsingleTag是匹配单标签的
+		return this;//创建标签已完
+	}
+	else//处理$('#div1')
+	{
+		//第10集
+		elem=document.getElementById(match[2]);
+		//经过之前的分析得知，如果是Id的话match数组就是['#div1',null,'div1']，所以match[2]就是div1
+		// Check parentNode to catch when Blackberry 4.6 returns
+		// nodes that are no longer in the document #6963
+		//以下代码中if条件里面是判断elem是否存在，但是在黑莓4.6中会出现一些意外情况，所以加了elem.parentNode的判断
+		if ( elem && elem.parentNode ) {
+			// Inject the element directly into the jQuery object
+			this.length = 1;
+			this[0] = elem;
+			//这样就变成了这种形式
+			//{
+			//	0:li,
+			//	length:1
+			//}
+		}
+		this.context=document;//指定上下文
+		this.selector=selector;//指定选择器
+		return this;
+	}
+// HANDLE: $(expr, $(...))
+//可以进入该if判断中的是context为空或者context不为空但是context是jQuery对象的情况
+//例如：$('ul',$(document)).find('li')
+}else if(!context||context.jquery){
+	return (context||rootjQuery).find(selector);
+	//rootjQuery就是根节点，即$(document)
+	//find调用了sizzle，是一个比较复杂的模块，等遇到了再说
+}else{
+	//context不是jQuery对象时的情况，例如$('ul',document).find('li')
+	// HANDLE: $(expr, context)
+	// (which is just equivalent to: $(context).find(expr)
+	return this.constructor(context).find(selector);
+}
+
+//////////////////////处理dom对象
+}else if(selector.nodeType){
+	this.context=this[0]=selector;
+	this.length=1;
+	return this;
+}else if(jQuery.isFunction(selector)){
+	//jQuery中有两种方法：
+	//$(function(){});
+	//$(document).ready(function(){});
+	return rootjQuery.ready(selector);
+}
+//如果selector有selector这个属性，证明是jQuery对象，其实是防止类似$($('#div'))这种写法
+if ( selector.selector !== undefined ) {
+	this.selector = selector.selector;
+	this.context = selector.context;
+}
+return jQuery.makeArray(selector,this);
+//与merge方法类似，$.makeArray这个方法接收一个参数时是对外的用法，即把类数组（aDiv）转为真正的数组，对内部还可以传两个参数，第二个参数就是this（当前jQuery对象），传两个参数的时候转成json
+},
+// Start with an empty selector
+selector: "",
+
+// The default length of a jQuery object is 0
+length: 0,
+//以上两个属性就不必多说了
+//toArray方法和makeArray方法类似，但是toArray是实例方法，而makeArray是静态方法
+//$('div').toArray();调用toArray之后就得到了[div,div,div...]数组里面存储了原生对象
+toArray: function() {
+	//slice方法不传参数的时候就会截取整个数组
+	return core_slice.call( this );
+},
+// Get the Nth element in the matched element set OR
+// Get the whole matched element set as a clean array
+get: function( num ) {
+	return num == null ?
+
+		// Return a 'clean' array
+		this.toArray() :
+
+		// Return just the object
+		( num < 0 ? this[ this.length + num ] : this[ num ] );
+},
+//$('div').get(0)得到原生对象
+//$('div').get()得到原生对象数组
+
+//12集
+//$('div').pushStack( $('span') ).css('background','#f00')
+//span变成了红色，因为span后被添加进去，所以先出来变成红色
+//在pushStack方法里面ret有prevObject属性，通过下面的这句话我们可以看到prevObject的用处
+//$('div').pushStack( $('span') ).css('background','#f00').end().css('background','#0f0')
+//这里的end方法实际上内部一定调用了prevObject
+//pushStack在平时我们用的并不多，但是jQuery内部用得很多，而且对于jQuery内部这个方法至关重要，举例来说
+//$('div').slice(1,3).css('background','red') 第1、2个div就变成了红色（slice(1,3)不包含第3个）
+//slice实现的时候也一定是调用了pushStack
+//$('div').slice(1,3).css('background','red').end().css('color','#00f') 第2、3个div变成了红色，所有的div文字变成了蓝色
+pushStack: function( elems ) {
+
+	// Build a new jQuery matched element set
+	var ret = jQuery.merge( this.constructor(), elems );
+
+	// Add the old object onto the stack (as a reference)
+	ret.prevObject = this;
+	ret.context = this.context;
+
+	// Return the newly-formed element set
+	return ret;
+},
+
+// Execute a callback for every element in the matched set.
+// (You can seed the arguments with an array of args, but this is
+// only used internally.)
+each: function( callback, args ) {
+	return jQuery.each( this, callback, args );
+},
+
+ready: function( fn ) {
+	// Add the callback
+	jQuery.ready.promise().done( fn );
+
+	return this;
+},
+
+eq: function( i ) {
+	var len = this.length,
+		j = +i + ( i < 0 ? len : 0 );
+	return this.pushStack( j >= 0 && j < len ? [ this[j] ] : [] );
+},
+
+map: function( callback ) {
+	return this.pushStack( jQuery.map(this, function( elem, i ) {
+		return callback.call( elem, i, elem );
+	}));
+},
+
+////////////////////extend用法
+//当只写一个对象自变量的时候，是jQuery中扩展插件的形式，例如
+
+$.extend({//直接在$下面扩展方法是扩展静态方法，调用的时候形式为$.aaa()
+	aaa:function(){
+		alert(1);
+	},
+	bbb:function(){
+		alert(2);
+	},
+});
+
+$.fn.extend({//在原型下扩展方法是扩展实例方法，调用的时候形式为$('div').aaa()
+	aaa:function(){
+		alert(3);
+	},
+	bbb:function(){
+		alert(4);
+	},
+});
+//思考：$.extend() 调用的时候this就是$
+//$.fn.extend() 调用的时候this就是$.fn
+jQuery.extend=jQuery.fn.extend=function(){
+	
+}
+
+//当写多个对象自变量的时候，后面的对象都是扩展到第一个对象上
+var a={};
+$.extend(a,{name:'hello'},{age:'20'});
+//现在的a就是
+{
+	name:'hello',
+	age:20
+}
+//还可以做深拷贝和浅拷贝 jQuery中默认是浅拷贝
+
+var a={};
+var b={name:'hello'};
+$.extend(a,b);
+a.name='hi';
+alert(b.name);//hello 也就是说这时a和b是不受影响的
+//但是
+var a={};
+var b={name:{age:30}};
+$.extend(a,b);
+a.name.age=20;
+alert(b.name.age);//20 由于默认是浅拷贝，所以当json里面嵌套json的时候就会出问题
+
+$.extend(true,a,b)//当第一个参数是true的时候就会变成深拷贝
+
+jQuery.extend=jQuery.fn.extend=function(){
+	if(){}//看是不是深拷贝情况
+	if(){}//看参数是否正确
+	if(){}//看是不是插件情况
+	for(){//可能有多个对象的情况
+		if(){}//防止循环引用
+		if(){}//深拷贝
+		else if(){}//浅拷贝
+	}
+};
+jQuery.extend = jQuery.fn.extend = function() {
+	var options, name, src, copy, copyIsArray, clone,
+		target = arguments[0] || {},
+		i = 1,
+		length = arguments.length,
+		deep = false;
+
+	// Handle a deep copy situation
+	if ( typeof target === "boolean" ) {
+		deep = target;
+		target = arguments[1] || {};
+		// skip the boolean and the target
+		i = 2;
+	}
+
+	// Handle case when target is a string or something (possible in deep copy)
+	if ( typeof target !== "object" && !jQuery.isFunction(target) ) {
+		target = {};
+	}
+
+	// extend jQuery itself if only one argument is passed
+	if ( length === i ) {
+		target = this;
+		--i;
+	}
+
+	for ( ; i < length; i++ ) {
+		// Only deal with non-null/undefined values
+		if ( (options = arguments[ i ]) != null ) {
+			// Extend the base object
+			for ( name in options ) {
+				src = target[ name ];
+				copy = options[ name ];
+
+				// Prevent never-ending loop
+				if ( target === copy ) {
+					continue;
+				}
+
+				// Recurse if we're merging plain objects or arrays
+				if ( deep && copy && ( jQuery.isPlainObject(copy) || (copyIsArray = jQuery.isArray(copy)) ) ) {
+					if ( copyIsArray ) {
+						copyIsArray = false;
+						clone = src && jQuery.isArray(src) ? src : [];
+
+					} else {
+						clone = src && jQuery.isPlainObject(src) ? src : {};
+					}
+
+					// Never move original objects, clone them
+					target[ name ] = jQuery.extend( deep, clone, copy );
+
+				// Don't bring in undefined values
+				} else if ( copy !== undefined ) {
+					target[ name ] = copy;
+				}
+			}
+		}
+	}
+
+	// Return the modified object
+	return target;
+};
+//jQuery.extend目的是扩展一些工具方法15集
+jQuery.extend({
+	expando: 生成唯一的jQuery字符串（内部）
+	noConflict()：防止冲突
+	isReady：DOM是否加载完（内部）
+	readyWait：等待多少文件的计数器（内部）
+	holdReady()：推迟DOM触发
+	ready()：准备DOM触发
+	isFunction()：是否为函数
+	isArray()：是否为数组,
+	isWindow()：是否为window
+	isNumeric()：是否为数字
+	type()：判断数据类型
+	isPlainObject()：是否为对象自变量
+	isEmptyObject()：是否为空的对象
+	error()：抛出异常
+	parseHTML()：解析结点
+	parseJson():解析json
+	parseXML():解析XML
+	noop():空函数
+	globalEval():全局解析JS
+});
+
+// Unique for each copy of jQuery on the page
+expando: "jQuery" + ( core_version + Math.random() ).replace( /\D/g, "" ),
+
+//关于noConflict方法，是在外部用到$时的一种处理形式，具体如下
+var miaov=$.noConflict();//先用noConflict方法将jQuery对象存起来
+var $=123;//此时愿意给$赋什么值就给它赋什么值
+miaov(function(){//用到jQuery的时候用别名就可以了
+	alert($);//这里就可以找到外部的$了
+});
+
+noConflict: function( deep ) {
+	if ( window.$ === jQuery ) {
+		window.$ = _$;
+	}
+
+	if ( deep && window.jQuery === jQuery ) {
+		window.jQuery = _jQuery;
+	}
+
+	return jQuery;
+},
+
+$(function(){});
+↓
+$(document).ready(function(){});
+↓
+$().ready();
+↓
+jQuery.ready.promise().done(fn);(创建一个延迟对象)→document.readyState==="complete"
+↓								↓
+completed回调							↓
+↓								←
+↓←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+↓
+$.ready()
+///////////////////////////
+$.isFunction(show)//show如果是函数就返回true
+
+// See test/unit/core.js for details concerning isFunction.
+// Since version 1.3, DOM methods and functions like alert
+// aren't supported. They return false on IE (#2968).
+isFunction: function( obj ) {
+	return jQuery.type(obj) === "function";
+},
+源码中注释的意思就是在高版本浏览器中，全局函数是函数类型，但在低版本浏览器中全局函数是对象类型，即
+alert(typeof alert);//高版本下得到function 低版本下得到object
+
+//////////////////////////
+isArray: Array.isArray,//IE678不支持isArray，是ECMA5的新东西
+
+isWindow: function( obj ) {
+	return obj != null && obj === obj.window;
+},
+//alert(null==null);//true
+alert(undefined=null);//true
+true==null//false
+false==null//false
+
+由以上测试得到除了undefined和null和null做比较是真，别的都是假
+
+//window在js中有两种意义
+1、充当全局对象
+var a=10;
+window.a=10;
+2、浏览器窗口
+window.open();
+//所以obj==obj.window返回true，而别的对象是没有window属性的
+
+isNumeric: function( obj ) {
+	return !isNaN( parseFloat(obj) ) && isFinite( obj );
+},
+
+//typeof判断是否是数字的话不准确，因为typeof NaN返回Number
+
+isFinite判断传的数字是不是有限的，如果越界了，就返回false了
+
+alert(isFinite(Number.MAX_VALUE+Number.MAX_VALUE));//false
+////////////////////////////////
+type:function(obj){
+	if(obj==null)//null、undefined和null作比较的时候返回true
+	{
+		return String(obj);//通过String将null和undefined转换为字符串，所以$.type(null)得到字符串'null'，而$.type(undefined)得到字符串'undefined'
+	}
+	// Support: Safari <= 5.1 (functionish RegExp) 在老版本的chrome和Safari浏览器中$.type(/\s+/)返回function，新的版本中才修正过来，显示object，所以做双重判断就是避免了Safari下的这个问题
+	return typeof obj === "object" || typeof obj === "function" ?
+		class2type[ core_toString.call(obj) ] || "object" :
+		typeof obj;
+	//?前面的两个条件如果都不满足，就是基本类型
+},
+使用时通过$.type(a)就可以得到a的类型
+core_toString就是{}.toString方法的缩写
+alert({}.toString.call([]));//[object Array]
+
+//在此给class2type这个json赋了值，让class2type里面的每一项(形如[object Array])对应的值为array
+jQuery.each("Boolean Number String Function Array Date RegExp Object Error".split(" "), function(i, name) {
+	class2type[ "[object " + name + "]" ] = name.toLowerCase();
+});
+/////////////////////////////////////
+isPlainObject 判断是否是对象自变量
+所谓对象自变量，例如：
+var obj={name:'111'};
+var obj2=new Object();
+$.isPlainObject(obj);//true
+
+但是[]就不是对象自变量了
+isPlainObject: function( obj ) {
+	// Not plain objects:
+	// - Any object or value whose internal [[Class]] property is not "[object Object]"
+	// - DOM nodes
+	// - window
+	if ( jQuery.type( obj ) !== "object" || obj.nodeType || jQuery.isWindow( obj ) ) {
+		return false;
+	}
+	//第一个条件排除了Number Boolean String基本类型
+	//第二个条件排除了DOM结点
+	//第三个条件排除了window
+
+
+
+	// Support: Firefox <20
+	// The try/catch suppresses exceptions thrown when attempting to access
+	// the "constructor" property of certain host objects, ie. |window.location|
+	// https://bugzilla.mozilla.org/show_bug.cgi?id=814622
+	try {
+		if ( obj.constructor &&
+				!core_hasOwn.call( obj.constructor.prototype, "isPrototypeOf" ) ) {
+			return false;
+		}
+	} catch ( e ) {
+		return false;
+	}
+	//core_hasOwn是class2type.hasOwnProperty，即{}.hasOwnProperty方法
+	//原型链:arr->Array.prototype->Object.prototype-----Object.prototype下有isPropertyOf属性
+	//{}.hasOwnProperty.call(Object.prototype,"isPrototypeOf");  true
+	//{}.hasOwnProperty.call(Array.prototype,"isPrototypeOf");  false
+	//{}.hasOwnProperty.call(window.location.prototype,"isPrototypeOf");  false
+	//try catch容错是防止FF20-浏览器的bug
+
+
+
+
+	// If the function hasn't returned already, we're confident that
+	// |obj| is a plain object, created by {} or constructed with new Object
+	return true;
+},
+////////////////////////////
+isEmptyObject()  判断是否为空
+$.isEmptyObject({})//true
+$.isEmptyObject([])//true
+function A(){}
+$.isEmptyObject(new A())//true
+
+isEmptyObject: function( obj ) {
+	var name;
+	for ( name in obj ) {
+		return false;
+	}
+	return true;
+},
+
+在面向对象继承的时候，系统会自动帮我们加上
+A.prototype.constructor=A
+但是当我们for in遍历prototype的时候constructor是遍历不到的
+for in的特点就是系统自带的for in不到，而我们自己加的可以for in不到
+//////////////////////
+error方法
+$.error("这是错误");//这样在控制台就会抛出红色的错误
+error: function( msg ) {
+	throw new Error( msg );
+},
+//////////////////////
+var str='<li></li><li></li>';
+console.log($.parseHTML(str));//[li,li]
+//parseHTML第二个参数是执行上下文，第三个参数是是否创建script标签
+parseHTML: function( data, context, keepScripts ) {
+	if ( !data || typeof data !== "string" ) {
+		return null;
+	}
+	if ( typeof context === "boolean" ) {
+		keepScripts = context;
+		context = false;
+	}//处理调用形式为$.parseHTML('<li></li>',true)的情况
+	context = context || document;
+
+	var parsed = rsingleTag.exec( data ),//是否为单标签
+		scripts = !keepScripts && [];
+
+	// Single tag
+	if ( parsed ) {
+		return [ context.createElement( parsed[1] ) ];
+	}
+
+	parsed = jQuery.buildFragment( [ data ], context, scripts );
+
+	if ( scripts ) {
+		jQuery( scripts ).remove();
+	}
+
+	return jQuery.merge( [], parsed.childNodes );
+},
+//////////////////////////////////////////
+parseJSON: JSON.parse,
+
+$.parseJSON('{"name":"aaa"}').name------得到aaa
+
+///////////////////////////////////////////
+parseXML: function( data ) {
+	var xml, tmp;
+	if ( !data || typeof data !== "string" ) {
+		return null;
+	}
+
+	// Support: IE9
+	try {
+		tmp = new DOMParser();//创建了解析XML的方法 只有IE8-不支持
+		xml = tmp.parseFromString( data , "text/xml" );//加try catch是因为在IE9下XML写错时会报错
+	} catch ( e ) {
+		xml = undefined;
+	}
+	//处理IE
+	if ( !xml || xml.getElementsByTagName( "parsererror" ).length ) {
+		jQuery.error( "Invalid XML: " + data );
+	}
+	return xml;
+},
+xmlDoc=$.parseXML("<rss><channel>aaa</channel></rss>")
+$xml=$(xmlDoc)
+$title=$xml.find("title");
+///////////////////////////
+noop:function(){}
+
+///写插件时可能会用 一般也用不上
+function Aaa()
+{
+	this.defaults={
+		show:$.noop
+	};
+}
+Aaa.prototype.init=function(opt){
+	$.extend(this.defaults,opt);
+};
+////////////////////////////
+globalEval() 全局解析JS
+function test()
+{
+	$.globalEval("var newVar=true;");
+}
+test();
+alert(newVar);//true
+
+globalEval: function( code ) {
+	var script,
+			indirect = eval;
+
+	code = jQuery.trim( code );
+
+	if ( code ) {
+		// If the code includes a valid, prologue position
+		// strict mode pragma, execute code by injecting a
+		// script tag into the document.
+		//严格模式下，eval不可以用，所以需要区分
+		if ( code.indexOf("use strict") === 1 ) {
+			script = document.createElement("script");
+			script.text = code;
+			document.head.appendChild( script ).parentNode.removeChild( script );
+		} else {
+		// Otherwise, avoid the DOM node creation, insertion
+		// and removal by using an indirect global eval
+			indirect( code );
+		}
+	}
+},
+
+////window.eval和eval的区别
+function test()
+{
+	window.eval("var a=1");
+}
+test();
+alert(a);//1
+-------------------------------
+function test()
+{
+	eval("var a=1");
+}
+test();
+alert(a);//报错
+-------------------------------
+function test()
+{
+	var val=eval;
+	val("var a=1");
+}
+test();
+alert(a);//1
+//即eval前加window和将eval存起来效果一样
+--------------
+eval的身份：既是一个关键字，有是window对象的一个方法，如果直接eval("var a=1")则会当成关键字来对待，只在局部作用域有效，而window.eval这样调用就是按照window对象方法来调用的，所以。。。
+///////////////////////////////
+camelCase() 转驼峰方法
+
+
+// Convert dashed to camelCase; used by the css and data modules
+// Microsoft forgot to hump their vendor prefix (#9572)
+camelCase: function( string ) {
+	return string.replace( rmsPrefix, "ms-" ).replace( rdashAlpha, fcamelCase );
+},
+fcamelCase=function(all,letter){
+	return letter.toUpperCase();
+},
+转驼峰的时候IE较为特殊
+-ms-transform msTransform
+-moz-transform MozTransform
+
+/////////////////////////////////////////
+nodeName方法：是否为指定结点
+nodeName: function( elem, name ) {
+	return elem.nodeName && elem.nodeName.toLowerCase() === name.toLowerCase();
+},
+
+$.nodeName(document.documentElement,'html');//true
+$.nodeName(document.body,'html');//false
+/////////////////////////////////////////
+each() 遍历集合
+
+// args is for internal usage only第三个参数args是内部使用的
+each: function( obj, callback, args ) {
+	var value,
+		i = 0,
+		length = obj.length,
+		isArray = isArraylike( obj );//判断当前对象obj是否为数组或者类数组，如果是数组、类数组以及当前jQuery对象的话，就返回真
+
+	if ( args ) {
+		if ( isArray ) {
+			for ( ; i < length; i++ ) {
+				value = callback.apply( obj[ i ], args );
+
+				if ( value === false ) {
+					break;
+				}
+			}
+		} else {
+			for ( i in obj ) {
+				value = callback.apply( obj[ i ], args );
+
+				if ( value === false ) {
+					break;
+				}
+			}
+		}
+
+	// A special, fast, case for the most common use of each
+	} else {
+		if ( isArray ) {
+			for ( ; i < length; i++ ) {
+				value = callback.call( obj[ i ], i, obj[ i ] );
+
+				if ( value === false ) {
+					break;
+				}
+			}
+		} else {
+			for ( i in obj ) {
+				value = callback.call( obj[ i ], i, obj[ i ] );
+
+				if ( value === false ) {
+					break;
+				}
+			}
+		}
+	}
+
+	return obj;
+},
+
+使用:
+var arr=['a','b','c'];
+$.each(arr,function(i,value){
+	console.log(i);//0 1 2返回索引
+	console.log(value);//'a' 'b' 'c'返回值
+});
+循环json的时候，i返回键，value返回值
+////////////////////////////////////
+trim: function( text ) {
+	return text == null ? "" : core_trim.call( text );
+},
+core_trim是用了ECMA5的新方法trim，是对原生trim的二次封装
+////////////////////////////////////
+makeArray:类数组转真数组
+
+var aDiv=document.getElementsByTagName("div");
+console.log($.makeArray(aDiv));
+实际上除了类数组之外，string number也能转为数组
+
+makeArray还有一个用法，也就是加上第二个参数的时候，作为内部使用，转换为类似数组的json
+
+
+
+makeArray: function( arr, results ) {
+	var ret = results || [];
+
+	if ( arr != null ) {
+		if ( isArraylike( Object(arr) ) ) {
+			jQuery.merge( ret,
+				typeof arr === "string" ?
+				[ arr ] : arr
+			);
+		} else {
+			core_push.call( ret, arr );
+		}
+	}
+
+	return ret;
+},
+////////////////////////
+inArray是数组版的indexOf方法
+$.inArray('a',['a','b','c']);//true
+
+inArray: function( elem, arr, i ) {
+	return arr == null ? -1 : core_indexOf.call( arr, elem, i );
+},
+////////////////////////
+merge
+
+
+merge: function( first, second ) {
+	var l = second.length,
+		i = first.length,
+		j = 0;
+	//有可能第二个参数不是数组，也不是类数组，可能是json，而且还是特殊形式的json，从else里的while()条件里面来看，j是索引，所以json里面得有一项的键是0
+	if ( typeof l === "number" ) {
+		for ( ; j < l; j++ ) {
+			first[ i++ ] = second[ j ];
+		}
+	} else {
+		while ( second[j] !== undefined ) {
+			first[ i++ ] = second[ j++ ];
+		}
+	}
+
+	first.length = i;
+
+	return first;
+},
+/////////////////////////////
+grep()
+
+var arr=[1,2,3,4];
+//第一个参数是当前操作元素的值，i是下标
+arr=$.grep(arr,function(n,i){
+	//返回值大于2的
+	return n>2;
+});
+arr=$.grep(arr,function(n,i){
+	//返回索引大于1的
+	return i>1;
+});
+arr=$.grep(arr,function(n,i){
+	//返回值小于1的，即第三个参数为true时，取相反的
+	return n>1;
+},true);
+
+
+grep: function( elems, callback, inv ) {
+	var retVal,
+		ret = [],
+		i = 0,
+		length = elems.length;
+	inv = !!inv;
+
+	// Go through the array, only saving the items
+	// that pass the validator function
+	for ( ; i < length; i++ ) {
+		retVal = !!callback( elems[ i ], i );
+		if ( inv !== retVal ) {
+			ret.push( elems[ i ] );
+		}
+	}
+
+	return ret;
+},
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

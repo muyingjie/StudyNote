@@ -1,0 +1,702 @@
+var arr=new Array();
+arr.push();
+arr.sort();
+
+Array.prototype.push=function(){
+	//this:1,2,3
+	//arguments:4,5,6
+	for(var i=0;i<arguments.length;i++)
+	{
+		this[this.length]=arguments[i];
+	}
+	return this.length;
+};
+
+var arr=[1,2,3];
+
+
+------------------------------------------------
+var str='hello';
+String.prototype.lastValue=function(){
+	return this.charAt(this.length-1);
+};
+
+alert(str.lastValue);
+
+--------------------------------------------------
+实例对象和原型之间的链接就叫原型链 在控制台下可以看到 原型链就是__proto__ __proto__不可写
+
+原型链的最外层是Object.prototype
+	__proto__			    __proto__
+	    ↓					↓
+a1------------------->Aaa.prototype-------------------------->Object.prototype
+
+面向对象的一些属性和方法
+hasOwnProperty 看是不是对象自身下面的属性
+var arr=[];
+arr.num=10;
+Array.prototype.num2=20;
+//console.log(arr.hasOwnProperty('num'));//true
+//console.log(arr.hasOwnProperty('num2'));//false
+
+constructor
+
+var a=new A();
+alert(a.constructor);//A函数
+
+
+function A(){}
+//写完一个构造函数后，程序会自动实现下面这句话
+A.prototype.constructor=A;
+
+//所以如果我们手动的改了这句话
+A.prototype.constructor=Array
+//就会指向数组，会影响别的代码
+
+//实际上hasOwnProperty是Object的方法，并不是创建构造函数的时候生成的方法，可以通过如下方法验证
+var a1=new A();
+console.log(a1.hasOwnProperty==Object.prototype.hasOwnProperty);//true
+
+
+有时需要手动改变constructor的指向
+
+Aaa.prototype={
+	constructor:Aaa,
+	name:'小明',
+	age:20
+};
+////////
+function Aaa(){
+	
+}
+
+Aaa.prototype.name=10;
+
+for(var attr in Aaa.prototype)
+{
+	console.log(attr);//只能遍历到num，不能得到constructor，即constructor使只读的
+}
+
+
+instanceof运算符 注意是运算符 用于判断对象和构造函数在原型链上是否有关系
+
+function Aaa(){}
+
+var a1=new Aaa();
+
+alert(a1 instanceof Aaa);//true
+alert(a1 instanceof Object);//true
+
+toString() Object上的方法
+//其实constructor instanceof toString() 都是判断类型的方法，但是toString是最好的方法
+
+function Aaa(){
+
+}
+
+var a1=new Aaa();
+alert(a1.toString()==Object.prototype.toString);//true
+
+
+var arr=[];
+alert(arr.toString==Object.prototype.toString);//false
+
+
+//综上，系统对象都是自身的，而自己的构造函数创建的对象是Object的，即系统的对象例如arr是在Array.prototype下的方法
+
+toString()的作用是转字符串，转换后的字符串和数组是一样的，当然，这个toString是可以重写的
+
+Array.prototype.toString=function(){
+	return this.join('+');
+};
+
+toString还可以进行进制转换
+
+var num=255;
+alert(num.toString(16));//'ff'
+
+toString还可以做类型判断
+var arr=[];
+alert(Object.prototype.toString.call(arr));//'[Object Array]'
+
+var reg=new RegExp();
+alert(Object.prototype.toString.call(reg));//'[Object RegExp]'
+
+
+用instanceof和constructor在有些情况下可能会出问题
+window.onload=function(){
+	var oF=document.createElement('iframe');
+	document.body.appendChild(oF);
+	var ifArray=window.frame[0].Array;
+	var arr=new ifArray();
+	alert(arr.constructor==Array);//false 跨iframe时contructor会失效
+	alert(arr instanceof Array);//false
+	alert(Object.prototype.toString.call(arr)=='[object Array]');
+};
+
+
+//拖拽继承
+#div1{ width:100px; height:100px; background:#f00; position:absolute;}
+#div2{ width:100px; height:100px; background:#0ff; position:absolute; left:100px;}
+
+window.onload=function(){
+	var d1=new Drag('div1');
+	d1.init();
+	
+	var d2=new ChildDrag('div2');
+	d2.init();
+};
+
+function Drag(id)
+{
+	this.obj=document.getElementById(id);
+	this.disX=0;
+	this.disY=0;
+}
+
+Drag.prototype.init=function(){
+	var _this=this;
+	this.obj.onmousedown=function(ev){
+		var oEvent=ev||event;
+		_this.fnDown(oEvent);
+		document.onmousemove=function(ev){
+			var oEvent=ev||event;
+			_this.fnMove(oEvent);
+		};
+
+		document.onmouseup=function(ev){
+			_this.fnUp();
+		};
+		return false;
+	};
+};
+
+
+Drag.prototype.fnDown=function(ev){
+	this.disX=ev.clientX-this.obj.offsetLeft;
+	this.disY=ev.clientY-this.obj.offsetTop;
+};
+
+Drag.prototype.fnMove=function(ev){
+	this.obj.style.left=ev.clientX-this.disX+'px';
+	this.obj.style.top=ev.clientY-this.disY+'px';
+};
+
+Drag.prototype.fnUp=function(){
+	document.onmousemove=document.onmouseup=null;
+};
+
+
+
+function ChildDrag(id)
+{
+	Drag.call(this,id);
+}
+
+Drag.prototype.fnMove=function(ev){
+	var l=ev.clientX-this.disX;
+	var t=ev.clientY-this.disY;
+	if(l<0)
+	{
+		l=0;
+	}
+	if(l>document.documentElement.clientHeight-this.obj.offsetWidth)
+	{
+		l=document.documentElement.clientHeight-this.obj.offsetWidth
+	}
+	//t是同理的
+	this.obj.style.left=l+'px';
+	this.obj.style.top=t+'px';
+};
+
+extend(Child.prototype,Drag.prototype);
+
+function extend(obj1,obj2){
+	for(var attr in obj2){
+		obj1[attr]=obj2[attr];
+	}
+}
+
+//类式继承
+function A(){
+	this.name='小明';
+}
+A.prototype.showName=function(){
+	alert(this.name);
+};
+
+function B(){
+	
+}
+B.prototype=new A();
+B.prototype.constructor=B;
+
+var b1=new B();
+
+//如果现在将类A中的this.name改成[1,2,3]
+b1.push(4);
+
+//新建一个对象
+var b2=new B();
+alert(b2);//本来应该弹出1,2,3，但是实际上弹出的是1,2,3,4
+
+b1 b2虽然是两个不同的对象，但是两个对象之间相互影响，这样一定不太好，所以要做属性和方法的继承的时候要分开继承，写继承的时候应该这样写
+function A(){
+	this.name='小明';
+}
+A.prototype.showName=function(){
+	alert(this.name);
+};
+
+function B(){
+	
+}
+
+var F=function(){};
+F.prototype=A.prototype;
+B.prototype=new F();
+B.prototype.constructor=B;
+
+//b1============>B.prototype=f1===========>F.prototype=A.prototype(有showName)
+
+//以上代码只实现了方法的继承，而没有实现属性的继承，属性在继承的时候还是用call函数
+
+//原型继承
+
+var a={
+	name:'小明'
+};
+
+var b=cloneObj(a);
+
+alert(b.name);
+
+function cloneObj(obj){
+	var F=function(){};
+	F.prototype=obj;
+	return new F();
+}
+
+拷贝继承
+类式继承
+原型继承
+
+
+//组件开发
+
+//拖拽组件
+#div1{ width:100px; height:100px; background:#f00; position:absolute;}
+#div2{ width:100px; height:100px; background:#0ff; position:absolute; left:100px;}
+
+window.onload=function(){
+	var d1=new Drag();
+	d1.init('div1');//传参的时候还可以写到初始化函数中
+	
+	var d2=new Drag();
+	d2.init('div2',function(){
+		document.title='hello';
+	});//期望在d2按下的时候标题显示为Hello
+
+	var d3=new Drag();
+	d3.init('div3',function(){
+		document.title='妙味';
+	},function(){
+		document.title='课堂';//希望鼠标抬起的时候变成课堂
+	});
+
+	var d4=new Drag();
+	//如果希望d4在抬起的时候title显示 拜拜，但是如果写在第二个参数的位置，一定不可以，当然我们可以写一个空函数作为占位，但是当参数一旦多的时候，就会非常不方便
+};
+
+function Drag()
+{
+	this.obj=null;
+	this.disX=0;
+	this.disY=0;
+}
+
+Drag.prototype.init=function(id,toDown,toUp){
+	this.obj=document.getElementById(id);
+	var _this=this;
+	this.obj.onmousedown=function(ev){
+		var oEvent=ev||event;
+		toDown();//希望在按下的时候调用，所以要写在mousedown里面，但是如果不需要这个功能的时候会报错
+		_this.fnDown(oEvent);
+		document.onmousemove=function(ev){
+			var oEvent=ev||event;
+			_this.fnMove(oEvent);
+		};
+
+		document.onmouseup=function(ev){
+			toUp||toUp();
+			_this.fnUp();//和toDown函数一样，如果不需要的话也会报错
+		};
+		return false;
+	};
+};
+
+
+Drag.prototype.fnDown=function(ev){
+	this.disX=ev.clientX-this.obj.offsetLeft;
+	this.disY=ev.clientY-this.obj.offsetTop;
+};
+
+Drag.prototype.fnMove=function(ev){
+	this.obj.style.left=ev.clientX-this.disX+'px';
+	this.obj.style.top=ev.clientY-this.disY+'px';
+};
+
+Drag.prototype.fnUp=function(){
+	document.onmousemove=document.onmouseup=null;
+};
+
+function extend(obj1,obj2){
+	for(var attr in obj2){
+		obj1[attr]=obj2[attr];
+	}
+}
+
+//解决参数过多的问题可以直接传入json形式的参数
+//参数如果不写程序报错的问题，可以用extend解决
+
+window.onload=function(){
+	var d1=new Drag();
+	d1.init({//配置参数
+		id:'div1'
+	});
+
+	var d2=new Drag();
+	d2.init({//配置参数
+		id:'div2'
+		toDown:function(){
+			document.title='miaov';
+		},
+		toUp:function(){
+			document.title='ketang';
+		}
+	});
+
+	var d3=new Drag();
+	d3.init({//配置参数
+		id:'div3',
+		toUp:function(){
+			document.title='byebye';
+		}
+	});
+};
+
+function Drag()
+{
+	this.obj=null;
+	this.disX=0;
+	this.disY=0;
+	this.settings={
+		toDown:function(){},//默认什么都不干
+		toUp:function(){}
+	};
+}
+
+Drag.prototype.init=function(options){
+	extend(this.settings,options);
+	var _this=this;
+	this.obj=document.getElementById(options.id);
+	this.obj.onmousedown=function(ev){
+		var oEvent=ev||event;
+		_this.options.toDown();
+		_this.fnDown(oEvent);
+		document.onmousemove=function(ev){
+			var oEvent=ev||event;
+			_this.fnMove(oEvent);
+		};
+
+		document.onmouseup=function(ev){
+			_this.options.toUp();
+			_this.fnUp();
+		};
+		return false;
+	};
+};
+
+
+Drag.prototype.fnDown=function(ev){
+	this.disX=ev.clientX-this.obj.offsetLeft;
+	this.disY=ev.clientY-this.obj.offsetTop;
+};
+
+Drag.prototype.fnMove=function(ev){
+	this.obj.style.left=ev.clientX-this.disX+'px';
+	this.obj.style.top=ev.clientY-this.disY+'px';
+};
+
+Drag.prototype.fnUp=function(){
+	document.onmousemove=document.onmouseup=null;
+};
+
+function extend(obj1,obj2){
+	for(var attr in obj2){
+		obj1[attr]=obj2[attr];
+	}
+}
+
+//弹窗组件开发
+
+window.onload=function(){
+	var aInput=document.getElementsByTagName('input');
+	
+	aInput[0].onclick=function(){
+		var d1=new Dialog();
+		dl.init({
+			
+		});
+	};
+
+	aInput[1].onclick=function(){
+		var d1=new Dialog();
+		dl.init({
+			W:100,
+			H:400,
+			dir:'right'
+		});
+	};
+};
+
+function Dialog(){
+	this.oLogin=null;
+	this.settings={
+		W:300,
+		H:300,
+		dir:'center'
+	};
+}
+
+Dialog.prototype.json={};
+
+Dialog.prototype.init=function(options){
+	extend(this.settings,options);
+
+	if(this.json[options.iNow]==undefined){
+		this.json[options.iNow]=true;
+	}
+
+	if(this.json[options.iNow]){
+		this.create();
+		this.json[options.iNow]=false;
+	}
+	
+};
+
+Dialog.prototype.create=function(){
+	this.oLogin=document.createElement('div');
+	oLogin.className='login';
+	oLogin.innerHTML='...';
+	document.body.appendChild(this.oLogin);
+	this.setData();
+};
+
+Dialog.prototype.setData=function(){
+	this.oLogin.style.width=this.settings.W+'px';
+	this.oLogin.style.height=this.settings.H+'px';
+	if(this.settings.dir=='center')
+	{
+		this.oLogin.style.left=(viewWidth()-this.settings.W)/2+'px';
+		this.oLogin.style.top=(viewHeight()-this.settings.H)/2+'px';
+	}
+	else if(this.settings.dir=='right')
+	{
+		this.oLogin.style.left=(viewWidth()-this.settings.W)+'px';
+		this.oLogin.style.top=(viewHeight()-this.settings.H)+'px';
+	}
+};
+
+Dialog.prototype.close=function(){
+	var _this=this;
+	var oClose=this.oLogin.getElementsByTagName('span')[1];
+	oClose.onclick=function(){
+		document.body.removeChild(_this.oLogin);
+		this.json[options.iNow]=true;
+	};
+};
+
+function viewWidth(){
+	return document.documentElement.clientWidth;
+}
+
+functon viewHeight(){
+	return document.documentElement.clientHeight;
+}
+
+function extend(obj1,obj2){
+	for(var attr in obj2)
+	{
+		obj1[attr]=obj2[attr];
+	}
+}
+
+
+//自定义事件：主要跟函数有关系，让函数能具备事件的某些特性
+
+//定义自定义事件
+window.addEventListener('show',function(){alert(1);});
+window.addEventListener('show',function(){alert(2);});
+window.addEventListener('show',function(){alert(3);});
+
+//主动触发自定义事件
+show();
+
+window.onload=function(){
+	var oDiv=document.getElementById('div1');
+	var oSpan=document.getElementById('span1');
+
+	bindEvent(obj,'click',function(){
+		alert(1);
+	});
+
+	bindEvent(oSpan,'show',function(){
+		alert(2);
+	});
+
+	bindEvent(oSpan,'show',function(){
+		alert(3);
+	});
+
+	//主动触发事件的执行函数
+	fireEvent(oSpan,'show');
+
+	fireEvent(oDiv,'click');//弹出1、2
+};
+
+//主动触发自定义事件
+function fireEvent(obj,events){
+	for(var i=0;i<obj.listeners[events].length;i++)
+	{
+		obj.listeners[events][i]();
+	}
+}
+
+function bindEvent(obj,events,fn){
+	//obj:楼层
+	//events:书架
+	//fn:可以看成一本书
+	obj.listeners=obj.listeners||{};
+	obj.listeners[events]=obj.listeners[events]||{};
+	obj.listeners[events].push(fn);
+	if(obj.addEventListener){
+		obj.addEventListener(events,fn,false);
+	}else{
+		obj.attachEvent(on+'events',fn);
+	}
+}
+
+//自定义事件的拖拽组件
+
+//基于jQuery的选项卡组件开发
+/*
+	title:基于jQuery的选项卡组件
+	options:event delay
+	methods:nowSel() getContent()
+	events:beforeClick afterClick
+*/
+
+//jQuery中的主动触发：trigger
+
+$(function(){
+	var t1=new Tab();
+	t1.init('div1',{});
+
+	var t2=new Tab();
+	t2.init('div2',{
+		event:'mouseover'
+	});
+
+	
+	var t3=new Tab();
+	t3.init('div3',{
+		event:'mouseover',
+		delay:200
+	});
+
+	var t4=new Tab();
+	t4.init('div3',{});
+	t4.nowSel(2);
+
+	$('#input1').click(function(){
+		alert(t4.getContent());
+	});
+
+	$(t4).on('beforeClick',function(){
+		alert(t4.getContent());
+	});
+
+	$(t4).on('afterClick',function(){
+		alert(t4.getContent());
+	});
+});
+function Tab(){
+	this.oParent=null;
+	this.aInput=null;
+	this.aDiv=null;
+	this.iNow=0;
+	this.settings={
+		event:'click',
+		delay:0
+	};
+}
+
+Tab.prototype.init=function(oParent,options){
+	$.extend(this.settings,options);
+	this.oParent=$('#'+oParent);
+	this.aInput=this.oParent.find('input');
+	this.aDiv=this.oParent.find('div');
+	this.change();
+};
+
+Tab.prototype.change=function(){
+	var _this=this;
+	var timer=null;
+	this.aInput.on(this.settings.event,function(){
+		
+
+if(_this.settings.event=='mouseover'&&_this.settings.delay){
+			var _this=this;
+			timer=setTimeout(function(){
+				show(_this);
+			},delay);
+		}else
+		{
+			show(this);
+		}
+		_this.iNow=$(this).index();
+	}).mouseout(function(){
+		clearTimeout(timer);
+	});
+
+	function show(obj){
+		$(_this).trigger('beforeClick');
+		_this.aInput.attr('class','');
+		_this.aDiv.css('display','none');
+		$(obj).attr('class','active');
+		_this.aDiv.eq($(this).index).css('display','block');
+		this.iNow=index;
+		$(_this).trigger('afterClick');
+	}
+};
+
+Tab.prototype.nowSel=function(index){
+	this.aInput.attr('class','');
+	this.aDiv.css('display','none');
+	this.aInput.eq(index).attr('class','active');
+	this.aDiv.eq(index).css('display','block');
+};
+
+Tab.prototype.getContent=function(){
+	return this.aDiv.eq(this.iNow).html();
+};
+
+
+
+
+
+
+
+
+

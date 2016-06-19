@@ -1,0 +1,273 @@
+引入SVG
+
+svg是基于XML的技术
+svg可以写成一个独立的文件
+
+如果想写svg代码需要引入头信息
+
+xmls里面是svg的命名空间
+<svg xmls="http://www.w3.org/2000/svg">
+	<circle cx="100" cy="100" r="40" fill="red">
+		
+	</circle>
+</svg>
+
+
+图片、背景、框架可以引入svg
+
+1、<img src="1svg.svg">
+
+2、<div style="width:200px; height:200px; background:url(1svg.svg)"></div>
+
+3、<iframe src="1svg.svg"></iframe>
+
+4、或者直接写svg标签
+<div id="div1">
+	<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+		<circle cx="100" cy="100" r="40" fill="red">
+		
+		</circle>
+	</svg>
+</div>
+
+基本图形
+circle
+cx cy r
+
+<div id="div1">
+	<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+		<circle cx="100" cy="100" r="40" fill="transparent" stroke="black" stroke-width="5">
+		
+		</circle>
+	</svg>
+</div>
+
+有些属性可以写到style里面，并不推荐
+<div id="div1">
+	<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+		<circle cx="100" cy="100" r="40" style="fill:transparent;stroke:black;stoke-width:5">
+		
+		</circle>
+	</svg>
+</div>
+
+<rect width="200" height="200" x="100" y="100" fill="red" rx="10" ry="20">
+	
+</rect>
+rx ry可以只写一个值 如果只写一个默认两个值相等
+
+stroke中的值可以设置为transparent
+<line x1="10" y1="10" x2="50" y2="30" stroke="black" stroke-width="5" stroke-opacity="0.5">
+
+</line>
+
+<g>标签 是一个容器(分组)标签 用来组合元素
+
+<g>
+	<circle cx="100" cy="100" r="40" fill="transparent" stroke="black" stroke-width="5"></circle>
+	<circle cx="100" cy="100" r="30" fill="transparent" stroke="black" stroke-width="5"></circle>
+	<circle cx="100" cy="100" r="20" fill="transparent" stroke="black" stroke-width="5"></circle>
+	<circle cx="100" cy="100" r="10" fill="transparent" stroke="black" stroke-width="5"></circle>
+</g>
+
+由于g标签里面可以是线段、矩形等等任何图形，而线段、矩形是不具备cx cy的，所以cx cy不可以加到g标签上，而stroke fill可以
+
+
+如果想做平移操作，可以这样做
+<g transform="translate(200,200)">
+
+文字标签
+<text>
+
+<g style="cursor:pointer;">
+	<circle cx="100" cy="100" r="40" fill="transparent" stroke="black" stroke-width="5" ></circle>
+	<text x="200" y="208" font-size="20" text-anchor="middle">写成208是为了垂直居中
+</g>
+
+
+
+<image>
+
+<g style="cursor:pointer;">
+	<image x="150" y="149" width="100" height="103" xlink:href="img/main.jpg"></image>
+	<text x="200" y="208" font-size="20" text-anchor="middle">写成208是为了垂直居中
+</g>
+
+
+#div1{ width:780px; height:400px; background:url(bg.jpg)}
+
+<div>
+	<svg xmls="xxx">
+		<g style="cursor:pointer;">
+			<line x1="100" y1="100" x2="390" y2="200" stroke="transparent" stroke-width="5"></line>加这条线的目的就是不至于很困难的移动到线上
+			<line x1="100" y1="100" x2="390" y2="200" stroke="#ccc"></line>
+			<rect x="235" y="140" fill="#999" width="20" height="20" rx="5"></rect>
+			<text x="245" y="158" fill="#fff" font-size="20px" text-anchor="middle">?</text>
+		</g>
+		<g style="cursor:pointer;">
+			<circle cx="100" cy="100" r="40" fill="#fff" stroke="#f00" stroke-width="3"></circle>
+			<text x="100" y="108" font-size="20" text-anchor="middle">易车网</text>
+		</g>
+		<g style="cursor:pointer;">
+			<circle cx="390" cy="200" r="40" fill="#fff" stroke="#f00" stroke-width="3"></circle>
+			<text x="390" y="208" font-size="20" text-anchor="middle">易车网</text>
+		</g>
+	</svg>
+</div>
+
+
+
+svg和js联合开发
+
+js动态创建svg
+window.onload=function(){
+	var svgNS="http://www.w3.org/2000/svg";
+	//NS name space，第一个参数是命名空间 第二个参数是标签名
+	var oSvg=document.createElementNS(svgNS,'svg');
+	var oDiv=document.getElementById('div1');
+
+	oSvg.setAttribute('xmlns',svgNS);
+	oSvg.setAttribute('width','100%');
+	oSvg.setAttribute('height','100%');
+
+	oDiv.appendChild(oSvg);
+};
+
+//封装createTag函数
+function createTag(tag,jsonAttr){
+	var oTag=document.createElementNS(svgNS,tag);
+	for(var attr in jsonAttr)
+	{
+		oTag.setAttribute(attr,objAttr[attr]);
+	}
+	return oTag;
+}
+
+var oSvg=create('svg',{'xmlns',svgNS,'width':'100%','height':'100%'});
+
+
+//js动态计算
+var centerX=oParent.offsetWidth/2;
+var centerY=oParent.offsetHeight/2;
+
+var data={
+	centerNode:{text:'科鲁兹'},
+	otherNode:[
+		{
+			x:100,
+			y:100,
+			text:'易车网'
+		}
+	]
+};
+
+function addMainTag(){
+	var oSvg=create('svg',{'xmlns',svgNS,'width':'100%','height':'100%'});
+	var oG //创建包裹层
+	var oCircle //创建圆
+}
+
+addMainTag();
+
+function addOtherTag(){
+
+}
+
+
+var circleNum=9;
+var angleNum=360/circleNum;
+var radius=150;
+var otherData=[];
+
+for(var i=0;i<circleNum;i++)
+{
+	var x=Math.cos(i*angleNum*Math.PI/180)*radius+centerX;
+	var y=Math.sin(i*angleNum*Math.PI/180)*radius+centerY;
+	otherData.push({x:x,y:y,text:i});
+}
+
+阿基米德螺旋线
+
+aCircle[i].onmouseenter=function(){
+	startMove(this.getElementsByTagName('circle')[0],30,40);
+};
+
+aCircle[i].onmouseleave=function(){
+	startMove(this.getElementsByTagName('circle')[0],40,30);
+};
+
+function startMove(obj,r1,r2)
+{
+	var nowR=r1;
+	var overR=r2;
+	obj.speed=0;
+	clearInterval(obj.timer);
+	obj.timer=setInterval(function(){
+		obj.speed+=(overR-nowR)/6;
+		obj.speed*=0.75;
+
+		if(Math.abs(overR-nowR<=1&&Math.abs(obj.speed)<=1)){
+			clearInterval(obj.timer);
+			obj.setAttribute('r',overR);
+		}else{
+			nowR+=obj.speed;
+			obj.setAttribute('r',nowR);
+		}
+	},30);
+}
+
+fill通过none也可以不设置效果
+
+polyline折线标签
+<polyline stroke="#000" points="50 50 200 300 250 400">
+	
+</polyline>
+points设置多组值的时候也可以用逗号分隔
+
+
+polygon多边形标签
+和polyline的区别就是polygon会自动闭合
+
+
+百度测距效果
+
+var oPolyLine=null;
+var pointsNum='';
+
+oSvg.onmousedown=function(ev){
+	var oEvent=ev||event;
+	if(oPolyLine){
+		oPolyLine=createTag('polyline',{'fill':'none','stroke':'#f00','width':'2'});
+		oSvg.appendChild(oPolyLine);
+	}
+	
+	var x=oEvent.clientX-oParent.offsetLeft;
+	var y=oEvent.clientY-oParent.offsetTop;
+
+	if(pointsNum==''){
+		pointsNum=x+','+y;
+	}
+	else
+	{
+		pointsNum+=','+x+','+y;
+	}
+	oPolyLine.setAttribute('points','50,50,100,200,300,500');
+};
+
+第十集
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

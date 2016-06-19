@@ -1,0 +1,191 @@
+gif和CSS3 animation缺点：
+1、不能灵活控制动画的暂停和播放
+2、不能捕获到动画完成的时机
+3、不能对帧动画做更灵活的扩展
+
+原理
+准备多张img，定时改变img的src属性(不推荐) 请求次数增加了
+只准备一张图，改变background-position
+
+var STATE_INITIAL=0;
+var STATE_START=1;
+var STATE_STOP=2;
+function Animation(){
+	this.taskQueue=[];
+	this.index=0;
+	this.state=STATE_INITIAL;
+}
+Animation.prototype.loadImage=function(imgList){
+	
+};
+Animation.prototype.changePosition=function(ele,positions,imgUrl){
+
+};
+Animation.prototype.changeSrc=function(ele,imgList){
+
+};
+//自定义动画每帧执行的任务函数
+Animation.prototype.enterFrame=function(taskFn){
+
+};
+Animation.prototype.then=function(callback){
+
+};
+Animation.prototype.start=function(interval){
+	if(this.state==STATE_INITIAL){
+		return this;
+	}
+	if(!this.taskQueue.length){
+		return this;
+	}
+	this.state=STATE_START;
+	this.interval=interval;
+	this._runTask();
+	return this;
+};
+Animation.prototype.repeat=function(times){
+
+};
+Animation.prototype.repeatForever=function(){
+
+};
+Animation.prototype.wait=function(time){
+
+};
+Animation.prototype.pause=function(){
+
+};
+Animation.prototype.restart=function(){
+
+};
+//释放资源
+Animation.prototype.dispose=function(){
+
+};
+Animation.prototype._add=function(taskFn,type){
+	this.taskQueue.push({
+		taskFn:taskFn,
+		type:type
+	});
+	return this;
+};
+Animation.prototype._runTask=function(){
+	if(!this.taskQueue||this.state!==STATE_START){
+		return;
+	}
+	if(this.index===this.taskQueue.length){
+		this.dispose();
+		return;
+	}
+	var task=this.taskQueue[this.index];
+	if(task.type===TASK_SYNC){
+		this._syncTask(task);
+	}else{
+		this._asyncTask(task);
+	}
+};
+Animation.prototype._syncTask=function(task){
+	var me=this;
+	var next=function(){
+		//切换到下一个任务
+		me._next();
+	};
+	var taskFn=task.taskFn;
+	taskFn(next);
+};
+Animation.prototype._asyncTask=function(task){
+	
+};
+Animation.prototype._next=function(){
+	this.index++;
+	this._runTask();
+};
+
+//========================================
+function loadImage(images,callback){
+	var count=0;
+	var success=true;
+	var timeoutId=0;
+	var isTimeout=false;
+	for(var key in images){
+		if(images.hasOwnProperty(key)){
+			continue;
+		}
+		var item=images[key];
+		if(typeof item==="string"){
+			item=images[key]={
+				src:item
+			};
+		}
+		if(!item||!item.src){
+			continue;
+		}
+		count++;
+		item.id="__img__"+key+getId();
+		item.img=window[item.id]=new Image();
+		doLoad(item);
+	}
+	if(!count){
+		callback(success);
+	}else if(timeout){
+		timeoutId=setTimeout(onTimeout,timeout);
+	}
+	
+	function doLoad(item){
+		item.status="loading";
+		var img=item.img;
+		img.onload=function(){
+			success=success&true;
+			item.status="loaded";
+			done();
+		};
+		img.onerror=function(){
+			success=false;
+			item.status="error";
+			done();
+		};
+		//真正发起了一个http请求加载图片
+		img.src=item.src;
+		function done(){
+			img.onload=img.onerror=null;
+			try{
+				//低版本的IE可能会报错
+				delete window[item.id];
+			}catch(e){
+				
+			}
+			if(!--count&&!isTimeout){
+				clearTimeout(timeoutId);
+				callback(success);
+			}
+		}
+	}
+	function onTimeout(){
+		isTimeout=true;
+		callback(false);
+	}
+}
+var __id=0;
+function getId(){
+	return ++__id;
+}
+module.exports=loadImage;
+
+//==========================================
+var DEFAULT_INTERVAL=1000/60;
+//写成闭包的形式是为了让浏览器只解析一次这个函数
+var requestAnimationFrame=(function(){
+	return 	window.requestAnimationFrame||
+			window.webkitRequestAnimationFrame||
+			window.mozRequestAnimationFrame||
+			window.oRequestAnimationFrame||
+			function(callback){
+				return window.setTimeout(callback,callback.interval||DEFAULT_INTERVAL);
+			};
+})();
+
+
+
+
+
+

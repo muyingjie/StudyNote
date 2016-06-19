@@ -1,0 +1,124 @@
+1、变量
+	从开发便捷角度来讲，很多地方都用到的一个东西，我们通常会用一个变量把它存起来
+	从内存角度来讲，变量可以理解为是栈中的一块空间
+
+2、函数
+	从开发角度来讲，封装函数最直接的目的是避免代码重复
+	Js中的函数也是一种对象，因此会有fn.call fn.apply fn.bind这些方法
+	三个方法都可以改变this的指向
+	fn.call和fn.apply改变指向的同时会执行函数，而bind则是返回改变了this之后的一个新的函数
+	从内存角度来讲，函数可以理解为一租指令构成的集合
+3、闭包
+	闭包和函数关系很紧密，函数是Js中对象类型的变量的一种，既然是变量，那么就可以作为参数，作为返回值，作为表达式，作为参数的时候就是回调，作为返回值的时候就是闭包
+	假设函数a里面定义了一个变量b，返回了一个函数c，在c内部如果执行b++，在外部接收到这个返回的函数c并且执行后，会间接的改变a函数里面的局部变量，这是在外部改变的，因此这种方式实际上是模拟了Java中的private变量，这和成员变量是不一样的
+	类似函数柯里化的行为也是建立在闭包的基础上实现的，例如angular内部setModuleLoader里面的invokeLater方法
+	闭包可以总结为一句话：子函数可以使用父函数的局部变量
+4、预解析
+	也就是变量和函数定义的提升，在一个作用域内变量和函数的定义会提升到最上面，因此如果在代码中间有这样一条语句:var a=1;var a;会被提升到最上面，而a=1;这条赋值语句还会在原来的位置
+5、作用域链
+	在Js中函数才是一个作用域，块不属于一个作用域
+	如果在一个作用域中使用某个变量时找不到该变量在当前作用域中的定义，那么就会沿着作用域向上查找，直到找到为止
+6、原型链
+	Js中一切皆对象，对象有一个隐含的属性__proto__，该属性指向这个对象的原型对象，new 构造函数的方式得到的对象其__proto__指向其构造函数的原型对象，构造函数的原型对象又指向Object原型对象，平常定义的json它的__proto__默认就是Object原型对象，Object原型对象是原型链的终点
+	在面向对象继承的实现代码中经常可以看到"构造函数.prototype=new 子类对象"实际上就是将子类对象的__proto__指向了父类对象的一个实例，所以肯定能够用父类上的方法了
+7、事件
+	事件绑定 addEventListener的第三个参数用来表明绑定的事件是发生在捕获阶段还是冒泡阶段
+	事件冒泡 
+	事件委托 子元素发生的事件冒泡到父元素上时，在父元素的事件绑定函数里先判断下事件对象上的target属性，该属性即为实际发生事件的对象，委托有一定兼容性问题，需要和srcElement一起作判断
+8、jQuery无new构造和链式调用
+	jQuery调用时没有new：$("xxx") 而且可以链式调用
+	关于没有new，可以在函数内部判断this是否为jQuery构造函数的实例，如果直接调用$(xxx)一定得不到构造函数实例，此时返回通过new调用的jQuery即可，在new调用的jQuery里面直接返回this，该this即为当前jQuery实例对象
+	在后期的版本中，jQuery通过返回new jQuery.prototype.init();实例来避免循环引用的问题，但jQuery.prototype.init和jQuery分别是不同的构造函数，所以new jQuery.prototype.init()和new jQuery()返回的实例肯定不一样，两个实例所指向的原型也不一样，后者的原型才有each click attr等等方法，所以通过jQuery.prototype.init.prototype=jQuery.prototype来改变jQuery.prototype.init的原型为jQuery的原型，jQuery的原型上有的方法jQuery.prototype.init的原型上也就都有了
+	链式调用的实现可以在每个方法后都返回jQuery实例即可
+
+9、jQuery中的Callbacks
+	Callbacks主要运用了观察者模式，可以接受四种模式及其组合，once unique stopOnFalse memory，前3个很好理解，once模式下，在fire完成之后就会清空list数组，unique模式下，在add的时候回做是否重复添加的检测，stopOnFalse模式下，fire的过程中遇到返回false的函数就立刻终止函数执行队列，memory模式下，不仅fire的时候会调用list中所有的函数，而且在后面add的函数都会立即执行，而且还可以再次传入新的参数fire触发
+	在add了一些函数并fire触发之后，再次add函数时在add函数内部会判断当前模式是否为memory，如果是的话，就将fireStart变量置为当前list的长度，再调用fire函数，fire里面会从fireStart开始遍历完list，同时fireStart会被置为0，再次fire的时候就会用新的参数会把list从头到尾遍历一遍
+
+10、jQuery中的Deferred
+	Deferred内部实际上严重依赖Callbacks，异步操作的执行无非就是三种状态：成功、失败、执行中，Deferred为这三种状态各开了一个回调对象，成功状态添加的回调的方法是done，失败状态添加回调的方法是fail，执行中状态添加回调的方法是progress，这三个方法底层调用的都是Callbacks里面的add方法，成功状态的调用触发函数是resolve，失败状态的调用触发函数是reject，执行中状态的调用函数是notify，这三个方法底层都是调用了fire
+	Deferred中还有一个非常重要的方法叫then，这个方法的基本使用方式是可以传多个回调函数，第一个代表成功，第二个代表失败，第三个代表过程中，传进来的这些函数会调用add方法，此时add进来的这个函数会调用刚才在then里面传进来的对应的函数，这个函数是可以有返回值的，
+
+
+
+publishExternalAPI
+setupModuleLoader	建立模块机制
+注册内核provider(服务)	$parse和$rootScope
+angularInit		防止多次初始化ng-app
+bootstrap		创建injector、拉起内核和启动模块、调用compile服务
+
+
+angular启动的启动：
+加载angular.js过程：定义一些变量和函数，其中把angular绑定给了window，然后和jQuery整合在一起，并给jQuery扩展了一些方法，接下来调用了一个很重要的方法publishExternalAPI，这个方法顾名思义，就是给angular绑定一些全局方法，在这些全局方法里面，有很重要的一个就是bootstrap，在domReady事件触发之后会执行一个叫做angularInit的方法，在这个方法里面找到含有ng-app属性的元素，作为angular管理的DOM的起点
+由于angular启动之后在angular对象上就会存在bootstrap方法，因此会通过判断angular上是否有bootstrap方法来判断angular是否已经加载过，如果加载过的话直接return，这也是启动angular之前做的第一件事
+
+在publishExternalAPI里面其实做了一个很重要的工作就是setupModuleLoader，在这个函数里面给angular添加了module方法，以及module上面的directive controller provider service等方法
+
+上面通过html中添加ng-app指令启动angular的方式叫做自动启动，实际上我们还有手动启动的方式启动angular，此时不必在某个元素上添加ng-app指令，而是
+angular.element(document).ready(function(){
+	angular.bootstrap(document,["MyModule"]);//angular将管理document里的内容，并从MyModule模块开始启动
+});
+
+一个页面里面可以有多个ng-app，只要不嵌套就可以，一个ng-app对应一个模块，但是angular只会自动启动第一个ng-app对应的模块，第二个不会自动启动，所以我们需要手动启动第二个模块，即通过angular.bootstrap启动
+
+如果一个模块在启动之后又试图启动，那么将会报错
+
+publishExternalAPI的任务
+1、给angular绑定一些方法
+2、启动模块加载器setupModuleLoader
+3、创建内置模块
+	先创建内置模块ngLocale
+	再创建内置模块ng ng依赖于ngLocale
+	ng模块里面会将内置的指令ng-xxx和provider全部注册进来
+	指令ng-xxx已经用的很多了，$ParseProvider实际上是解析表达式的，即{{}}里面的表达式以及ng-if里面的表达式等等
+
+angularInit
+1、查找html中是否存在ng-app指令，如果有会自动调用bootstrap，没有的话等着我们自己手动调用bootstrap，如果不调用，angular就启动不了
+
+bootstrap
+1、判断是否尝试多次调用bootstrap启动angular，如果多次启动直接报错
+2、创建注入器，注入器依赖ng模块和我们外部ng-app所定义的模块，以及内部的$provide模块，一个ng-app只有一个注入器，注入器就是执行函数的，在此注入器执行的函数就是编译ng-app里面的html内容，将指令 表达式等等翻译成标准html，这个函数依赖于$rootScope $rootElement $compile $injector
+
+provider/factory/service/constant/value 都可以被注入
+controller/directive/filter/service/factory 可以接受注入
+
+provider定义方式：
+myModule.provider("HelloAngular",function(){
+	return {
+		$get:function(){
+			var name="aaa";
+			function getName(){
+				return name;
+			}
+			return {
+				getName:getName
+			};
+		}
+	};
+});
+
+指令的执行分为两个阶段：compile link
+compile里面返回一个函数，这个函数会作为下一步link函数
+如果同时写了link和compile，link绑定的函数就会失效，转而让compile里面返回的函数有效，compile很少使用
+
+compile用来对指令的模板进行转换
+scope在链接阶段(link)才会被创建出来，所以在compile里面操作scope会报错，对于同一指令的多个实例，compile函数只会执行一次，link会执行多次
+
+$rootScope会绑定在加了ng-app指令的元素上
+
+
+脏检测：html中ng-xxx和{{}}里面的表达式都会被watch，而这些表达式里面任意一个发生变化时，例如ajax数据返回，定时器更改了监听的watcher的值，以及各种事件，都会触发$apply，此时会将当前$scope以及其子$scope上的watcher全部遍历一遍，如果有发生变化的就会去渲染DOM，$apply和$digest的区别在于$apply增加了错误检测，如果给$apply传入一个函数的话可以确保函数执行完毕再进行$digest
+
+表达式编译：{{option.testAttr}}首先会进行词法解析Lex，遍历整个字符串，通过一定的算法识别出数字、标识符、操作符等等，放在一个数组中，接下来进行语法分析，遍历由词法分析得到的数组，生成一个抽象结构树(AST)，这个树其实就是一个json，里面的树形结构和操作符优先级、结合性以及作用域有密切关系，最终会对该树编译生成一个函数，这个函数会返回这个表达式的值
+
+指令的执行：分为两个阶段，首先是compile阶段，这个里面实际上是控制遇到一个指令之后如何显示html的，compile会返回一个函数，这个函数将成为link阶段绑定的函数，如果compile返回了这样一个函数，那么后面在link上绑的函数将失效，link阶段里面处理编译后的html
+
+
+依赖注入：首先想说什么是注入器，注入器实际上就是将很多模块中的服务、实例集合在一起并对外提供和这些服务、实例构成的集合相关的一些方法，例如获取某个服务get、查看该服务是否存在于当前注入器中has，以及执行一个函数invoke，执行函数的过程中必然需要依赖外部一些东西，通常的做法是通过参数或者全局变量来实现，但是全局变量耦合性非常强，不必多说，因此注入器在执行一个函数的过程中实际上会给函数传一些参数，而这些参数就是所谓的依赖，我们传入的这些依赖、这些参数必须是当前注入器已经有的服务或实例，同样注入器还提供了实例化一个对象的方法initiate，这个方法实际上就是构造函数通过new的调用，最终会调用invoke的，此外还有一个工具函数annotate，主要用来内部使用，作用是抽取参数的
+
+
+
+
+
+
+
