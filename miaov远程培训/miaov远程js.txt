@@ -1,0 +1,4146 @@
+1、元素隐藏可以采用的方法
+	display:none;
+	overflow:hidden;
+	visibility:hidden;
+	将宽或者高改为0，并且把border设置为0；
+	opacity:0;
+	改变left和top的值
+2、js中的事件类型：鼠标事件、键盘事件、系统事件、表单事件、自定义事件（例如双击和三击事件）
+3、函数执行的方法
+	function abc()
+	(1)、直接调用
+	(2)、oDiv.onclick=abc;	注意在这里一定不要加括号否则js一遇到abc()就会马上执行，无法绑定到事件上
+	(3)、直接调用
+4、onload事件可以绑定到window上，还可以绑定到body和img上
+已经看到第10分钟
+5、	（1）所有的相对路径都不要作if判断，一定会挂掉
+	（2）颜色值也不要拿来做判断，因为不知道浏览器返回的是"red","#ff0000","rgb(255,0,0)"
+	（3）innerHTML的值不要拿来做判断
+	（4）IE6、IE7、IE8不支持更改表单元素的type属性，会报错，例如oInp.type="checkbox";有兼容问题
+	（5）改变浮动属性时要注意：
+	如果直接改变：
+		oDiv.style.cssFloat="left";
+		oDiv.style.styleFloat="left";
+	才可以避免兼容问题
+	但是我们可以这样做：
+		.fl{float:left;}
+		.fr{float:right;}
+		oDiv.className="fl";
+		//oDiv.className="fr";
+6、
+for(var i=0;i<aLi.length;i++)
+{
+	aLi[i].onclick=function(){
+		alert(i);//注：i的值是3；而不是在页面当中点击对应的li弹出对应的1、2、3的值
+	};
+}	
+			
+7、
+for(var i=0;i<2000;i++)
+{
+	document.body.innerHTML+="<input type='button' value='按钮'/>";
+}
+//这样写性能严重受到影响
+
+
+//应该这样写
+var str='';
+for(var i=0;i<100000;i++)
+{
+	str+="<input type='button' value='按钮'/>";
+}
+document.body.innerHTML=str;
+
+8、
+oDiv.onclick=function(){
+	oDiv.style.cssText='width:200px; height:200px;';
+};
+oBtn.onclick=function(){
+	oDiv.style.cssText='width:100px;';
+};
+
+点击了oBtn之后原来点击oDiv加的'width:200px; height:200px;'会被'width:100px;'取代
+作用类似于oDiv.style.width='100px';
+
+9、自动生成新闻的例子中，防止点击多次生成多条新闻的解决办法：
+定义一个开关变量
+var onOff=true;
+oBtn.onclick=function(){
+	if(onOff)
+	{
+		for(var i=0;i<aLi.length;i++)
+		{
+			oUl.innerHTML+=aLi[i];
+		}
+		onOff=false;
+	}
+};
+
+10、
+<script>
+function fn1(){
+	alert(this);
+}
+//fn1();	this=>window
+//oDiv.onclick=fn1;	this=>oDiv
+//oDiv.onclick=function(){
+	fn1();	fn1里面的this=>window
+};
+</script>
+
+11、isNaN返回false的情况就是Number转化为数字的情况
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+数据类型转换Number
+var a3=[];
+Number(a3);//0
+
+var a3=[""];
+Number(a3);//0
+
+var a3=[123];
+Number(a3);//123
+
+var a3=["123"];
+Number(a3);//123
+
+var a3=[1,2,3];
+Number(a3);//NaN
+
+var a3;
+Number(a3);//NaN
+
+var a3="100px";
+Number(a3);//NaN
+
+var a3="-100px";
+parseInt(a3);//-100
+
+var a3="   -100px";
+parseInt(a3);//-100
+
+var a3="00000100px";
+parseInt(a3);//100
+
+判断整数和小数
+if(parseInt(a3)==parseFloat(a3))
+{
+	//整数
+}
+else
+{
+	//小数
+}
+
+200+"3" //"2003"
+var a="10"; ++a //11
+
+isNaN(a)的内部机制
+如果Number(a)转出来之后是个数字，那isNaN就返回false，否则返回true
+
+HTML中拿到的内容类型都是字符串，所以我们可以通过isNaN来判断是否是数字
+
+JS中的数据类型：数字、字符串、布尔、函数、对象(obj、[]、{}、null)、未定义
+
+判断是不是数字：if(typeof a==="number"&&a===a)//a===a是排除NaN的情况
+
+函数传参与封装
+<style>
+ul { padding:0; margin:0; }
+li { list-style:none; }
+body { background:#333; }
+.box { width:400px; height:500px; position:relative; background:url(img/loader_ico.gif) no-repeat center #fff; float:left; margin-right:60px; }
+.box img { width:400px; height:500px; }
+.box ul { width:40px; position:absolute; top:0; right:-50px; }
+.box li { width:40px; height:40px; margin-bottom:4px; background:#666; }
+.box .active { background:#FC3; }
+.box span { top:0; }
+.box p { bottom:0; margin:0; }
+.box p,.box span { position:absolute; left:0; width:400px; height:30px; line-height:30px; text-align:center; color:#fff; background:#000; }
+</style>
+<script>
+
+/*
+	重用代码：
+		1、尽量保证 HTML 代码结构一致，可以通过父级选取子元素
+		2、把核心主程序实现，用函数包起来
+		3、把每组里不同的值找出来，通过传参实现
+*/
+
+window.onload = function (){
+	fnTab( 'pic1', [ 'img/1.png', 'img/2.png', 'img/3.png', 'img/4.png' ], [ '小宠物', '图片二', '图片三', '面具' ], 'onclick' );
+	fnTab( 'pic2', [ 'img/2.png', 'img/3.png', 'img/4.png' ], [ '图片二', '图片三', '面具' ], 'onmouseover' );
+};
+
+传递事件作为参数
+function fnTab( id, arrUrl, arrText, evt ){
+	var oDiv = document.getElementById(id);
+	var oImg = oDiv.getElementsByTagName('img')[0];
+	var oSpan = oDiv.getElementsByTagName('span')[0];
+	var oP = oDiv.getElementsByTagName('p')[0];
+	var oUl = oDiv.getElementsByTagName('ul')[0];
+	var aLi = oUl.getElementsByTagName('li');
+	var num = 0;
+	
+	for( var i=0; i<arrUrl.length; i++ ){
+		oUl.innerHTML += '<li></li>';
+	}
+	
+	// 初始化
+	function fnTab(){
+		oImg.src = arrUrl[num];
+		oSpan.innerHTML = 1+num+' / '+arrUrl.length;
+		oP.innerHTML = arrText[num];
+		for( var i=0; i<aLi.length; i++ ){
+			aLi[i].className = '';
+		}
+		aLi[num].className = 'active';
+	}
+	fnTab();
+	
+	for( var i=0; i<aLi.length; i++ ){
+		aLi[i].index = i;			// 索引值
+		aLi[i][evt] = function (){
+			num = this.index;
+			fnTab();
+		};
+	}
+}
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+getComputedStyle和currentStyle获取到的backgroundColor得到的结果不兼容，所以不要拿这个值来作判断
+这两个方法也不能获取没有在css设置的样式
+--------------------------------------------------------------------------------------------------------------------------------------------
+var str="妙味课堂";
+console.log(str.charCodeAt(0));//返回“妙”字的unicode编码，其中字符0-9返回48-57，字符a-z返回97-122，字符A-Z返回90
+
+console.log(String.fromCharCode(22937))//返回“妙”这个汉字
+
+检测数字的函数
+function detectNum(s)
+{
+	var n=0;
+	for(var i=0;i<s.length;i++)
+	{
+		n=s.charCodeAt(i);
+		if(n<48||n>57)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+加密：
+aInp[1].onclick=function(){
+	var str=aInp[0].value;
+	var str1="";
+	for(var i=0;i<str.length;i++)
+	{
+		str1 += String.fromCharCode(str.charCodeAt()-1000)+"";
+	}
+	console.log
+	
+};
+
+indexOf("m",5)//第二个参数代表从哪个位置找，如果找不到返回-1
+
+
+
+找字符串在第几位
+var i=0;
+while(str.indexOf(s,i)!=-1))
+{
+	alert(str.indexOf(s,i));
+	i=str.indexOf(s,i)+s.length;
+}
+
+
+截取
+str.substring();截取全部
+str.substring(4);截取从索引4到字符串末尾
+str.substring(0,2);截取从索引0到索引1的字符串，注意没有索引为2的字符串
+str.substring(-3,2);-3当成0处理
+
+str.slice();与substring区别不大，只是第一个参数不能比第二个大，否则返回空，换言之，它不会自动交换位置
+接受负数作为参数的时候从后往前找，例如
+str.slice(-2);返回最后两个字符串
+str.slice(0,1);从第0个开始，删除1个元素
+
+
+分割
+str.split();什么参数都不写，把整个当成一个元素成为长度为1的数组
+str.split("");将每个字母作为一个元素，合并成一个数组
+
+str="/www.miaov.com/";
+alert(str.split("/").length);//返回3
+
+str.split("-",3);返回的数组长度是3，如果大于3，剩下的部分被舍弃
+
+合并
+var arr=["aa","bb","cc"];
+alert(arr.join());//用","连接成字符串
+
+
+json
+json的名字最好是字符串类型的
+
+数组的length属性是可写的，快速清空数组的方法就是arr.length=0;或者arr=[];
+但是字符串的length属性是不可以修改的
+
+arr.push(4);//push方法的返回值是push之后的长度
+arr.unshift(4);//向栈顶添加值，IE6、7不支持其返回值
+arr.pop();//删掉数组的最后一个，返回删除的那个元素
+arr.shift();//删掉数组的第一个，返回删除的那个元素
+
+arr.splice(0,2);//从第0位开始，删除2个
+arr.splice(0,2,3);//从第0位开始，删除两个，在删除位置插入3
+arr.splice(1,0,2);//在第1位后面，删除0个，并在删除位置插入2
+
+splice返回删除的值，如果没有删除，返回为空
+
+数组去重
+
+var arr=[1,2,2,4,2];
+
+for(var i=0;i<arr.length;i++)
+{
+	for(var j=i+1;j<arr.length;j++)
+	{
+		if(arr[i]==arr[j])
+		{
+			arr.splice(j,1);
+			j--;
+		}
+	}
+}
+
+sort()里面的参数是一个function，是比较的方法
+
+sort(function(a,b){
+	return b-a;//从小到大排列
+	//return a-b;从大到小排列
+})
+
+
+快速排序
+希尔排序
+冒泡
+归并
+选择
+插入
+
+
+
+arr=["10px","20px","30px","40px"]
+
+arr.sort(function(){
+	return parseInt(a)-parseInt(b);
+});
+
+
+随机排序
+arr.sort(function(){
+	return Math.random()-0.5;//可能是正值，也可能是负值，这样就实现了随机排序
+});
+
+返回1-3的随机数
+Math.ceil(Math.random()*3);
+
+颠倒字符串
+var str="abcdef";
+str.split("").reverse().join("");
+
+随机产生100个从0-1000之间不重复的整数
+封装数组的index_of方法
+--------------------------------------------------------------------------------------------------------------------------------------------
+元素.attributes//返回一个集合
+元素.attributes[0].value		//返回id属性对应的值"div1"
+元素.attributes[0].name		//返回第0个属性的名称"id"
+元素.attributes[0].nodeType	//2
+<div id="div1" class="div1"/>
+
+获取父级的第一个元素节点
+firstChild	非标准浏览器下返回第一个元素节点，标准浏览器下得到第一个文本节点
+firstElementChild 非标准浏览器不认，标准浏览器下得到第一个元素节点
+
+兼容写法：oFirst=oUl.firstElementChild||oUl.firstChild;但是这种写法也是有问题的，最好的写法就是oFirst.children[0]
+
+oLast=oUl.lastElementChild||oUl.lastChild;
+
+oNext=oFirst.nextElementSibling||oFirst.nextSibling;
+
+oPrev=oFirst.lastElementSibling||oFirst.lastSibling;
+
+元素的childNodes和children都是只读的属性
+
+
+
+
+
+oLi.offsetParent 是oLi加了定位的父级，如果当前元素没有定位父级，默认是body
+
+但是在IE7以下
+	如果没有定位父级，而自身加了定位，就是html
+	如果当前元素的某个父级触发了layout，那么offsetParent就会指向到这个触发了layout特性的父节点上
+
+
+offsetLeft 当前元素到定位父级的距离（偏移值）
+
+
+元素宽高取值
+clientWidth=样式宽+padding(注：无单位)
+offsetWidth=样式宽+padding+border
+
+获取元素到页面的left和top
+var iTop=0;
+var obj=oDiv3;
+while(obj)
+{
+	iTop+=obj.offsetParent;
+	obj=obj.offsetParent;
+}
+	
+
+function getPos(obj)
+{
+	var pos={left:0,top:0};
+	while(obj)
+	{
+		pos.left+=obj.offsetLeft;
+		pos.top+=obj.offsetTop;
+		obj=obj.offsetParent;
+	}
+}
+
+
+
+
+if(oUl.children[0])
+{
+	oUl.insertBefore(oLi,oUl.children[0]);
+}
+else
+{
+	oUl.appendChild(oLi);
+}
+
+appendChild,insertBefore,replaceChild可以操作已有节点，也可以操作原来就有的节点
+--------------------------------------------------------------------------------------------------------------------------------------------
+jquery
+jquery选择元素
+	css选择器
+	独有的选择器
+		$("li:first")
+		$("li:last")
+		$("li:eq(2)")//括号中的2代表下标为2的li
+		$("li:even")//奇数行
+		$("li:odd")//偶数行
+		$("li").filter(".box")//filter筛选
+		$("li").filter("[title=hello]")//筛选title属性为hello的li，例如<li title="hello"></li>
+	多种筛选写法
+
+
+jquery写法
+	方法函数化：
+	链式操作
+
+赋值：$("#div1").html();//获取
+
+$("#div1").html("hello");//赋值
+
+$("#div1").css("width","200px");//赋值
+
+$("#div1").html("width");//获取
+
+$("li").html();//当对一组元素获取的时候，只获取第一个
+
+$("li").html("hello");//当对一组元素赋值的时候，全部赋值
+
+$("div").attr("title","456");//attr函数的作用就是赋值
+
+$("div").attr("class","456");
+
+$("div").next().css("background","red");//next返回下个兄弟节点，prev是返回上一个
+
+$("div").find("h2").css("background","red");//在div下所有的h2颜色变红
+
+$("div").find("h2").eq(1).css("background","red");//在div下所有的h2中的第2个颜色变红，eq的索引从0开始
+
+$("#div1").index();//在当前所有兄弟节点中的位置，从0开始
+
+//filter过滤，not相反，has是有没有包含
+$("div").filter(".box").css("background","red")
+
+$("div").not(".box").css("background","red")
+
+$("div").has("span").css("background","red")//div中包含span的元素背景才有变化
+
+filter和not是针对当前元素设置的，在这里就是div，而has是设置包含的元素的样式的
+
+jquery写选项卡
+$(function(){
+	$("input").click(function(){
+		$(this).attr("class","");
+		$(this).css("display","none");
+		$(this).eq($(this).index())attr("class","active");
+	});
+});
+
+<input type="button" value="选项1" />
+<input type="button" value="选项2" />
+<input type="button" value="选项3" />
+<div>1111</div>
+<div>2222</div>
+<div>3333</div>
+
+$()下的常用方法
+$("div").addClass("div3 div4");
+
+$("div").removeClass("div1 div2");
+
+$("div").width();//css()获取到的数据带单位，而这个方法没有单位
+
+$("div").innerWidth();//width+padding
+
+$("div").outerWidth();//width+padding+border
+
+$("div").outerWidth(true);//width+padding+border+margin
+
+------------------------------------------------------------------------
+
+$("span").insertBefore($("div"));//先找到span，在div之前插入这个span
+
+$("span").insertAfter($("div"));
+
+$("span").appendTo($("div"));//给div添加一个span节点，而且添加到后面
+
+$("span").prependTo($("div"));
+
+$("div").before($("span"));与$("span").insertBefore($("div"));效果一样
+
+但是后续操纵对象变了，例如
+$("div").before($("span")).css("background","#f00");//这样操作将div的背景变成红色
+
+$("span").insertBefore($("div")).css("background","#f00");//这样操作将span的背景变成红色
+
+after() append() prepend()与前面都是一样的
+------------------------------------------------------------------------
+
+$("div").remove();//会将div删除
+
+$("div").on("click",function(){
+	alert(123);//这样的加事件的方式不仅可以给div绑定js原生事件，还可以绑定自定义事件，而且可以加多个事件
+});
+
+$("div").on("click mouseover",function(){
+	alert(123);
+});
+
+$("div").on({
+	"click":function(){
+		alert(123);
+	}
+	"mouseover":function(){
+		alert(456);
+	}
+});//这样做达到的目的就是点击弹出123，移入的时候弹出456
+
+$("div").on(function(){
+	alert(123);
+	$("div").off();//这样做结果是点击一次div，再点击的时候就没反应了，即点击完之后就把div上的事件解除绑定了
+});
+
+$("div").on("click mouseover",function(){
+	alert(123);
+	$("div").off();//不论是点击还是移入，只要发生了这两个事件中的一个事件就都被解除了
+});
+
+$("div").on("click mouseover",function(){
+	alert(123);
+	$("div").off("click");//只解除了click
+});
+
+$(window).scrollTop()//获取滚动距离
+
+jq编写弹窗
+首先得知道在jq中如何动态创建元素
+$("<div>")//这样写就是创建了div标签
+
+标签里面的内容也可以直接创建
+$("<div>123</div>")
+
+正式开始写
+$("#input1").click(function(){
+	var o_log_in=$("<div>aaa</div>");
+
+	$(body).append(o_log);
+	o_log_in.css("left",($(window).width-o_log_in.outerWidth)/2);//加不加单位都行
+
+	o_log_in.css("top",($(window).height-o_log_in.outerHeight)/2);//加不加单位都行
+
+	$(window).on("resize scroll",function(){
+		o_log_in.css("left",($(window).width-o_log_in.outerWidth)/2);//加不加单位都行
+
+		o_log_in.css("top",($(window).height-o_log_in.outerHeight)/2+$(window).scrollTop());//加不加单位都行
+	})
+
+	$("#close").click(function(){
+		o_log_in.remove();
+	});
+
+});
+
+$("div").click(function(ev){
+	ev.pageX类似于原生当中的clientX，但clientX是相对于可视区的，但是pageX是相对于文档的，clientX和滚动条的尺寸加起来就是pageX，pageY同理
+	ev.which类似于原生中的keycode，而且这个值还可以记录鼠标的左键，右键，滚轮等
+	ev.preventDefault();阻止默认事件
+	ev.stopPropagation();阻止冒泡
+	return false;//阻止默认事件并且阻止冒泡
+	
+	$("div").on("click",function(){
+		alert(123);
+	});//这种情况下div的每点击一次，就会弹一次123
+
+	$("div").one("click",function(){
+		alert(123);
+	});//div只能点击一次
+});
+
+$(function(){
+	$("#div2").offset().left;//获取到屏幕的左距离
+	$("#div2").position().left;//到有定位的父级的left值，把当前元素转换成类似定位的形式
+
+	$("#div2").parent();//获取父级
+	$("#div2").offsetParent();//获取有定位的父级
+
+	$("#div2").val();//获取value值
+	$("#div2").val(456);//将$("#div2")的value改成456
+
+	$("li").size();//返回li的长度，也就是有多少li
+
+	$("li").each(function(i,elem){//第一个参数：下表，第二个参数：每个元素
+		$(elem).html(i);//将每个li(elem)的innerHTML设置成对应的i；
+	});
+});
+
+jquery编写拖拽
+
+$(function(){
+	$("#div2").mousedown(function(ev){
+		var n_left=ev.pageX()-$("#div2").offset().left;
+		var n_top=ev.pageY()-$("#div2").offset().top;
+		$(document).mousemove(function(ev){
+			var n_move_left=ev.pageX-n_left;
+			var n_move_top=ev.pageY-n_top;
+			//老师的写法
+			$("#div2").css("left",n_move_left);
+			$("#div2").css("top",n_move_top);
+			//我的写法
+			$("#div2").style.left=n_move_left+"px";
+			$("#div2").style.top=n_move_top+"px";
+		});
+		$(document).mouseup(function(){
+			//老师的写法
+			$(document).off();
+			//我的写法
+			$("#div2").mousemove=$("#div2").mouseup=null;
+		});
+		return false;
+	});
+});
+
+$("#div2").hover(function(){
+	$(this).css("background",blue);	
+},function(){
+	$(this).css("background",yellow);
+});
+
+$("#div2").show();显示
+$("#div2").hide();隐藏
+
+$("#div2").show(1000);宽、高、透明度同时减小直到隐藏的运动效果
+$("#div2").hide(1000);宽、高、透明度同时增大直到显示的运动效果
+
+$("#div2").fadeOut(1000);淡出（1s内完成）
+$("#div2").fadeIn(1000);淡入（1s内完成）
+//注意：这两个方法中如果不传参数默认400ms内完成
+$("#div2").fadeTo(1000,0.5);第一个参数是时间，第二个参数是想要达到的透明度
+
+$("#div2").slideUp();//向上展开
+$("#div2").slideDown();//向下展开
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+作业：通过dom操作来做QQ展开收缩的那个例子，要考虑到内层可能只有h2而没有ul
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+<script>
+	alert(a);//会报错
+	a=1;
+</script>
+js解析机制
+（1）预解析
+	解析var 函数 参数
+	var后的变量预解析为undefined
+	函数都拿过来，全部解析//事件绑定的函数不解析
+	参数其实和var解析过程差不多
+（2）逐行解析
+	遇到表达式要解析，所谓表达式就是加减乘除运算符以及参数
+
+alert(a);
+var a=1;
+alert(a);
+function a(){alert(2);}
+alert(a);
+var a=3;
+alert(a);
+function a(){alert(4);}
+alert(a);
+
+注：预解析的时候，变量和函数重名的时候，函数覆盖变量
+开始的时候读到a=undefined
+接下来a=function a(){alert(2)};
+此时有两个名字一样的变量a
+根据函数替代变量的原则，a变量中存储的就是function a(){alert(2)};
+接下来又读到一次a=undefined
+同样a=function a(){alert(2)};
+再接下来，得到a=function a(){alert(4)};
+此时两个函数势均力敌，所以后面覆盖前面的，得到a=function a(){alert(4)};
+到此，预解析完毕
+预解析完了之后，浏览器中存在
+a=function a(){alert(4)};
+
+再进行解析的话，第一次alert(a);自然就弹出function a(){alert(4)};
+读到a=1;a变量里面的值就会被覆盖
+接下来的alert(a);弹出1
+
+函数和json都是一个域，也就是说都会作为一个独立的域执行
+var a=1;
+function fn1(){
+	alert(a);//undefined
+	var a=2;
+}
+fn1();
+alert(a);	//1
+
+
+var a=1;
+function fn1(){
+	alert(a);//1	通过作用域链往外找
+	a=2;	//将外面的a变量改为2
+}
+fn1();
+alert(a);	//2
+
+
+var a=1;
+function fn1(a){
+	alert(a);//注意，这里的a是指参数a，在函数内部预解析的时候已经解析了，将a解析成了undefined，所以这里应该弹出undefined
+	a=2;//这里是将参数a的值改为了2
+}
+fn1();
+alert(a);	//1
+
+
+
+var a=1;
+function fn1(a){//也就是从这一行开始执行
+	alert(a);//1
+	a=2;	
+}
+fn1(a);		//函数解析的时候要从参数开始
+alert(a);	//1
+
+
+
+
+
+alert(a);	//undefined
+if(true)
+{
+	var a=1;
+}
+
+
+alert(fn1);	//注意：在火狐下会报错，但是在谷歌下就会弹出fn1的函数体，这是火狐的一个bug，所以要注意定义函数一定不要定义在if或for循环内部，否则火狐解析不出来
+if(true)
+{
+	var a=1;
+	function fn1()
+	{
+		alert(123);
+	}
+}
+
+
+for(var i=0;i<aBtn.length;i++)
+{
+	aBtn[i].onclick=function(){
+		alert(i);	//注意这时i不是3，而是undefined，每个aBtn[i].onclick=function(){}里面都是一个域，而for循环大括号又不是一个域，要进行预解析，所以有var i，那么仓库中就存储了i的值，是undefined
+		for(var i=0;i<aBtn.length;i++)
+		{
+			aBtn[i].style.background="yellow";
+		}
+	};
+}
+
+
+for(var i=0;i<aBtn.length;i++)
+{
+	aBtn[i].onclick=function(){
+		alert(i);	//3
+		for(i=0;i<aBtn.length;i++)//去掉了i前面的var
+		{
+			aBtn[i].style.background="yellow";
+		}
+	};
+}
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+function getByClass(oPar,tagName,attr)
+{
+	var aAll=oPar.getElementsByTagName("tagName");
+	var aRes=[];
+
+	for(var i=0;i<aAll.length;i++)
+	{
+		var aClassName=aAll[i].className.split(" ");
+		for(var j=0;j<aClassName.length;j++)
+		{
+			if(aClassName[j] == attr)
+			{
+				aRes.push(aAll[i]);
+				break;
+			}
+		}
+	}
+	return aRes;
+}
+
+function addClass(obj,className)
+{
+	if(obj.className=="")
+	{
+		obj.className=className;
+	}
+	else
+	{
+		var arrClassName=obj.className.split(" ");
+		var _index=arrIndexOf(arrClassName,classNaem);
+		if(_index==-1)
+		{
+			obj.className+=" "+className;
+		}
+		else
+		{
+			return;
+		}
+	}
+}
+
+function removeClass(obj,className)
+{
+	if(obj,className=="")
+	{
+		return;
+	}
+	else
+	{
+		var arrClassName=obj.className.split(" ");
+		var _index=arrIndexOf(arrClassName,classNaem);
+		if(_indexOf!=-1)
+		{
+			arrClassName.splice(_index,1);
+			obj.className=arrClassName.join(" ");
+		}
+	}
+}
+
+function arrIndexOf(arr,v)
+{
+	for(var i=0;i<arr.lengh;i++)
+	{
+		if(arr[i]==v)
+		{
+			return i
+		}
+	}
+	return -1;
+}
+---------------------------------------------------------------------------------------
+onchange在值发生改变的时候被触发
+text:当光标离开的时候如果内容有变化就触发
+radio/checkbox：标准浏览器下电极时只要值变了就会触发
+	非标准下焦点离开的时候如果值变了就会触发
+
+
+o_btn.onsubmit=function(){
+	if(!this.text1.value)
+	{
+		alert(请输入内容);
+		return false;//return false可以阻止函数执行
+	}
+};
+
+//var re=confirm("你确定要重置？")
+//if(re)
+//{
+//	return true;
+//}
+//else
+//{
+//	return false;
+//}
+
+直接可以简写成return confirm("你确定要重置？");
+
+
+open(url,新窗口打开方式)
+	如果url为空，则默认打开一个空白页面
+	如果打开方式为空，默认为新窗口方式打开
+
+window.navigator.userAgent 当前浏览器的信息
+alert(typeof window.location);//object
+window.location.href
+window.location.search//url ？后的内容
+window.location.hash//url # 后的内容
+
+
+滚动条滚动距离
+	非chrome:document.documentElement.scrollTop
+	chrome:document.body.scrollTop
+
+内容高
+document.body.scrollHeight
+
+offsetTop是包含margin值的，而offsetHeight是不包含margin值的
+
+
+
+------------------------------------------------------------------------
+事件
+
+焦点：能够使浏览器能够区分用户输入的对象，当一个元素有焦点的时候，那么他就可以接受用户的输入
+设置焦点的几种方式
+1、点击
+2、tab
+3、js	onfocus
+
+
+能够响应用户操作的元素才有焦点
+
+输入框得到焦点默认文字消失，失去焦点文字又显示
+o_txt.onfocus=function(){
+	if(this.value=="请输入内容")
+	{
+		this.value="";
+	}
+	
+};
+
+o_txt.onblur=function(){
+	if(this.value=="")
+	{
+		this.value="请输入内容";
+	}
+};
+
+页面加载完成后焦点自动到达text中
+o_txt.focus();
+取消元素的焦点
+o_txt.blur();
+选择指定元素里面的文本内容
+//网上我们经常看到点击复制链接这样的功能，但是在标准浏览器中，js是禁止操作用户的剪切板的，所以这个功能会失效，即浏览器提示：当前浏览器不支持自动复制，请手动复制；但是文本框可以自动选中所有的文字，这时select就起作用了
+o_btn.onclick=function(){
+	o_txt.select();//但是这个功能只能操作能进行交互的元素，如果想把div、p标签里面的内容选中，是做不到的
+};
+
+事件对象event类似于飞机的黑匣子
+ie/chrome：event是一个内置全局对象
+ff（标准下）：事件对象是通过事件函数的第一个参数传入的
+
+
+clientX、clientY当前坐标到可视区的距离
+onmousemove的触发频率不是像素，而是间隔时间
+
+事件冒泡与html结构有关，而与表现上谁覆盖谁没关系
+
+o_div1.onclick=fn1;
+//o_div2.onclick=fn1;
+//o_div3.onclick=fn1;
+
+当注释掉后面两行的时候，需要注意o_div2和o_div3还是可以接收到点击事件的，但是没有函数绑定给这些事件，但是不影响事件的接受
+
+下拉菜单的例子（google"更多"）
+<input id="btn"/>
+<div id="div1"></div>
+
+//想要点击按钮让div显示，再点击文档其他位置，让它消失
+o_btn.onclick=function(){
+	o_div.style.display="block";
+};
+document.onclick=function(){
+	o_div.style.display="none";
+};
+
+但是当我们点击o_btn的时候并没有显示出o_div，因为我们点击o_btn的时候同时发生了o_btn.onclick和document.onclick两个事件，后者是通过o_btn.onclick的冒泡传递给它的父级的，这样父级上的第一个事件是让它显示，而随后马上又在父级上绑定了让它消失，所以最后的结果就是不显示，但是这么麻烦的一个东西为什么不禁止掉它呢？因为页面当中不止有一个元素，但是我们希望点击页面当中的其他任何元素都让这个div消失，如果没有冒泡就需要给每个其他元素都加事件，这是很麻烦的一件事情，但是有事件冒泡的话这个问题就很好解决了，我们只需要将事件加给所有的元素的父级，所有元素的父级就是文档，所以冒泡是浏览器自身的一种工作机制，不能随便禁用
+
+阻止冒泡：当前要阻止冒泡的事件函数中调用event.cancelBubble=true;
+
+
+利用阻止冒泡做"分享到"的例子
+
+<div id="div1">
+	<div id="div2"></div>
+</div>
+
+
+css部分
+#div1{ width:100px; height:100px; background:#f00; position:absolute; left:-100px; top:100px;}
+#div2{ width:30px; height:50px; background:#000; position:absolute; right:-30px; top:25px;}
+
+
+//分析：利用事件冒泡的话，我们可以直接给#div1加事件，当#div2移入的时候虽然#div2本身没有加移入事件，但是该事件会冒泡到#div1上，从而实现这个功能，代码如下：
+
+js
+o_div1.onmouseover=function(){
+	this.style.left=0;
+};
+o_div1.onmouseout=function(){
+	this.style.left="-100px";
+};
+
+之前给一个对象绑定一个事件处理函数的时候，都是obj.onclick=fn这种形式，但是这种形式类似于赋值形式，也就是说后面的值会覆盖前面的，所以这种绑定有这样一个缺陷，所以第二种事件绑定方式就出现了，这中绑定方式可以给一个对象的同一个事件绑定多个不同的函数
+
+
+ie下：obj.attachEvent("onclick",fn_name);//这里的fn_name下面，this指向会出问题，this会指向window，这时必须通过对象冒充来纠正，即用call函数纠正
+如果call方法的第一个参数是null的时候，并不指向null，而是原来的对象，最终我们会这样写
+document.attachEvent("onclick",function(){
+	fn1.call(document);
+});
+
+
+标准下：obj.addEventListener(click,fn_name,false);
+第三个参数表示是否捕获
+
+function bind(obj,evname,fn)
+{
+	if(obj.addEventListener)
+	{
+		
+	}
+}
+
+
+addEventListener这个事件中，false代表冒泡，监听从里到外的事件
+true代表捕获，监听从外到里的事件，如果有对应的事件被监听，那么就在对应顺序上执行时间函数
+
+取消事件
+第一种，普通方法
+document.onclick=null;
+第二种
+document.detachEvent("onclick",fn1);
+document.removeEventListener("click",fn1,false);
+
+
+
+
+var o_event=event||ev;
+//事件发生的时候ctrlKey,altKey,shiftKey是o_event对象下的属性
+
+//仿QQ留言，点击回车就可以留言
+
+oText.onkeyup=function(ev){
+	var o_event=ev||event;
+	if(this.value!="")
+	{
+		if(ev.keyCode==13)
+//如果希望通过ctrl+回车实现发送，则要写成if(ev.keyCode==13&&ev.ctrlKey==true)
+		
+		{
+			var o_li=document.createElement("li");
+			o_li.innerHTML=this.value;
+
+			if(o_ul.children[0])
+			{
+				o_ul.insertBefore(o_li,o_ul.children[0]);
+			}
+			else
+			{
+				o_ul.appendChild(o_li);
+			}
+		}
+	}
+};
+
+
+
+不是所有元素都能接受键盘事件，能够响应用户输入的元素，能够接受焦点的元素就能接受键盘事件
+onkeydown如果按下不抬起，那么会连续触发
+
+oncontextmenu:右键菜单（环境菜单）事件，所谓环境菜单，就是点击不同的对象会弹出不同的菜单，这就叫环境菜单
+
+
+
+o_div.onmousedown=function(ev){
+	//鼠标按下的时候，也就是onmousedown的时候，如果有文字被选中，各个浏览器会有各种不一样的默认行为，所以我们需要阻止这些默认行为，就需要禁掉默认事件，在最后加return false，这种方式是标准浏览器下的解决方案，但是在非标准的IE下这种方法是不管用的
+	var o_event=event||ev;
+	var x=o_event.clientX-o_div.offsetLeft;
+	var y=o_event.clientY-o_div.offsetTop;
+
+	if(o_div.setCapture)
+	{
+		o_div.setCapture();
+	}
+
+	//o_div.onmousemove=function(ev){
+	document.onmousemove=function(ev){//为了防止拖动太快的情况下鼠标滑移离开元素
+		var o_event=ev||event;
+		//o_div.style.left=x+o_div.offsetLeft+"px";
+		//o_div.style.top=y+o_div.offsetTop+"px";
+		o_div.style.left=o_event.clientX-x+"px";
+		o_div.style.top=o_event.clientY-y+"px";
+	};
+	//o_div.onmouseup=function(){
+	document.onmouseup=function(){//结构上如果在该o_div后面有元素，当o_div拖动到这个元素的时候会到它的下方，这时鼠标再次抬起的时候o_div的onmouseup事件消失，转而把该事件给了覆盖o_div的元素，这样o_div就不能脱离鼠标焦点了，所以通过冒泡的原理，给document加onmouseup事件就可以解决这个问题
+		document.onmousemove=null;
+		document.onmouseup=null;
+		if(o_div.releaseCapture)
+		{
+			o_div.releaseCapture();
+		}
+	};
+	return false;
+};
+
+//前面如果加上a_input[0].setCapture();那么即使点击a_input[1]也会弹出1而不弹出2，即使点击页面上任意空白的部分也只会弹出1，甚至在将窗口缩小的时候点击桌面上某个图标仍然弹出1，这叫设置全局捕获，当我们给一个元素设置全局捕获的时候，这个元素就会监听后续发生的所有事件，当有事件发生的时候就会被当前设置了全局捕获的元素所触发，但是这个看似强大的功能有兼容问题，在火狐下有这个方法，但是没有和IE一样那样的效果，而在chrome下直接报错。这样的话我们可以在o_div按下的时候给o_div设置全局捕获，让选中的文字压根捕获不到onmousemove事件，这样就可以实现在非标准IE下禁掉默认事件，当鼠标抬起的时候还需要释放掉捕获
+
+a_input[0].onclick=function(){
+	alert(1);
+};
+
+a_input[1].onclick=function(){
+	alert(2);
+};
+
+
+拖拽图片的时候也有问题，这个问题可以类比选中文字的时候的那个问题，也是浏览器默认行为，由于我们加了return false，所以不用再多考虑了
+
+拖拽封装
+
+function drag(obj)
+{
+	obj.onmousedown=function(ev){
+	var o_event=event||ev;
+	var x=o_event.clientX-o_div.offsetLeft;
+	var y=o_event.clientY-o_div.offsetTop;
+
+	if(obj.setCapture)
+	{
+		obj.setCapture();
+	}
+
+	document.onmousemove=function(ev){//为了防止拖动太快的情况下鼠标滑移离开元素
+		var o_event=ev||event;
+		//o_div.style.left=x+o_div.offsetLeft+"px";
+		//o_div.style.top=y+o_div.offsetTop+"px";
+		obj.style.left=o_event.clientX-x+"px";
+		obj.style.top=o_event.clientY-y+"px";
+	};
+	
+	document.onmouseup=function(){
+		document.onmousemove=null;
+		document.onmouseup=null;
+		if(obj.releaseCapture)
+		{
+			obj.releaseCapture();
+		}
+	};
+	return false;
+}
+
+
+限制范围拖拽
+function drag(obj)
+{
+	obj.onmousedown=function(ev){
+	var o_event=event||ev;
+	var x=o_event.clientX-o_div.offsetLeft;
+	var y=o_event.clientY-o_div.offsetTop;
+
+	if(obj.setCapture)
+	{
+		obj.setCapture();
+	}
+
+	document.onmousemove=function(ev){//为了防止拖动太快的情况下鼠标滑移离开元素
+		var o_event=ev||event;
+		//o_div.style.left=x+o_div.offsetLeft+"px";
+		//o_div.style.top=y+o_div.offsetTop+"px";
+		var L=o_event.clientX-x;
+		var T=o_event.clientY-y;
+
+		if(L<0)
+		{
+			L=0;
+		}else if(L>document.documentElement.clientWidth-obj.offsetWidth)
+		{
+			L=document.documentElement.clientWidth-obj.offsetWidth
+		}
+		
+
+		
+		if(T<0)
+		{
+			T=0;
+		}else if(T>document.documentElement.clientHeight-obj.offsetHeight)
+		{
+			T=document.documentElement.clientHeight-obj.offsetHeight
+		}
+
+
+		obj.style.left=L+"px";
+		obj.style.top=T+"px";
+	};
+	
+	document.onmouseup=function(){
+		document.onmousemove=null;
+		document.onmouseup=null;
+		if(obj.releaseCapture)
+		{
+			obj.releaseCapture();
+		}
+	};
+	return false;
+}
+
+
+九宫格碰撞检测
+
+function drag(obj)
+{
+	obj.onmousedown=function(ev){
+	var o_event=event||ev;
+	var x=o_event.clientX-o_div.offsetLeft;
+	var y=o_event.clientY-o_div.offsetTop;
+
+	if(obj.setCapture)
+	{
+		obj.setCapture();
+	}
+
+	document.onmousemove=function(ev){//为了防止拖动太快的情况下鼠标滑移离开元素
+		var o_event=ev||event;
+		//o_div.style.left=x+o_div.offsetLeft+"px";
+		//o_div.style.top=y+o_div.offsetTop+"px";
+		var L1=o_event.clientX-x;
+		var R1=L1+obj.offsetWidth;
+		var T1=o_event.clientY-y;
+		var B1=T+obj.offsetHeight;
+
+		var L2=o_img.offsetLeft;
+		var R2=L2+o_img.offsetWidth;
+		var T2=o_img.offsetTop;
+		var B2=T2+o_img.offsetHeight;
+
+		if(R1<L2||L1>R2||B1<T2||T1>B2)		
+		{
+			o_img.src="1.jpg";
+		}
+		else
+		{
+			o_img.src="2.jpg";
+		}
+
+		obj.style.left=L1+"px";
+		obj.style.top=T1+"px";
+	};
+	
+	document.onmouseup=function(){
+		document.onmousemove=null;
+		document.onmouseup=null;
+		if(obj.releaseCapture)
+		{
+			obj.releaseCapture();
+		}
+	};
+	return false;
+}
+
+拖拽改变层大小
+
+//首先需要确定鼠标点击在元素的上下左右位置
+
+o_div.onmousedown=function(ev){
+	var o_event=ev||event;
+	var w=o_div.offsetWidth;
+	var x=o_event.clientX;
+	var l=this.offsetLeft;
+	var b="";
+	if(x>this.offsetLeft+this.offsetWidth-10)
+	{
+		b="right";
+	}
+	if(x<this.offsetLeft+10)
+	{
+		b="left";
+	}
+	document.onmousemove=function(ev){
+		var o_event=ev||event;
+		switch(b)
+		{
+			case "left":
+				o_div.style.width=w-(o_event.clientX-x)+"px";
+				o_div.style.left=l+(o_event.clientX-x)+"px";
+				break;
+			case "right":
+				o_div.style.width=w+(o_event.clientX-x)+"px";
+				break;
+		}
+	};
+	document.onmouseup=function(){
+		document.onmousemove=document.onmouseup=null;
+	};
+};
+
+模拟滚动条
+<div id="div1">
+	<div id="div2"></div>
+</div>
+
+o_div2.onmousedown=function(ev){
+	var o_event=ev||event;
+	var disY=ev.clientY-this.offsetTop;
+
+	var iMaxTop=o_div1.offsetHeight-o_div2.offsetHeight;
+	document.onmousemove=function(){
+		o_div2.style.top=o_event.clientY-disY+"px";
+	};
+	document.onmouseup=function(ev){
+		var T=ev.clientY-disY;
+		if(T<0)
+		{
+			T=0;
+		}
+		else if(T>iMaxTop)
+		{
+			T=iMaxTop;
+		}
+		o_div2.style.top=T+"px";
+		var iScale=T/iMaxTop;
+		o_div3.style.height=500*iScale+"px";
+	};
+	document.onmousemove=document.onmouseup=null;
+	return false;
+};
+
+模拟滚动条控制内容的滚动
+
+<div id="div1">
+	<div id="div2"></div>
+</div>
+<div id="div3">
+	<div id="div4"></div>
+</div>
+
+o_div2.onmousedown=function(ev){
+	var o_event=ev||event;
+	var disY=ev.clientY-this.offsetTop;
+
+	var iMaxTop=o_div1.offsetHeight-o_div2.offsetHeight;
+	document.onmousemove=function(){
+		o_div2.style.top=o_event.clientY-disY+"px";
+	};
+	document.onmouseup=function(ev){
+		var T=ev.clientY-disY;
+		if(T<0)
+		{
+			T=0;
+		}
+		else if(T>iMaxTop)
+		{
+			T=iMaxTop;
+		}
+		o_div2.style.top=T+"px";
+		var iScale=T/iMaxTop;
+		o_div4.style.top=(o_div3.clientHeight-o_div4.clientHeight)*iScale+"px";
+	};
+	document.onmousemove=document.onmouseup=null;
+	return false;
+};
+
+
+鼠标滚轮
+
+滚轮事件：	ie/chrome:onmousewheel  
+			o_event.wheelDelta
+			向上滚动：120，下：-120
+		ff:DOMMouseScroll这个事件必须用addEventListener
+			o_event.detail
+			向上滚动：-3，下：3
+
+if(o_div.addEventListener)
+{
+	o_div.addEventListener("DOMMouseScroll",fn1,false);
+}
+o_div.onmousewheel=fn1;
+
+function fn1(ev)
+{
+	
+	var o_event=ev||event;
+	var b=true;
+	if(o_event.wheelDelta)
+	{
+		b=o_event.wheelDelta>0?true:false;
+	}
+	else
+	{
+		b=o_event.detail<0?true:false;
+	}
+
+	if(b)
+	{
+		this.style.height=this.offsetHeight-10+"px";
+	}
+	else
+	{
+		this.style.height=this.offsetHeight+10+"px";
+	}
+
+	if(o_event.preventDefault)
+	{
+		o_event.preventDefault();
+	}
+	return false;
+}
+
+//注：return false阻止的是obj.on事件名称=fn所触发的默认行为
+
+而addEventListener绑定的事件需要通过event下preventDefault()
+
+阻止默认行为的方式也是根据事件绑定的形式决定的，如果我这样写
+
+document.addEventListener("contextmenu",function(){
+	return false;//这里的return false是不管用的
+},false);
+
+但是在IE下的attachEvent仍然是通过return false来禁止的，即
+document.attachEvent("onclick",function(){
+	return false;
+});
+
+
+cookie:作用是存储数据并且可以设置存储时间，当用户访问了某个网站（网页）的时候，我们就可以通过cookie来向访问者电脑上存储数据
+1、不同浏览器存放的cookie位置不一样，也是不能通用的
+2、cookie的存储是以域名的形式进行区分的
+3、cookie的数据可以设置名字，存储的形式为document.cookie="名字=值";
+
+document.cookie="username=leo";//这句话就往我们的cookie中存了"username=leo"这条数据
+document.cookie可以读，也可以写
+但是有些浏览器处于安全考虑不允许本地文件访问cookie，比如chrome，但是这也没有关系，因为我们的网站最终要到服务器上
+我们通过document.cookie获取当前网站下的cookie的时候，得到的字符串形式的值，它包含了当前网站下所有的cookie，它会把所有的cookie通过一个 "; " 连起来
+一个域名下存放的cookie的个数是有限制的，不同的浏览器存放的个数不一样
+每个cookie存放的内容大小也是有限制的，不同浏览器存放大小不一样
+
+如果我们想长时间存放一个cookie，我们需要在设置一个cookie的时候需要设置一个过期时间
+document.cookie="名称=值；expires="+时间;而这个时间必须是字符串形式的
+
+cookie默认是临时存储的，当浏览器关闭进程的时候自动销毁
+
+var o_date=new Date();
+o_date.setDate(o_date.getDate()+5);
+document.cookie="username=leo;expires="+o_date.toGMTString;//那么在这里，username这一cookie就会在5天之后消失
+document.cookie="age=32";//age这一cookie由于没有设置过期时间，所以在会话结束（即浏览器关闭，当前进程结束的时候）就会消失
+
+
+内容最好编码存放，encodeURI
+
+alert(encodeURI("你好"));
+alert(decodeURI("%E4%BD%E4%BD%E4%BD"));
+最终写成
+document.cookie="username"+encodeURI('leo\n你好')+";expires="+o_date.toGMTString();
+读取的时候
+alert(decode(document.cookie));
+
+function get_cookie(key){
+	var arr1=document.cookie.split("; ");
+	for(var i=0;i<arr1.length;i++)
+	{
+		var arr2=arr1.split("=");
+		if(arr2[0]==key)
+		{
+			return decodeURI(arr2[1]);
+		}
+	}
+}
+
+alert(get_cookie("username"));
+
+function set_cookie(key,value,t)
+{
+	var o_date=new Date();
+	o_date.setDate(o_date.getDate()+t);
+	document.cookie=key+"="+value+";expires="+o_date.toGMTString();
+}
+
+
+function remove_cookie(key)
+{
+	set_cookie(key,"",-1);
+}
+
+记录用户名
+if(get_cookie("username"))
+{
+	o_user_name.value=get_cookie("username");
+}
+o_login.onclick=function(){
+	alert("登陆成功");
+	set_cookie("username",o_user_name.value,5);
+};
+
+o_del.onclick=function(){
+	remove_cookie("username");
+	o_user_name.value="";
+};
+
+
+ajax
+
+o_btn.onclick=function(){
+	var xhr=new XMLHttpRequest();
+	xhr.open("get","1.txt",true);
+	xhr.send();
+
+	xhr.onreadystatechange=function(){
+		if(xhr.readyState==4)
+		{
+			alert(xhr.responseText);
+		}
+	};
+};
+
+
+创建ajax对象
+
+var xhr=new XMLHttpRequest();//IE7以上没什么问题
+IE6以下：ActiveXObject是所有插件的总称，我们需要声明具体用哪个插件
+new ActiveXObject(Microsoft.XMLHTTP);
+
+var xhr=null;
+if(window.XMLHttpRequest)//如果写成XMLHttpRequest，那相当于我们拿一个不存在的对象去作判断，一定会报错
+{
+	xhr=new XMLHttpRequest();
+}
+else
+{
+	xhr=new ActiveXObject(Microsoft.XMLHTTP);
+}
+//也可以用try...catch创建
+try{
+	
+}catch(e){
+
+}
+
+
+open方法
+	参数：1、打开方式2、地址3、是否异步
+
+表单：用来做数据提交
+
+	action:数据提交的地址，默认当前页面
+	method:数据提交的方式，默认是get方式
+		1、get：把数据名称和数据值用=链接，如果有多个的话，那么他会把多个数据组合用&进行链接，然后把数据放到url?后面传到指定页面，url长度是有限制的，所以get方式传递的数据量很有限
+		2、post，数据传输大小理论上没有限制，但是在php.ini中这个量是可更改的
+	enctype:提交的数据格式，默认是"application/x-www-form-urlencoded"
+	enctype="application/x-www-form-urlencoded"
+
+
+responseText是个属性，ajax请求的内容就在这个下面存储，类型是字符串
+
+status:服务器的工作状态，http状态码
+
+xhr.onreadystatechange=function(){
+if(xhr.readyState==4){
+	if(xhr.status==200)
+	{
+		alert(xhr.responseText);
+	}else
+	{
+		alert("出错了"+xhr.status);
+	}
+}
+	
+};
+
+xhr.responseText这些返回的信息通过解析才方便我们前端操作，而我们前端可以通过JSON对象来解析，但是这个对象是有兼容问题的，主要是在IE7以下没有这个对象，但是虽然原生不支持，我们可以去JSON的官网上下载json2.js这个包，JSON这个对象下有两个重要的方法供我们使用stringfy和parse
+
+stringfy:可以把一个对象转成对应字符串
+
+var arr=[1,2,3];
+alert(typeof JSON.stringfy(arr));//返回string
+
+parse:把字符串转成对象
+
+var s1="[100,200,300]";
+alert(typeof JSON.parse(s1));//返回array
+
+但是如果我们写如下代码
+var s2="{left:100}";
+alert(JSON.parse(s2));//会报错，因为json的名称必须写成严格模式的，也就是说我们必须写成这样
+var s2='{"left":100}';//注意单引号都是不可以的，后台给我们返回的内容的名字也是带有双引号的，如果从后台那里的接口中得到的数据中没有单引号要及时与后台沟通
+
+
+封装ajax方法
+
+function ajax(method,url,data,success)
+{
+	var xhr=null;
+	try
+	{
+		xhr=new XMLHttpRequest();
+	}
+	catch(e)
+	{
+		xhr=new ActiveXObject("Microsoft.XMLHTTP");
+	}
+
+	if(method=="get"&&data)
+	{
+		url+="?"+data;
+	}
+	//get方式下
+	//对于缓存问题，可以连接一个随机数或者日期对象
+	//乱码问题，编码encodeURI，对于传输过程中的中文做编码处理
+	//xhr.open("get","2.get.php?username="+encodeURI('刘伟')+"?age=30&"+new Date().getTime(),true);
+
+
+
+	//post方式下
+	//数据要放在send里面
+	//需要设置请求头xhr.setRequestHeader("content-type","application/x-www-form-urlencoded")来告诉后端数据发送的编码类型
+	//xhr.send("username=leo&age=30");
+	//post没有缓存问题，post提交的时候不会缓存
+	//post也没有中文问题，是由于声明了请求头，无需编码
+	xhr.open(method,url,true);
+	if(method=="get")
+	{
+		xhr.send();
+	}
+	else
+	{
+		xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
+		xhr.send(data);
+	}
+
+	xhr.onreadystatechange=function(){
+		if(readyState==4)
+		{
+			if(xhr.status==200)
+			{
+				success&&success(xhr.responseText);
+			}
+			else
+			{
+				alert("出错了"+xhr.status);
+			}
+		}
+	};
+}
+
+
+瀑布流
+布局部分
+
+<ul id="ul1">
+	<li>
+		<div>
+			<img src=""/>
+			<p></p>
+		</div>
+	</li>
+	<li>
+		<div>
+			<img src=""/>
+			<p></p>
+		</div>
+	</li>
+	<li>
+		<div>
+			<img src=""/>
+			<p></p>
+		</div>
+	</li>
+</ul>
+
+分析得到的数据的格式
+
+chrome开发者工具->Network->第一列Name Path中找到发送到的那个目的页面在这里是getPics.php?cpage=1并单击->Preview
+
+window.onload=function(){
+	var n_li_len=a_li.length;
+	var n_page=1;
+	var b_on=true;//这个变量用于判断是否该加载下一批图片，因为上一批必须先完全加载才可以加载下一批
+	//初始化数据处理
+	get_data();
+	function get_data()
+	{
+		ajax("get","getPics.php","cpage="+n_page,function(data){
+		var data=JSON.parse(data);
+
+		if(!data.length)
+		{
+			//代表没有数据可加载了
+			return;
+		}
+		for（var i=0;i<data.length;i++）
+		{
+			var n_shortest_index=get_short_li();
+
+			var o_div=document.createElement("div");
+			var o_img=document.createElement("img");
+			o_img.src=data[i].preview;
+			//浏览器加载的过程中，图片的宽高还没有计算好，所以加载的时候高默认按照0处理，这时计算就会出问题，解决的办法就是架上下面两句话，也就是把图片的宽高给它预先设定好，但是这种发发需要后端人员的配合，需要把img的宽高参数传过来，不过除了这种方法之外，我们可以通过图片预加载功能以及递归调用解决这个问题
+			o_img.style.width=225+"px";
+			o_img.style.height=(225/data[i].width)*data[i].height+"px";
+			o_div.appendChild(o_img);
+			var o_p=document.createElement("p");
+			o_p.innerHTML=data[i].title
+			o_div.appendChild(o_p);
+
+			a_li[n_shortest_index].appendChild(o_div);
+		}
+		});
+		b_on=true;
+	}
+	
+
+	window.onscroll=function(){
+		var n_index=get_short_li();
+		var o_shortest_li=a_li[n_index];
+
+		var scroll_top=document.documentElement.scrollTop||document.body.scrollTop;
+		var client_height=document.documentElement.clientHeight;
+
+		if(o_shortest_li.offsetHeight+get_top(o_shortest_li)<scroll_top+client_height)
+		{
+			if(b_on)
+			{
+				b_on=false;
+				n_page++;
+				//在此我们要注意，滚动事件是连续触发的，而数据加载是要花时间的，那么在数据加载的这段时间之内我们不停的滚动滚动条，条件始终成立，所以n_page一直加，这样就产生了问题
+				get_data();
+			}
+			
+			
+		}
+	};
+	function get_short_li()
+	{
+		var n_index=0;
+		var n_shortest=a_li[n_index];
+		for(var i=1;i<a_li.length;i++)
+		{
+			if(n_shortest>a_li[i].offsetHeight)
+			{
+				n_index=i;
+				n_shortest=a_li[i].offsetHeight;
+			}
+		}
+		return n_index;
+	}
+
+	function get_top(obj)
+	{
+		var n_top=0;
+		while(obj)
+		{
+			n_top+=obj.offsetTop;
+			obj=obj.offsetParent;
+		}
+		return n_top;
+	}
+};
+
+
+留言板
+
+项目搭建：
+项目文件夹下主要包括
+
+html文件
+css文件
+img文件
+sql文件
+ajax.js文件
+guestbook.js文件
+guestbook文件夹
+
+guestbook中存的就是我们的后端提供过来的接口，sql文件是数据库文件
+
+打开phpmyadmin
+
+创建新数据库，再点导入
+
+window.onload=function(){
+	//注册的时候验证用户名
+	/*
+	接口准备工作
+	get
+		guestbook/index.php
+			m:index
+			a:verifyUsername
+			username:要验证的用户名
+		返回
+		{
+			code:返回的信息代码 0->没有错误 1->有错误
+			message:返回的信息 具体的返回信息
+		}
+	*/
+
+	var o_user_name//要验证的用户名
+	var o_verify_user_name_msg//输入用户名的表单控件失去焦点后显示提示信息的地方
+
+	//初始化
+	update_user_status();
+	
+	update_user_status()
+	{
+		var uid=get_cookie("uid");
+		var username=get_cookie("username");
+
+		var o_user;
+		var o_log_in;
+		var o_reg;
+		var o_user_info
+		if(uid)
+		{
+			//如果是登录状态
+			o_user.styl.display="block";
+			o_user_info.innerHTML=username
+			o_reg.style.display="none";
+			o_login.style.display="none";
+		}
+		else
+		{
+			o_user.style.display="none";
+			o_user_info.innerHTML=""
+			o_reg.style.display="block";
+			o_login.style.display="block";
+		}
+	}
+	o_user_name.onblur=function(){
+		ajax("get","guestbook/index.php","m=index&a=verifyUsername&username="+this.value,function(data){
+			var d=JSON.parse(data);
+			o_verify_user_name_msg.innerHTML=d.message;
+			if(d.code)
+			{
+				o_verify_user_name_msg.style.color="#f00";
+			}
+			else
+			{
+				o_verify_user_name_msg.style.color="#0f0";
+			}
+		});
+	};
+
+	//初始化留言列表
+	get/post
+		guestbook/index.php
+			m:index
+			a:getList
+			page:获取的留言的页码，默认是1
+			n:每页显示的条数，默认是10
+
+		返回
+		{
+			code:返回的信息代码 0->没有错误 1->有错误
+			data:返回成功的留言的详细信息
+				cid:留言id
+				content:留言内容
+				uid:留言人的id
+				username
+				dateline
+				support:当前留言顶的数量
+				oppose:当前留言踩的数量
+			message:返回的信息 具体的返回信息
+		}
+
+	ajax("get","guestbook/index.php","m=index&a=getList&n=10",function(data){
+		var d=JSON.parse(data);
+		var arr=d.data.list;
+
+		if(arr.length)
+		{
+			for(var i=0;i<arr.length;i++)
+			{
+				create_list(arr[i])
+			}
+			o_show_more.style.display="block";
+		}
+		else
+		{
+			o_show_more.style.display="none";
+			o_list.innerHTML="现在还没有留言，快来抢沙发";
+		}
+	});
+
+
+	//用户注册
+	/*
+	接口准备工作
+	get/post
+		guestbook/index.php
+			m:index
+			a:reg
+			username:要注册的用户名
+			passwork:注册的密码
+			//这里需要注意，后端有时会告诉我们有些值是必须要传的
+		返回
+		{
+			code:返回的信息代码 0->没有错误 1->有错误
+			message:返回的信息 具体的返回信息
+		}
+	*/
+
+	var o_register_btn//注册按钮
+	var o_password//密码
+	o_register_btn.onclick=function(){
+		ajax("post","guestbook/index.php","m=index&a=reg&username="+encodeURI(o_user_name.value)+"&password="+o_password.value,function(data){
+			var d=JSON.parse();
+			
+		});
+	};
+
+	//用户登录
+	/*
+	接口准备工作
+	get/post
+		guestbook/index.php
+			m:index
+			a:login
+			username:要登录的用户名
+			passwork:登录的密码
+			//这里需要注意，后端有时会告诉我们有些值是必须要传的
+		返回
+		{
+			code:返回的信息代码 0->没有错误 1->有错误
+			message:返回的信息 具体的返回信息
+		}
+	*/
+	var o_user_name2
+	var o_login_btn//登录按钮
+	var o_password2//登录密码
+	o_register_btn.onclick=function(){
+		ajax("post","guestbook/index.php","m=index&a=login&username="+encodeURI(o_user_name2.value)+"&password="+o_password2.value,function(data){
+			var d=JSON.parse();
+
+			alert(d.message);
+
+			if(!d.code)
+			{
+				update_user_status();
+			}
+			
+		});
+	};
+
+	//用户退出
+	/*
+	接口准备工作
+	get/post
+		guestbook/index.php
+			m:index
+			a:logout
+			
+		返回
+		{
+			code:返回的信息代码 0->没有错误 1->有错误
+			message:返回的信息 具体的返回信息
+		}
+	*/
+	var o_log_out//退出按钮
+	
+	o_log_out.onclick=function(){
+		ajax("post","guestbook/index.php","m=index&a=logout",function(){
+			var d=JSON.parse(data);
+			alert(d.message);
+			
+			if(!d.code)
+			{
+				update_user_status();
+			}
+		});
+	};
+
+	//留言
+	/*
+	接口准备工作
+	get/post
+		guestbook/index.php
+			m:index
+			a:send
+			content:留言内容
+			
+		返回
+		{
+			code:返回的信息代码 0->没有错误 1->有错误
+			data:返回成功的留言的详细信息
+				cid:留言id
+				content:留言内容
+				uid:留言人的id
+				username
+				dateline
+				support:当前留言顶的数量
+				oppose:当前留言踩的数量
+			message:返回的信息 具体的返回信息
+		}
+	*/
+
+	var o_content//留言内容
+	var o_post_btn//点击按钮留言
+
+	o_post_btn.onclick=function(){
+		ajax("post","guestbook/index.php","m=index&a=send&content="+encodeURI(o_content.value),function(){
+			var d=JSON.parse(data);
+			//添加留言到当前列表中，在这里需要判断，当留言成功的时候才能添加
+			if(!d.code)
+			{
+				//添加当前留言到列表中
+				create_list(d.data);
+			}
+			
+		});
+	};
+
+	function create_list(data,b_insert)
+	{
+				var o_dl=document.createElement("dl");
+				
+				var o_dt=document.createElement("dt");
+				var o_strong=document.createElement("strong");
+				o_strong.innerHTML=d.data.username;
+				o_dt.appendChild(o_strong);
+
+				var o_dd1=document.createElement("dd");
+				o_dd.innerHTML=data.content;
+
+				var o_dd2=document.createElement("dd");
+				var o_a1=document.createElement("a");
+				
+				o_a.href="";//可以不加
+				o_a.innerHTML="顶(<span>"+data.support+"</span>)";
+
+				var o_a2=document.createElement("a");
+				o_a.href="";//可以不加
+				o_a.innerHTML="踩(<span>"+data.support+"</span>)";
+
+				o_dd.appendChild("o_a1");
+				o_dd.appendChild("o_a2");
+
+				o_dl.appendChild(o_dt);
+				o_dl.appendChild(o_dd1);
+				o_dl.appendChild(o_dd2);
+
+				
+				if(b_insert&&o_list.children[0])
+				{
+					o_list.insertBefore();
+				}
+				else
+				{
+					o_list.appendChild(o_dl);
+				}
+				
+	}
+	//点击更多
+	o_get_more.onclick=function(){
+		i_page++;
+		show_list();
+	};
+	function show_list()
+	{
+		
+	}
+};
+
+function get_cookie(key){
+	var arr1=document.cookie.split("; ");
+	for(var i=0;i<arr1.length;i++)
+	{
+		var arr2=arr1[i].split("=");
+		if(arr2[0]==key)
+		{
+			return arr2[1];
+		}
+	}
+}
+
+ajax跨域
+
+
+o_btn.onclick=function(){
+	var xhr
+	//写ajax的时候最好先监听
+	xhr.onreadystatechange=function(){
+		if(xhr.readyState==4)
+		{
+			if(xhr.status==200)
+			{
+				alert(xhr.responseText);
+			}
+		}
+		xhr.open("get","1.txt",true);
+		xhr.send();
+	};
+};
+
+这时我们如果想获取别的域名底下的内容，该怎么办呢？
+
+跨域：一个域名下的文件请求另外一个域名下的文件，那么就会产生跨域请求
+
+解决办法Jsonp——Json with padding
+	1、script标签	我们的html中有很多加载资源的标签，例如link img script
+	2、用script标签加载资源是没有跨域问题的
+	3、能不能加载.js文件的问题
+	注：一个文件的文件类型并不是后缀名来决定的，后缀名是给人们为了分辩方便而产生的，或者与其他第三方软件进行关联，而与它的实质内容有关，所以我们这里也是可以得到外部文件的
+
+例如
+<script src="1.txt"></script>
+<script>
+alert(a);
+</script>
+我在1.txt中写了var a=1;但是仍然能弹出1来
+
+但是新的问题又来了，我们可以从别的域名中获取数据，但是外部的数据没有变量存着它，所以我们没有办法操纵它
+
+在此，如果我们在加载外部文件的前面再加载一个js文件，文件里面内容及文件结构如下
+<script>
+function fn(a)
+{
+	alert(a);
+}
+</script>
+<script src="1.txt"></script>//在这个文件里面我们做这样的处理fn([1,2,3]);
+<script></script>这样这里的代码就可以执行了
+
+
+所以jsonp实现跨域的流程如下
+在资源加载进来之前定义好一个函数，这个函数接受一个参数（数据），函数里面利用这个参数 做一些处理，然后需要的时候通过script标签加载对应远程文件资源，当远程的文件资源被加载进来的时候，就会去执行我们前面定义好的函数，并且把数据当做这个函数的参数传入进去
+
+
+<script>
+function fn(a)
+{
+	alert(a);
+}
+</script>
+<!-- <script src="1.txt"></script> -->
+<script>
+window.onload=function(){
+	o_btn.onclick=function(){
+		//我们希望当按钮点击的时候加载远程资源，所以我们可以通过dom动态创建它
+		var o_script=document.createElement("script");
+		o_script.src="2.txt";
+		document.body.appendChild(o_script);
+	};
+};
+</script>
+
+
+看如下应用，在这个应用中我们分别点击三个按钮，执行不同的函数，这就要给后端传一个参数，这个参数就专门告诉后端我们将要对跨域取得的数据的处理函数名
+<script>
+function fn1(data) {
+	var oUl1 = document.getElementById('ul1');
+	var html = '';
+	for (var i=0; i<data.length; i++) {
+		html += '<li>'+data[i]+'</li>';
+	}
+	oUl1.innerHTML = html;
+}
+function fn2(data) {
+	var oUl2 = document.getElementById('ul2');
+	var html = '';
+	for (var i=0; i<data.length; i++) {
+		html += '<li>'+data[i]+'</li>';
+	}
+	oUl2.innerHTML = html;
+}
+function fn3(data) {
+	var oUl3 = document.getElementById('ul3');
+	var html = '';
+	for (var i=0; i<data.length; i++) {
+		html += '<li>'+data[i]+'</li>';
+	}
+	oUl3.innerHTML = html;
+}
+</script>
+<script>
+window.onload = function() {
+	
+	var oBtn1 = document.getElementById('btn1');
+	
+	var oBtn2 = document.getElementById('btn2');
+	
+	oBtn1.onclick = function() {
+		
+		var oScript = document.createElement('script');
+		oScript.src = 'getData.php?callback=fn1';
+		document.body.appendChild(oScript);
+		
+	}//点击该按钮的时候需要在地址栏中输入 ?t=num&callback=fn1
+	
+	var oBtn2 = document.getElementById('btn2');
+	
+	oBtn2.onclick = function() {
+		
+		var oScript = document.createElement('script');
+		oScript.src = 'getData.php?t=str&callback=fn2';
+		document.body.appendChild(oScript);
+		
+	}//点击该按钮的时候需要在地址栏中输入 ?t=str&callback=fn2
+	
+	var oBtn3 = document.getElementById('btn3');
+	
+	oBtn3.onclick = function() {
+		
+		var oScript = document.createElement('script');
+		oScript.src = 'getData.php?callback=fn3';
+		document.body.appendChild(oScript);
+		
+	}//点击该按钮的时候需要在地址栏中输入 ?callback=fn1
+	
+}
+</script>
+
+
+百度下拉提示框
+function miaov(data)
+{
+	var o_ul=document.getElementsByTagName("ul")[0];
+	var html="";
+	if(data.s.length)
+	{
+		o_ul.style.display="block";
+		for(var i=0;i<data.s.length)
+		{
+			html+="<li><a href='#'>"+data.s[i]+"</a></li>"
+			
+		}
+		o_ul.innerHTML=html;
+	}
+	else
+	{
+		
+	}
+}
+window.onload=function(){
+	o_txt.onkeyup=function(){
+		if(this.value!="")
+		{
+			var oScript = document.createElement('script');
+			oScript.src = "http://suggestion.baidu.com/su?wd="+this.value+"&cb=miaov";
+			document.body.appendChild(oScript);
+		}
+		else
+		{
+			o_ul.style.display="none";
+		}
+	};
+};
+
+
+
+
+
+豆瓣
+function fn1(data)
+{
+	console.log(data);
+	o_msg.innerHTML=data.tilte.$t+":"+data["opensearch:totalResults"].$t;
+
+	var a_entry=data.entry;
+	var html="";
+	for(var i=0;i<a_entry.length;i++)
+	{
+		html+="<dl><dt>"+a_entry[i].title.$t+"</dt><dd><img src='"+a_entry[i].link[2]["@href"]+"</dd></dl>"
+	}
+
+	o_list.innerHTML=html;
+}
+window.onload=function(){
+	o_btn.onclick=function(){
+		if(o_q.value!="")
+		{
+			var o_script=document.createElement("script");
+			o_script.src="http://api.douban.com/book/subjects?q="+o_q.value+"&alt=x&callback=fn1";
+			document.appendChild(o_script);
+		}
+	};
+};
+
+<input type="text" id="q"/><input type="button" id="btn" value="搜索"/>
+<p id="msg"></p>
+<hr/>
+<div>
+	<dl>
+		<dt>sdasdasdsa</dt>
+		<dd><img src=""/></dd>
+	</dl>
+</div>
+
+fe42a6eb6f7c01064139d0f6801a53fe
+
+fe42a6eb6f7c01064139d0f6801a53fe
+
+Socket Error # 11001 Host not found
+
+
+function startMove(obj, json, iSpeed) {
+		clearInterval(obj.iTimer);
+		var iCur = 0;
+			
+		obj.iTimer = setInterval(function() {
+			
+			var iBtn = true;
+						
+			for ( var attr in json ) {
+				
+				//什么时候停止定时器？所有属性都运动到了目标点的时候
+				
+				var iTarget = json[attr];
+				
+				if (attr == 'opacity') {
+					iCur = Math.round(css( obj, 'opacity' ) * 100);
+				} else {
+					iCur = parseInt(css(obj, attr));
+				}
+				
+				if (iCur != iTarget) {
+					iBtn = false;
+					if (attr == 'opacity') {
+						obj.style.opacity = (iCur + iSpeed) / 100;
+						obj.style.filter = 'alpha(opacity='+ (iCur + iSpeed) +')';
+					} else {
+						obj.style[attr] = iCur + iSpeed + 'px';
+					}
+				}
+				
+			}
+			
+			//在这里来看下，所有属性是不是都到了目标点
+			if (iBtn) {
+				clearInterval(obj.iTimer);
+			}
+			
+		}, 30);
+	}
+
+缓冲运动
+
+css解析和js解析
+
+在css中如果写成left:100.4px是认0.4px的，但是js当中是不认的，会直接当成100px处理，所以offsetWidth一定是整数，而且会将offsetLeft小数部分四舍五入计算，在这里我们解决这个bug的方法是如果速度为正，直接让速度向上取整，如果速度为负，让速度向下取整
+
+var n_timer=null;
+var n_speed=0;
+var n_cur=0;
+o_btn.onclick=function(){
+	clearInterval(n_timer);
+
+	n_timer=setInterval(function(){
+		n_cur=parseInt(get_style(o_div,"left"));
+		n_speed=(500-n_cur)/8;
+		n_speed=n_speed>0?Math.ceil(n_speed):Math.floor(n_speed);
+
+		if(cur==500)
+		{
+			clearInterval(n_timer);
+		}
+		else
+		{
+			n_cur+=n_speed;
+			o_div.style.left=n_cur+"px";
+		}
+	},30);
+};
+
+运动框架加入缓冲运动
+function start_move(obj,json,cb)
+{
+	clearInterval(obj.timer);
+	var n_speed=0;
+	var n_cur=0;
+
+	obj.timer=setInterval(function(){
+
+		var b_stop=true;
+
+		for(var attr in json)
+		{
+			if(attr=="opacity")
+			{
+				n_cur=Math.round(parseFloat(get_style(obj,opacity))*100);
+			}
+			else
+			{
+				n_cur=parseInt(get_style(obj,attr));
+			}
+
+			n_speed=(n_target-n_cur)/8;
+			n_speed=n_speed>0?Math.ceil(n_speed):Math.floor(n_speed);
+
+			if(n_cur!=json[attr])
+			{
+				b_stop=false;
+				if(attr=="opacity")
+				{
+					obj.style.filter="alpha(opacity:"+n_cur+n_speed+")";
+					obj.style.opacity=(n_cur+n_speed)/100;
+				}
+				else
+				{
+					obj.style[attr]=n_cur+n_speed+"px";
+				}
+			}
+		}
+		if(b_stop)
+		{
+			clearInterval(n_timer);
+			if(cb)
+			{
+				cb.call(obj);
+			}
+			
+		}
+	},30);
+}
+
+实例：多图片展开收缩，元素居中放大
+
+注：如果图片放大一倍，那么位移放大宽和高的一半
+
+布局转换（要求：在转换布局的时候，位置不能变）
+for(var i=0;i<a_li.length;i++)
+{
+	//注：在用js设置css样式的时候，在同一个代码块中，有些css样式设置的权限要比其他样式高，在这里的话，虽然我们把position加到了后面，但是解析的时候还是会被提前，也就是说position先解析，left和top后解析，当position解析完了之后，每个li的left和top已经都成了10了（即margin-left和margin-top），这个时候再去获取它们的left和top值，那一定得到10了解决的办法也很简单，把它们放在不同的代码块中就没问题了
+	a_li[i].style.left=a_li[i].offsetLeft+"px";
+	a_li[i].style.top=a_li[i].offsetTop+"px";
+	a_li[i].style.position="absolute";
+}
+
+所以要写成
+for(var i=0;i<a_li.length;i++)
+{
+	a_li[i].style.left=a_li[i].offsetLeft+"px";
+	a_li[i].style.top=a_li[i].offsetTop+"px";
+}
+
+for(var i=0;i<a_li.length;i++)
+{
+	a_li[i].style.position="absolute";
+}
+但是这时布局转换还没有完，由于margin值和left值都被计算了，所以相当于被算了两次left值，所以还要把margin清零，最终写成
+for(var i=0;i<a_li.length;i++)
+{
+	a_li[i].style.left=a_li[i].offsetLeft+"px";
+	a_li[i].style.top=a_li[i].offsetTop+"px";
+}
+
+for(var i=0;i<a_li.length;i++)
+{
+	a_li[i].style.position="absolute";
+	a_li[i].style.margin=0;
+}
+
+接下来接着做我们的多个div放大效果
+for(var i=0;i<a_li.length;i++)
+{
+	a_li[i].onmouseover=function(){
+		atart_move(this,{
+			"width":200,
+			"height":200,
+			"left":this.offsetLeft-50,//注：这样写是有问题的，因为当我们的鼠标在放大的过程中再次移入，那么就会获取当前的offsetLeft值，在这个基础上减50很明显是有问题的，而我们想要的是在最开始的时候它的offsetLeft的那个值减去50，所以在布局转换的时候还需要把当初的那个值存到一个数组里面
+			"top":this.offsetTop-50
+		});
+	};
+}
+
+再次更改代码：
+for(var i=0;i<a_li.length;i++)
+{
+	a_start.push({left:a_li[i].offsetLeft,top:a_li[i].offsetTop});
+}
+
+for(var i=0;i<a_li.length;i++)
+{
+	a_li[i].index=i;
+	a_li[i].style.left=arr[i].left+"px";
+	a_li[i].style.top=arr[i].top+"px";
+	a_li[i].style.position="absolute";
+	a_li[i].style.margin=0;
+
+	a_li[i].onmouseover=function(){
+		start_move(this,{
+			"width":200,
+			"height":200,
+			"left":arr[this.index].left-50,
+			"top":arr[this.index].top-50
+		});
+		this.style.zIndex=n_now_z_index++;
+	};
+	
+	a_li[i].onmouseout=function(){
+		start_move(this,{
+			"width":100,
+			"height":100,
+			"left":arr[this.index].left,
+			"top":arr[this.index].top
+		});
+	};
+}
+
+运动的留言本
+
+o_btn.onclick=function(){
+	var o_li=document.createElement("li");
+	o_li.innerHTML=o_content.value;
+
+	if(o_ul.children[0])
+	{
+		o_ul.insertBefore(o_li,o_ul.children[0]);
+	}
+	else
+	{
+		o_ul.appendChild(o_li);
+	}
+
+	var n_height=parseInt(get_style(o_li,"height"));
+	var n_opacity=Math.round(parseFloat(get_style(o_li,"opacity"))*100);
+	o_li.style.height=0;
+	o_li.style.opacity=0;
+	start_move(o_li,{
+		"height":n_height,
+		"opacity":100
+	});
+};
+
+幻灯片
+
+
+o_ul.style.width=a_li.length*a_li[0].offsetWidth+"px";
+
+for(var i=0;i<a_span.length;i++)
+{
+	a_span[i].index=i;
+	a_span[i].onclick=function(){
+		for(var i=0;i<a_span.length;i++)
+		{
+			remove_class(a_span[i],"active");
+		}
+		add_class(a_span[i],"active");
+		start_move(o_ul,{"left":this.index*a_li[0].offsetWidth});
+	};
+}
+
+带运动的返回顶部
+
+function set_top()
+{
+	var scollTop=document.documentElement.scrollTop||document.body.scrollTop;
+	o_div.style.top=scrollTop+document.documentElement.clientHeight-o_div.offsetHeight+"px";
+}
+
+window.onscroll=function(){
+	
+	set_top();
+};
+
+o_div.onclick=function(){
+	clearInterval(o_div.n_timer);
+	var n_cur=n_speed=0;
+
+	o_div.n_timer=setInterval(function(){
+		n_cur=document.documentElement.scrollTop||document.body.scrollTop;
+		n_speed=Math.floor((0-n_cur)/6);
+
+		if(n_cur==0)
+		{
+			clearInterval(n_timer);
+		}
+		else
+		{
+			n_cur+=n_speed;
+			document.documentElement.scrollTop=document.body.scrollTop=n_cur+"px";
+		}
+	},30);
+};
+
+
+<div id="div1">
+	<ul>
+		<li><img src="1.png" /></li>
+		<li><img src="1.png" /></li>
+		<li><img src="1.png" /></li>
+		<li><img src="1.png" /></li>
+		<li><img src="1.png" /></li>
+		<li><img src="1.png" /></li>
+	</ul>
+	<p>
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
+	</p>
+</div>
+但是有的时候会有这样的需求，当我们点击回顶部页面往上走的过程中，有时候想停住，不想网上滚动了，但这时定时器不管我们往下怎么滚，都依然会滚到顶部
+
+我们先做一个简单的测试
+function set_top()
+{
+	var scollTop=document.documentElement.scrollTop||document.body.scrollTop;
+	o_div.style.top=scrollTop+document.documentElement.clientHeight-o_div.offsetHeight+"px";
+}
+
+window.onscroll=function(){
+	console.log(2);
+	set_top();
+};
+
+o_div.onclick=function(){
+	clearInterval(o_div.n_timer);
+	var n_cur=n_speed=0;
+
+	o_div.n_timer=setInterval(function(){
+		n_cur=document.documentElement.scrollTop||document.body.scrollTop;
+		n_speed=Math.floor((0-n_cur)/6);
+
+		if(n_cur==0)
+		{
+			clearInterval(n_timer);
+		}
+		else
+		{
+			n_cur+=n_speed;
+			document.documentElement.scrollTop=document.body.scrollTop=n_cur+"px";
+		}
+		console.log(1);
+	},30);
+};
+
+这时我们在控制台上会看到：1,2,1,2,1,2,1......
+这里的1就是定时器输出的，而2就是onscroll事件触发输出的，也就是说onscroll并不是非得我们人手动触发才会触发
+
+再次运行函数，在这次运行过程中，如果我们在往上滚的过程中手动的通过鼠标向下滚了，就会输出类似这样的结果
+1,2,1,2,2,2,1......也就是说有连续的2产生，那么经过分析我们可以得出这样一个结论：如果2的前一个数字是1，那么这个2是定时器触发的，如果2的前一个数是2，那么这个2是我们手动触发的，根据这个原理，我们可以这样修改我们的代码，在外部定义一个变量
+
+var n_interval_trigger=0;
+
+function set_top()
+{
+	var scollTop=document.documentElement.scrollTop||document.body.scrollTop;
+	o_div.style.top=scrollTop+document.documentElement.clientHeight-o_div.offsetHeight+"px";
+}
+
+window.onscroll=function(){
+	
+	if(n_interval_trigger==1)//如果n_interval_trigger值为1，那么当前的scroll事件是被定时器所触发，否则就是非定时器的其他任何条件
+	{
+		clearInterval(o_div.n_timer);
+	}
+	set_top();
+};
+
+o_div.onclick=function(){
+	clearInterval(o_div.n_timer);
+	var n_cur=n_speed=0;
+
+	o_div.n_timer=setInterval(function(){
+		n_cur=document.documentElement.scrollTop||document.body.scrollTop;
+		n_speed=Math.floor((0-n_cur)/6);
+
+		if(n_cur==0)
+		{
+			clearInterval(n_timer);
+		}
+		else
+		{
+			n_cur+=n_speed;
+			document.documentElement.scrollTop=document.body.scrollTop=n_cur+"px";
+		}
+		n_interval_trigger=1;
+	},30);
+};
+
+图片预先加载
+当做组图的时候，我们不可能在html中放几十个img标签，太耗性能了，这时我们可以在html中只放一个标签，然后临时将这个img的src改为当前的，但是这样做也有一个问题就是图片加载的时间可能很长，但是用户看的时间比较短，这样体验还是不是太好，那么我们可以考虑如下思路
+在页面刚打开的时候，我们加载第一张图片，然后页面加载完成后，在用户看的时间内去加载后面的内容，那么我们必须有个工具，这个工具用来专门加载东西，这个工具就是Image对象
+
+var o_image=new Image();
+//属性：src 当我们给Image对象的src属性赋值一个url的时候，这个Image对象就会加载url资源，加载完成后的资源被保存到了浏览器的缓存文件夹里面，下次我们要去调用这个url，那么就会去缓存里面读这个图片
+//事件：onload:当资源加载完成触发
+	onerror:当资源加载失败的时候触发
+o_image.src
+
+图片预先加载-相册实例
+
+var o_img=document.getElementById("img1");
+var o_image=new Image();
+var a_image_src=[
+	"http://aaaaaaaaaaaaaaaaa",
+	"http://aaaaaaaaaaaaaaaaa",
+	"http://aaaaaaaaaaaaaaaaa",
+	"http://aaaaaaaaaaaaaaaaa",
+	"http://aaaaaaaaaaaaaaaaa",
+	"http://aaaaaaaaaaaaaaaaa",
+	"http://aaaaaaaaaaaaaaaaa",
+	"http://aaaaaaaaaaaaaaaaa",
+];
+
+var n_cur=0;
+var i=0;
+load();
+
+o_img.onclick=function(){
+	i++;
+	if(i<a_image_src.length)
+	{
+		o_img.src=arr[i];
+	}
+};
+
+function load()
+{
+	o_image.src=arr[n_cur];
+	o_image.onload=function(){
+		i_cur++;
+		if(i_cur<=arr.length)
+		{
+			load();
+		}
+	};
+}
+
+<img src="第一个的地址"/>	html中只放一个img
+
+图片按需加载
+//在图片量很大的情况下，我们通常会这样做：把真正的图片地址放在自定义属性_src下面，而src属性赋一个值，这个值是一个很小的图片的值，其实加这个src的目的还有一个，就是在IE家族浏览器中如果img的src加载出现异常在左上角有一个很丑的图标，所以为了不让用户看到这个图标，我们默认给每个图片的地址都加img/white.jpg，这个图片加载一次就被缓存了，所以几乎对性能没有任何影响
+//判断哪个标签进入了可视区
+如果当前图片距离页面顶部的的距离大于可视区加上滚动的距离
+
+show_image();
+window.onscroll=show_image;
+
+function show_image()
+{
+	var scrollTop=document.documentElement.scrollTop||document.body.scrollTop;
+	for(var i=0;i<a_img.length;i++)
+	{
+		if(!a_img[i].is_load&&get_top(a_img[i]<scrollTop+document.documentElement.clientHeight))//前面这个条件的目的是当我们的滚动条向上滚动的时候避免重复触发show_image()这一函数，更优化的办法还有我们可以在外面放一个数组，这个数组用来存放还没有加载的图片地址，加载一个地址，就从这个数组中把这个地址删掉，知道删完，再作判断
+		{
+			a_img[i].src=a_img[i].getAttribute("_src");
+			a_img[i].is_load=true;//给每个img加一个is_load自定义属性，代表是否加载过
+		}
+	}
+}
+
+
+function get_top(obj)
+{
+	var i_top=0;
+	while(obj)
+	{
+		i_top+=obj.offsetTop;
+		obj=obj.offsetParent;
+	}
+	return i_top;
+}
+<ul id="ul1">
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+	<li><img _src="img/1.jpg" src="img/white.jpg"/></li>
+</ul>
+
+运动高级
+
+弹性运动
+
+复习加减速运动
+window.onload=function(){
+	var n_timer=null;
+	var n_speed=10;
+
+	o_btn.onclick=function(){
+		start_move();
+	};
+	function start_move()
+	{
+		clearInterval(n_timer);
+		
+		n_timer=setInterval(function(){
+			n_speed+=3;
+			o_div.style.left=o_div.offsetLeft+n_speed+"px";
+		},30);
+	}
+};
+减速运动同理
+弹性或钟摆运动
+window.onload=function(){
+	var n_timer=null;
+	var n_speed=10;
+
+	o_btn.onclick=function(){
+		start_move();
+	};
+	function start_move()
+	{
+		clearInterval(n_timer);
+		
+		n_timer=setInterval(function(){
+			if(o_div.offsetLeft<500)
+			{
+				n_speed+=3;
+			}
+			else
+			{
+				n_speed-=3;
+			}
+			o_div.style.left=o_div.offsetLeft+n_speed+"px";
+		},30);
+	}
+};
+在这里还是有些问题，因为我们的物体距离中心店越远，达到中心点的速度应该越大，所以作如下改进
+window.onload=function(){
+	var n_timer=null;
+	var n_speed=10;
+
+	o_btn.onclick=function(){
+		start_move();
+	};
+	function start_move()
+	{
+		clearInterval(n_timer);
+		
+		n_timer=setInterval(function(){
+			if(o_div.offsetLeft<500)
+			{
+				n_speed+=(500-o_div.offsetLeft)/10;
+			}
+			else
+			{
+				n_speed-=(o_div.offsetLeft-500)/10;
+			}
+			o_div.style.left=o_div.offsetLeft+n_speed+"px";
+		},30);
+	}
+};
+
+在这里，if条件判断就没有必要了，所以代码可以进一步精简
+window.onload=function(){
+	var n_timer=null;
+	var n_speed=10;
+
+	o_btn.onclick=function(){
+		start_move();
+	};
+	function start_move()
+	{
+		clearInterval(n_timer);
+		
+		n_timer=setInterval(function(){
+			n_speed+=(500-o_div.offsetLeft)/10;
+			
+			o_div.style.left=o_div.offsetLeft+n_speed+"px";
+		},30);
+	}
+};
+
+但是这时我们的运动还不能停止，这时如果我们考虑加入摩擦因数，就更能模拟现实的情况，在我们的程序中就表现为让速度损失
+
+window.onload=function(){
+	var n_timer=null;
+	var n_speed=10;
+
+	o_btn.onclick=function(){
+		start_move();
+	};
+	function start_move()
+	{
+		clearInterval(n_timer);
+		
+		n_timer=setInterval(function(){
+			n_speed+=(500-o_div.offsetLeft)/10;
+			n_speed*=0.8;
+			o_div.style.left=o_div.offsetLeft+n_speed+"px";
+		},30);
+	}
+};
+
+这时，表面上看起来好像是停下来了，但是实际上定时器还开着，所以我们需要判断一下终点，手动把定时器关掉，这时终点的条件是速度接近于0，距离中点也接近于0
+
+window.onload=function(){
+	var n_timer=null;
+	var n_speed=10;
+
+	o_btn.onclick=function(){
+		start_move();
+	};
+	function start_move()
+	{
+		clearInterval(n_timer);
+		
+		n_timer=setInterval(function(){
+			n_speed+=(500-o_div.offsetLeft)/10;
+			n_speed*=0.8;
+			if(Math.abs(n_speed)<1&&Math.abs(500-o_div.offsetLeft)<=1)
+			{
+				clearInterval(n_timer);
+				o_div.style.left=500+"px";
+				n_speed=0;
+			}
+			else
+			{
+				o_div.style.left=o_div.offsetLeft+n_speed+"px";
+			}
+			
+		},30);
+	}
+};
+
+综上
+弹性运动公式：
+速度+=(目标点-当前值)//系数6-8
+速度*=摩擦系数//0.7-0.8
+后面的值为经验值
+
+缓冲运动公式：
+速度=(目标点-当前值)/系数
+速度取整
+
+弹性菜单实例
+<ul id="ul1">
+	<li id="mark"></li>
+	<li class="box"></li>
+	<li class="box"></li>
+	<li class="box"></li>
+	<li class="box"></li>
+</ul>
+
+window.onload=function(){
+	var n_timer=null;
+	var n_cur_index=0;
+	var n_speed=0;
+
+	for(var i=0;i<a_box.length;i++)
+	{
+		a_box[i].onmouseover=function(){
+			start_move(this.offsetLeft);
+		};
+		a_box[i].onmouseout=function(){
+			start_move(0);
+		};
+	}
+
+	function start_move(n_target)
+	{
+		clearInterval(n_timer);
+		n_timer=setInterval(function(){
+			
+			n_speed+=(n_target-o_mark.offsetLeft)/6;
+			n_speed*=0.8;
+			if(Math.abs(n_speed)<=1&&Math.abs(n_target-o_mark.offsetLeft)<=1)
+			{
+				clearInterval(n_timer);
+				n_speed=0;
+				o_mark.style.left=n_target+"px";
+			}
+			else
+			{
+				o_mark.style.left=o_mark.offsetLeft+n_speed+"px";
+			}
+		},30);
+	}
+};
+
+这时还是有问题的，因为遮罩和每个导航的选项是同级关系，那么每当我们移入某个导航项的时候遮罩随之过来，但是当遮罩过来了之后鼠标马上移到了遮罩上面，同时就移出了，导航项，这时遮罩会自动跑回去，解决这个问题的方法也很简单，就是用延迟定时器来解决
+window.onload=function(){
+	var n_timer=null;
+	var n_timer2=null;//延迟定时器
+	var n_cur_index=0;
+	var n_speed=0;
+
+	for(var i=0;i<a_box.length;i++)
+	{
+		a_box[i].onmouseover=function(){
+			clearTimeout(n_timer2);
+			start_move(this.offsetLeft);
+		};
+		a_box[i].onmouseout=function(){
+			n_timer2=setTimeout(function(){
+				start_move(0);
+			},100);
+			//让start_move(0)延迟100ms触发，在0-100ms内，我们可以做一些操作，在这0-100ms内，当我们的遮罩处于鼠标移入状态的时候我们可以把定时器清除，移出遮罩的时候再开定时器，让它接着回去
+		};
+	}
+	o_mark.onmouseover=function(){
+		clearTimeout(n_timer2);
+	};
+	o_mark.onmouseout=function(){
+		n_timer2=setTimeout(function(){
+			start_move(0);
+		},100);
+	};
+
+	function start_move(n_target)
+	{
+		clearInterval(n_timer);
+		n_timer=setInterval(function(){
+			
+			n_speed+=(n_target-o_mark.offsetLeft)/6;
+			n_speed*=0.8;
+			if(Math.abs(n_speed)<=1&&Math.abs(n_target-o_mark.offsetLeft)<=1)
+			{
+				clearInterval(n_timer);
+				n_speed=0;
+				o_mark.style.left=n_target+"px";
+			}
+			else
+			{
+				o_mark.style.left=o_mark.offsetLeft+n_speed+"px";
+			}
+		},30);
+	}
+};
+
+现在我们想进一步完善我们的导航，因为官网上的导航遮罩覆盖的部分文字都显示为白色，怎么才能达到这种效果呢？其实这个的原理和滚动歌词比较像
+
+<div id="div1"><span>asdasdssdsdad</span></div>
+<div id="div1"><span>asdasdssdsdad</span></div>
+
+*{ margin:0; padding:0;}
+#div1,#div2{ position:absolute; left:0; top:0;}
+#div2{ color:red; width:15px; height:16px; overflow:hidden;}
+#div2 span{ position:absolute; left:0; top:0; width:2000px; }
+
+setInterval(function(){
+	o_div2.style.left=o_div2.offsetLeft+1+"px";//让小块往右走
+	o_span.style.left=-o_div2.offsetLeft+"px";//同步让o_span向左走
+},30);
+
+利用这个原理，我们完善之前的菜单，结构就要写成
+<ul id="ul1">
+	<li id="mark">
+		<ul>
+			<li>首页</li>
+			<li>首页</li>
+			<li>首页</li>
+			<li>首页</li>
+		</ul>
+	</li>
+	<li class="box">首页</li>
+	<li class="box">首页</li>
+	<li class="box">首页</li>
+	<li class="box">首页</li>
+</ul>
+#ul1 li{ width:100px; height:30px; margin-right:5px;}
+#ul1 #mark{ position:absolute; left:0; top:0; overflow:hidden;}
+#ul1 #mark ul{ width:428px; position:absolute; left:-1px; top:-1px; color:#fff;}
+
+window.onload=function(){
+	var n_timer=null;
+	var n_timer2=null;//延迟定时器
+	var n_cur_index=0;
+	var n_speed=0;
+
+	for(var i=0;i<a_box.length;i++)
+	{
+		a_box[i].onmouseover=function(){
+			clearTimeout(n_timer2);
+			start_move(this.offsetLeft);
+		};
+		a_box[i].onmouseout=function(){
+			n_timer2=setTimeout(function(){
+				start_move(0);
+			},100);
+			//让start_move(0)延迟100ms触发，在0-100ms内，我们可以做一些操作，在这0-100ms内，当我们的遮罩处于鼠标移入状态的时候我们可以把定时器清除，移出遮罩的时候再开定时器，让它接着回去
+		};
+	}
+	o_mark.onmouseover=function(){
+		clearTimeout(n_timer2);
+	};
+	o_mark.onmouseout=function(){
+		n_timer2=setTimeout(function(){
+			start_move(0);
+		},100);
+	};
+
+	function start_move(n_target)
+	{
+		clearInterval(n_timer);
+		n_timer=setInterval(function(){
+			
+			n_speed+=(n_target-o_mark.offsetLeft)/6;
+			n_speed*=0.8;
+			if(Math.abs(n_speed)<=1&&Math.abs(n_target-o_mark.offsetLeft)<=1)
+			{
+				clearInterval(n_timer);
+				n_speed=0;
+				o_mark.style.left=n_target+"px";
+				o_mark_ul.style.left=-n_target+"px";
+			}
+			else
+			{
+				o_mark.style.left=o_mark.offsetLeft+n_speed+"px";
+				o_mark_ul.style.left=-o_mark.offsetLeft+"px";
+			}
+		},30);
+	}
+};
+
+弹性运动还要注意弹性过界的问题
+例如：我们做一个div的弹性运动，弹它的高度；
+
+function start_move(n_target)
+{
+	clearInterval(n_timer);
+	n_timer=setInterval(function(){
+		n_speed+=(n_target-o_div.offsetHeight)/6;
+		n_speed*=0.75;
+
+		if(Math.abs(n_speed)<=1&&Math.abs(n_target-o_div.offsetHeight)<=1)
+		{
+			clearInterval(n_timer);
+			n_speed=0;
+			o_div.style.height=n_target+"px";
+		}
+		else
+		{
+			o_div.style.height=o_div.offsetHeight+n_speed+"px";
+		}
+	},30);
+}
+
+但在低版本IE下，不支持负的宽高，会报错，所以我们在else的时候需要做一下处理
+function start_move(n_target)
+{
+	clearInterval(n_timer);
+	n_timer=setInterval(function(){
+		n_speed+=(n_target-o_div.offsetHeight)/6;
+		n_speed*=0.75;
+
+		if(Math.abs(n_speed)<=1&&Math.abs(n_target-o_div.offsetHeight)<=1)
+		{
+			clearInterval(n_timer);
+			n_speed=0;
+			o_div.style.height=n_target+"px";
+		}
+		else
+		{
+			var H=o_div.offsetHeight+n_speed;
+			if(H<0)
+			{
+				H=0;
+			}
+			o_div.style.height=H+"px";
+		}
+	},30);
+}
+作业：
+1、钟摆
+2、继续封装弹性运动框架，封装成类似完美运动框架
+
+浮动广告的例子
+
+function start_move()
+{
+	var n_speed_x=10;
+	var n_speed_y=10;
+
+	setInterval(function(){
+		var L=o_div.offsetLeft+n_speed_x;
+		var T=o_div.offsetTop+n_speed_y;
+
+		if(T>document.documentElement.clientHeight-o_div.offsetHeight)
+		{
+			T=document.documentElement.clientHeight-o_div.offsetHeight;
+			n_speed_y*=-1;
+		}
+		else if(T<0)
+		{
+			T=0;
+			n_speed_y*=-1;
+		}
+
+		if(L>document.documentElement.clientWidth-o_div.offsetWidth)
+		{
+			L=document.documentElement.clientWidth-o_div.offsetWidth;
+			n_speed_x*=-1;
+		}
+		else if(L>0)
+		{
+			L=0;
+		}
+
+		o_div.style.left=L+"px";
+		o_div.style.top=T+"px";
+
+		
+	},30);
+}
+
+总结：碰撞运动：首先找到碰撞的临界点再确定运动的方向，再对速度取反
+
+自由落体
+function start_move()
+{
+	clearInterval(n_timer);
+	n_timer=setInterval(function(){
+		n_speed+=3;
+
+		var T=o_div.offsetTop+n_speed;
+
+		if(T>document.documentElement.clientHeight-o_div.offsetHeight)
+		{
+			T=document.documentElement.clientHeight-o_div.offsetHeight;
+			n_speed*=-1;
+			n_speed*=0.7;//可以自己加上停止条件
+		}
+		o_div.style.top=T+"px";
+	},30);
+}
+抛物线
+
+function start_move()
+{
+	clearInterval(n_timer);
+	n_timer=setInterval(function(){
+		n_speed+=3;
+
+		var T=o_div.offsetTop+n_speed;
+
+		if(T>document.documentElement.clientHeight-o_div.offsetHeight)
+		{
+			T=document.documentElement.clientHeight-o_div.offsetHeight;
+			n_speed*=-1;
+			n_speed*=0.7;//可以自己加上停止条件
+			n_speed_x*=0.7;
+		}
+		o_div.style.top=T+"px";
+		o_div.style.left=o_div.offsetLeft+n_speed_x+"px";
+	},30);
+}
+
+苹果弹性菜单
+<div id="iphone">
+	<div id="wrap">
+		<ul id="ulq">
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+		</ul>
+	</div>
+</div>
+
+var disX=0;
+var downX=0;
+var n_now=0;
+var timer=null;
+var n_speed=0;
+o_ul.onmousedown=function(ev)
+{
+	var o_event=ev||event;
+	disX=o_event.clientX-o_ul.offsetLeft;
+	downX=o_event.clientX;
+
+	clearInterval(n_timer);
+
+	document.onmousemove=function(ev)
+	{
+		var o_event=ev||event;
+		o_ul.style.left=o_event.clientX-disX+"px";
+	}
+	document.onmouseup=function(ev)
+	{
+		document.onmousemove=document.onmouseup=null;
+		var o_event=ev||event;
+		if(o_event.clientX<downX)
+		{
+			//left
+			n_now++;
+			if(n_now==a_li.length)
+			{
+				n_now=a_li.length-1;
+			}
+			start_move(-n_now*a_li[0].offsetWidth);
+		}
+		else
+		{
+			//right
+		}
+	};
+
+	function start_move(n_target)
+	{
+		clearInterval(n_timer);
+		timer=setInterval(function(){
+			n_speed+=(n_target-o_ul.offsetLeft)/10;
+			n_speed*=0.75;
+
+			if(Math.abs(n_speed)<=1&&Math.abs(n_target-o_ul.offsetLeft)<=1)
+			{
+				clearInterval(n_timer);
+				n_speed=0;
+				o_ul.style.left=n_target+"px";
+			}
+			else
+			{
+				o_ul.style.left=o_ul.offsetLeft+n_speed+"px";
+			}
+		},30);
+	}
+}
+官网公告（碰撞弹窗）
+
+var disX=0;
+var disY=0;
+o_div.onmouseup=function(ev){
+	var o_event=ev||event;
+	disX=o_event.clientX-o_div.offsetLeft;
+	disY=o_event.clientY-o_div.offsetTop;
+
+	document.onmousemove=function(ev){
+		var o_event=ev||event;
+		o_div.style.left=o_event.clientX-disX+"px";
+		o_div.style.top=o_event.clientY-disY+"px";
+	};
+	document.onmouseup=function(){
+		document.onmousemove=document.onmouseup=null;
+	};
+	return false;
+};
+
+我们只要找到出手甩出去的那一瞬间的速度值，就可以确定弹窗运动的快慢了，所以css中写下面一句样式
+.box{ border:1px solid #000; position:absolute;}
+每move一下我们就创建这样一个div，也就是
+
+var disX=0;
+var disY=0;
+o_div.onmouseup=function(ev){
+	var o_event=ev||event;
+	disX=o_event.clientX-o_div.offsetLeft;
+	disY=o_event.clientY-o_div.offsetTop;
+
+	document.onmousemove=function(ev){
+		var o_event=ev||event;
+		o_div.style.left=o_event.clientX-disX+"px";
+		o_div.style.top=o_event.clientY-disY+"px";
+
+		var o_div=document.createElement("div");
+		o_div.className="box";
+		o_div.style.left=o_event.clientX+"px";
+		o_div.style.top=o_event.clientY+"px";
+		document.body.appendChild(o_div);
+	};
+	document.onmouseup=function(){
+		document.onmousemove=document.onmouseup=null;
+	};
+	return false;
+};
+好，这时我们注意观察，移动的慢的时候两点之间距离很小，移动的快的时候两点之间距离很大，所以可以根据最后两个点的距离决定速度的大小和方向
+
+var disX=0;
+var disY=0;
+
+var prevX=0;
+var prevY=0;
+var iSpeedX=0;
+var iSpeedY=0;
+
+var n_timer=null;
+o_div.onmouseup=function(ev){
+	var o_event=ev||event;
+	disX=o_event.clientX-o_div.offsetLeft;
+	disY=o_event.clientY-o_div.offsetTop;
+
+	prevX=o_event.clientX;
+	prevY=o_event.clientY;
+
+	document.onmousemove=function(ev){
+		var o_event=ev||event;
+		o_div.style.left=o_event.clientX-disX+"px";
+		o_div.style.top=o_event.clientY-disY+"px";
+
+		iSpeedX=o_event.clientX-prevX;
+		iSpeedY=o_event.clientY-prevY;
+
+		prevX=o_event.clientX;
+		prevY=o_event.clientY;
+	};
+	document.onmouseup=function(){
+		document.onmousemove=document.onmouseup=null;
+
+		start_move();
+	};
+	return false;
+};
+
+function start_move()
+{
+	clearInterval(n_timer);
+	n_timer=setInterval(function(){
+		iSpeedY+=3;
+
+		var L=o_div.offsetLeft+iSpeedX;
+		var T=o_div.offsetTop+iSpeedY;
+
+		if(T>document.documentElement.clientHeight-o_div.offsetHeight)
+		{
+			T=document.documentElement.clientHeight-o_div.offsetHeight;
+			iSpeedY*=-1;
+			iSpeedY*=0.75;
+			iSpeedX*=0.75;//在顶边和底边碰撞的概率相对来说较大，所以X轴的速度损失也要考虑在内
+		}
+		else if(T<0)
+		{
+			T=0;
+			iSpeedY*=-1;
+			iSpeedY*=0.75;
+			iSpeedX*=0.75;//在顶边和底边碰撞的概率相对来说较大，所以X轴的速度损失也要考虑在内
+		}
+
+		if(L>document.documentElement.clientWidth-o_div.offsetWidth)
+		{
+			L=document.documentElement.clientWidth-o_div.offsetWidth;
+			iSpeedX*=-1;
+			iSpeedX*=0.75;
+		}
+		else if(L<0)
+		{
+			L=0;
+			iSpeedX*=-1;
+			iSpeedX*=0.75;
+		}
+		o_div.style.left=L+"px";
+		o_div.style.top=T+"px";
+	},30);
+}
+
+练习：弹性菜单和碰撞菜单
+
+时间版运动框架
+回顾jquery中的运动
+$("#div1").click(function(){
+	$(this).animate({"width":300,"height":300},4000);//第二个参数默认400ms
+});
+//第三个参数是运动形式 默认swing（慢快慢） linear(匀速)
+//第四个参数是回调函数 
+
+鼠标移入变大，从中间放大的图片
+o_div.onmouseover=function(){
+	start_move(this,{
+		"width":200,
+		"height":200
+		"left":150,
+		"top":150
+	});
+};
+o_div.onmouseout=function(){
+	start_move(this,{
+		"width":100,
+		"height":100
+		"left":100,
+		"top":100
+	});
+};
+在我们的经典版运动框架中，由于各个值都是通过一个速度变化的，所以就会出现有的值运动完了，还在等另外一个值到达终点的bug
+但是在时间版本的运动框架里面是没有这个bug的
+
+tween算法
+
+4个参数
+t:current time(当前时间)
+b:beginning value(初始值)
+c:change in value(变化量)
+d:duration(持续时间)
+return (目标点)
+
+如果让一个div向右运动，花2s的事件让left从100到200
+则这个过程中
+t:可以变化的
+b:100(不可以变化)
+c:200-100(不可以变化)
+d:2s
+
+匀速运动的时候：return c*t/d+b;
+起始位置处：100*0/2+100=100
+终点处：100*2/2+100=200
+
+easeIn 加速曲线
+return c*(t/=d)*t+b
+
+easeOut 减速曲线
+return -c*(t/=d)*(t-2)+d
+
+对tween有了感性知识之后，我们考虑到b、c、d都很容易得到，但是t怎么定呢？
+在原生js中我们可以用(new Date()).getTime()做到
+
+新版start_move
+function start_move(obj,json,time,fx,fn)
+{
+	var n_cur={};
+
+	for(var attr in json)
+	{
+		n_cur[attr]=0;
+
+		if(attr=="opacity")
+		{
+			n_cur[attr]=Math.round(get_style(obj,"opacity")*100);
+		}
+		else
+		{
+			n_cur[attr]=parseInt(get_style(obj,attr));
+		}
+		
+	}
+
+	var start_time=now();
+
+	clearInterval(obj.timer);
+
+	obj.timer=setInterval(function(){
+
+		var change_time=now();
+
+		var t=times-Math.max(0,start_time-change_time+time);//0-2000
+
+		for(var attr in json)
+		{
+			var value=tween[fx](t,n_cur[attr],json[attr]-n_cur[attr],time);
+
+			if(attr=="opacity")
+			{
+				obj.style.opacity=value/100;
+				obj.style.filter="alpha(opacity:"+value+")";
+			}
+			else
+			{
+				obj.style[attr]=value+"px";
+			}
+		}
+
+		if(t==time)
+		{
+			clearInterval(obj.n_time);
+			fn&&fn();
+		}
+	},13);
+	
+	function now()
+	{
+		return (new Date()).getTime();
+	}
+	function get_style()
+	{
+		
+	}
+}
+
+老版本的运动框架，在浏览器中的问题
+当我们在浏览器中切换到别的选项或者切换到别的地方的时候，定时器会变缓，当我们不看当前页的时候，可以在不看的页面里面少执行几次定时器，从而提高性能，但是这对我们开发是有影响的
+
+解决的时候也很简单，既然切换到别的地方定时器会放缓，那么我们直接不让定时器走，也就是停掉定时器，就没有问题了
+
+window.onfocus=function(){
+	timer=setInterval(timer);
+};
+
+window.onblur=function(){
+	clearInterval(timer);
+};
+
+但是这个方案不一定是最好的，因为切换来切换去的这段时间内，原地不动了
+
+这种方法没有出问题的原理就是我们的getTime()不会在浏览器切换的时候停止
+
+扩展jq中的运动方式
+
+$.extend(jQuery.easing,{
+	easeIn:function(x,t,b,c,d)//前面添一个x形参占位
+	{
+		
+	}
+});
+
+
+
+
+
+js与三角函数
+Math.pow(2,3);2的3次方
+Math.sqrt(9);9开方
+
+苹果菜单dock栏
+<div id="div1">
+	<img src="1.png"/>
+	<img src="1.png"/>
+	<img src="1.png"/>
+	<img src="1.png"/>
+	<img src="1.png"/>
+	<img src="1.png"/>
+</div>
+
+#div1{ width:100%; position:absolute; bottom:0; text-align:center;}
+img{ width:64px;}
+
+window.onload=function(){
+	
+	document.onmousemove=function(ev){
+		var o_event=ev||event;
+
+		for(var i=0;i<a_img.length;i++)
+		{
+			var x=a_img[i].offsetLeft+a_img.offsetWidth/2;
+			var y=a_img[i].offsetTop+a_img.offsetHeight/2+o_div.offsetTop;
+
+			var b=x-o_event.clientX;
+			var a=y-o_event.clientY;
+			var c=Math.sqrt(a*a+b*b);
+
+			var scale=c/300;
+			if(scale<0.5)
+			{
+				scale=0.5;
+			}
+
+			a_img[i].style.width=(1-scale)*128+"px";
+			a_img[i].style.height=(1-scale)*128+"px";
+		}
+	};
+};
+
+圆周运动
+//圆的半径和圆心坐标
+var r=100;
+var x=700;
+var y=300;
+
+var num=0;
+
+setInterval(function(){
+	num++;
+	var a=Math.sin(num*Math.PI/180)*r;
+	var b=Math.cos(num*Math.PI/180)*r;
+
+	o_div.style.left=b+x+"px";
+	o_div.style.top=a+y+"px";
+},30);
+
+
+三维效果
+top值是不变的，x轴控制left值，z轴控制大小
+
+var r=100;
+var x=700;
+var y=300;
+
+var num=0;
+
+setInterval(function(){
+	num++;
+	var a=Math.sin(num*Math.PI/180)*r;
+	var b=Math.cos(num*Math.PI/180)*r;
+
+	o_div.style.left=b+x+"px";
+	
+	o_div.style.width=a/100*30+50+"px";
+	o_div.style.height=a/100*30+50+"px";
+},30);
+
+三位旋转矩阵
+
+反三角函数
+Math.asin(1/2);
+Math.asin(1/2)*180/Math.PI得到弧度
+
+265眼睛
+
+#div2{ border:2px solid #000; position:absolute; left:115px; top:44px; border-radius:50%;}
+#div3{ border:2px solid #000; position:absolute; left:135px; top:44px; border-radius:50%;}
+
+
+<div id="div1">
+	<div id="div2"></div>
+	<div id="div3"></div>
+</div>
+
+var r=5;//移动半径范围是-5~5
+var L2=115;
+var T2=43;
+var L3=135;
+var T3=43;
+
+document.onmousemove=function(ev){
+	var o_event=ev||event;
+
+	change(o_div2,o_event.clientX,o_event,clientY,L2,T2);
+	change(o_div3,o_event.clientX,o_event,clientY,L3,T3);
+
+	function change(obj,x,y,l,t)
+	{
+		var changeX=0;
+		var changeY=0;
+
+		var b=Math.abs(x-(obj.offsetLeft+obj.parentNode.offsetLeft));
+		var a=Math.abs(y-(obj.offsetTop+obj.parentNode.offsetTop));
+
+		if(x>obj.offsetLeft+obj.parentNode.offsetLeft&&y<obj.offsetTop+obj.parentNode.offsetTop)//右上
+		{
+			changeX=Math.sin(Math.atan(b/a))*r;
+			changeY=-Math.cos(Math.atan(b/a))*r;
+		}
+		else if(x>obj.offsetLeft+obj.parentNode.offsetLeft&&y>obj.offsetTop+obj.parentNode.offsetTop)//右下
+		{
+			changeX=Math.sin(Math.atan(b/a))*r;
+			changeY=Math.cos(Math.atan(b/a))*r;
+		}
+		else if(x<obj.offsetLeft+obj.parentNode.offsetLeft&&y>obj.offsetTop+obj.parentNode.offsetTop)//左下
+		{
+			changeX=-Math.sin(Math.atan(b/a))*r;
+			changeY=Math.cos(Math.atan(b/a))*r;
+		}
+		else if(x<obj.offsetLeft+obj.parentNode.offsetLeft&&y<obj.offsetTop+obj.parentNode.offsetTop)//左上
+		{
+			changeX=-Math.sin(Math.atan(b/a))*r;
+			changeY=-Math.cos(Math.atan(b/a))*r;
+		}
+		obj.style.left=l+changeX+"px";
+		obj.style.top=t+changeY+"px";
+	}
+};
+利用Math.atan2可以把代码简化，没有必要做这么多判断
+
+妙味视频集合页，感知鼠标的位置，留作作业
+
+圆的碰撞
+
+<div id="div1"></div>
+<div id="div2"></div>
+
+#div1{ width:200px; height:200px; background:#f00; border-radius:50%; position:absolute; left:700px; top:100px; }
+#div2{ width:100px; height:100px; background:#00f; border-radius:50%; position:absolute; left:100px; top:250px; }
+
+window.onload=function(){
+	var sX1=0;
+	var sY1=0;
+	var sX2=10;
+	var sY2=0;
+
+	setInterval(function(){
+		o_div2.style.left=o_div2.offsetLeft+10+"px";
+		//当圆心距小于两个圆的半径之和的时候，碰上
+	
+		var a=Math.abs(o_div1.offsetLeft+100-(o_div2.offsetLeft+50));
+		var b=Math.abs(o_div1.offsetTop+100-(o_div2.offsetTop+50));
+
+		var c=Math.sqrt(a*a+b*b);
+
+		if(c<=150)
+		{
+			var ang=Math.asin(b/c);
+
+			var s1=Math.cos(ang)*sX2;
+			var s2=Math.sin(ang)*sX2;
+
+			var x2change1=Math.cos(ang)*(-s1);
+			var y2change1=Math.sin(ang)*s1;
+
+			var y2change2=Math.cos(ang)*s2;
+			var x2change2=Math.sin(ang)*s2;
+
+			sX2=x2change1+x2change2;
+			sY2=y2change1+y2change2;
+		}
+		o_div2.style.left=o_div2.offsetLeft+sX2+"px";
+		o_div2.style.top=o_div2.offsetTop+sY2+"px";
+	},30);
+};
+
+fe42a6eb6f7c01064139d0f6801a53fe
+
+js模块化
+当项目越来越复杂的时候，经常遇到冲突、依赖等问题，例如
+我们开发了一个公共的组件库commen.js，在这个文件中，我们有组件function Tab(){}、function Drag(){}、function Dialog(){}。这时，如果我们引入外部commen.js之后
+<script src="commen.js"></script>
+<script>
+这里如果再写function Tab(){}就会覆盖之前commen.js中的function Tab(){}
+</script>
+
+简单的解决办法就是加命名空间，即
+var miaov={};
+
+miaov.a=10;
+miaov.tab=function(){};
+miaov.drag=function(){};
+miaov.dialog=function(){};
+
+这样之后的function Tab(){}就不会有冲突了
+
+但是，命名空间名字很长，其次，命名空间只能降低冲突，不能完全避免
+
+其次，一个页面中，经常见到这样的情况
+<script src="a.js"></script>
+<script src="b.js"></script>
+<script src="c.js"></script>
+<script src="d.js"></script>
+
+这种方式经常用于多人开发
+这时依赖问题就会很让人头疼
+
+模块：每个script标签引入的内容都叫模块
+
+使用seajs的四个步骤
+1、引入seajs库
+2、如何变成模块
+	define
+//普通模块
+module.js
+function show()
+{
+	alert(1);
+}
+
+
+
+//seajs模块	这时define外部的show()与define内部的show函数就没有冲突了
+define(function(require,exports,module){//一般建议这三个参数都带上，而且sea下的参数不允许修改，也不能在该函数里面写诸如var r=require;这样的语句
+	function show(){
+		alert(1);
+	}
+	exports.show=show;//在此对外提供接口
+});
+3、如何调用模块
+
+我们在别的模块中可以这样引用并调用
+seajs.use("js/module1.js");
+但是这样调用报了404错误，当我们把控制台的寻找路径拷过来观察发现为如下
+sea/js/module.js
+也就是说它是以seajs为根目录寻找的
+即要写成这样(相对于当前页面)
+
+
+seajs.use("./js/module.js",function(ex){
+	ex.show();//在此找到别的模块中的方法
+
+	//此时，如果再在这里定义一个函数
+	function show()
+	{
+		alert(2);
+	}
+	//就不会与之前模块中的show函数冲突了，调用的时候直接这样调用
+	show();
+});
+
+4、如何依赖模块
+
+module3.js
+define(function(require,exports,module){
+	var a=require("./module3.js");//依赖了模块3	当引入的是sea下面的模块的时候，那么require执行完的结果就是提供对应模块下的exports给的接口
+
+	function show(){
+		alert(a);
+	}
+	
+	exports.show=show;
+});
+
+利用seajs开发webqq
+
+首先建立一个文件夹webqq
+
+假设该项目由A主导开发
+那么A需要先在webqq文件夹里面建一个主页index.html
+
+#div1{ width:300px; height:300px; background:#f00; position:absolute; display:none;}
+#div2{ width:10px; height:10px; background:#ff0; position:absolute; right:0; bottom:0;}
+#div3{ width:100px; height:100px; background:blue; position:absolute; right:0; top:0;}
+
+//js部分
+//首先需要引入seajs库
+<script src="sea/sea.js"></script>
+<script>
+seajs.use("./main.js");
+</script>
+
+<input type="button" value="弹窗"/>
+<div id="div1">
+	<div id="div2"></div>
+</div>
+<div id="div3"></div3>
+
+A还需要建立一个基础的库main.js
+define(function(require,exports,module){
+	//获取元素
+	var o_input
+	var o_div1
+	var o_div2
+	var o_div3
+
+	//此时需要开发拖拽o_div3这一功能，而这个模块B已经开发好了(drag.js)，所以A需要拿过来用
+
+	require("./drag.js").drag(o_div3);
+
+	//接着做弹窗的功能
+
+	o_btn.onclick=function(){
+		o_div1.style.display="block";
+		//这里需要拖拽div2改变层大小，这时C已经开发好了
+
+		require("./scale.js").scale(o_div1,o_div2);
+	};
+});
+
+B开发的drag.js模块
+
+define(function(require,exports,module){
+	function drag(obj)
+	{
+		//拖拽代码
+
+		onmousemove的时候引入range.js模块
+		L=require("./range.js").range(L,document.documentElement.clientWidth-obj.offsetWidth,0);
+		T=require("./range.js").range(T,document.documentElement.clientHeight-obj.offsetHeight,0);
+	}
+
+	exports.drag=drag;
+});
+
+
+C开发的scale.js模块
+
+define(function(require,exports,module){
+	function scale(obj1,obj2){
+		//改变成大小代码
+		//如果产品有需求，改变层大小也需要限制范围，可以在这里面加require
+	}
+
+	exports.scale=scale;
+});
+
+
+D开发的range.js模块
+
+define(function(require,exports,module){
+	function range(val,max,min)
+	{
+		//限制范围代码
+		if(val>max)
+		{
+			return max;
+		}
+		else if(val<min)
+		{
+			return min;
+		}
+		else
+		{
+			return val;
+		}
+	}
+
+	exports.range=range();
+});
+
+js模块化开发历史
+2009年node.js的出现让模块化流行起来，因为服务器端必须要模块化开发
+
+commen.js专门针对服务器端模块化的
+
+浏览器js的模块化
+AMD规范	require.js库
+
+CMD规范	sea.js采用的
+
+构建工具
+开发流程
+线下--------------------->线上
+给自己看			给别人看
+
+
+
+线下的各个文件也要转化为线上的，那么构建工具就会完成这个功能，也就是说构建工具可以把很多歌js文件合并
+grunt.js就是其中之一
+
+安装流程
+1、先安装nodejs和npm(包管理工具)，最新的nodejs已经合成了npm了
+2、npm install -g grunt-cli
+3、npm install grunt --save-dev
+4、grunt -version
+
+gruntjs的使用
+
+插件
+
+找到contrib-concat并下载
+
+新建package.json文件，在最开始录入以下内容
+{
+	"name":"webqq",
+	"version":"0.1.0",
+	"devDependencies":{
+		"grunt":"~0.4.2",
+		"grunt-contrib-concat":"~0.3.0"
+	}
+}
+
+
+上线的版本，比如合并操作：define要多出两个参数：第一个参数：当前模块的ID，第二个参数：依赖模块的数组
+
+
+define("main",['./drag.js','./scale.js'],function(require,exports,module){
+define("drag",['./range.js'],function(require,exports,module){
+define("scale",['./range.js'],function(require,exports,module){
+define("range",[],function(require,exports,module){
+
+seajs+gruntjs联合开发
+下载
+grunt-cmd-transport//提取ID和依赖
+grunt-cmd-concat//合并
+这两个插件
+
+深入学习seajs
+配置信息
+seajs.config({
+	alias:{
+		m3:"./js/module3.js"
+	}
+});
+
+seajs.use("m3");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+fe42a6eb6f7c01064139d0f6801a53fe

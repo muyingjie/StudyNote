@@ -1,0 +1,778 @@
+新增选择器
+
+属性选择器
+<p miaov="bleo old">刘伟</p>
+<p miaov="bdp">杜鹏</p>
+<p miaov="bzM">钟毅</p>
+<p miaov="gXM">小美</p>
+
+p{ height:30px; border:1px solid #000;}
+p[miaov]{ background:#f00;}
+p[miaov=leo]{ background:#f00;}
+p[miaov~=old]{ background:#f00;}//词列表中有old的就选中
+p[miaov^=g]{ background:#f00;}//属性值以g开头的选中
+p[miaov$=M]{ background:#f00;}//属性值以M结尾的选中
+p[miaov*=d]{ background:#f00;}//属性值中只要有d就可以
+p[miaov|=b]{ background:#f00;}//属性值要以b-开头或者单单以b开头，例如<p miaov="b-leo"></p><p miaov="b"></p>
+
+
+<p>
+	<a href="http://www.miaov.com/doc/javascript.html">妙味课堂</a>
+</p>
+<p>
+	<a href="http://www.miaov.com/pdf/javascript.html">妙味课堂</a>
+</p>
+<p>
+	<a href="http://www.miaov.com/text/javascript.html">妙味课堂</a>
+</p>
+<p>
+	<a href="http://www.miaov.com/ppt/javascript.html">妙味课堂</a>
+</p>
+
+p{ height:30px; line-height:30px; font-size:12px; border:1px solid #000;}
+p a{ background:url(img/w.gif) no-repeat 3px center; padding-left:20px; display:block;}
+p a[href=*text]{ background-image:url(img/text.gif);}
+p a[href=*pdf]{ background-image:url(img/pdf.gif);}
+
+注意：IE7以上支持属性选择器
+
+
+结构性伪类
+<p>p1</p>
+<p>p2</p>
+<p>p3</p>
+<p>p4</p>
+<p>p5</p>
+<p>p6</p>
+
+p{ height:30px; border:1px solid #000;}
+p:nth-child(1){ background:#f00;}//从1开始计数
+p:nth-child(odd){ }//偶数行
+p:nth-child(even){ }//奇数行
+p:nth-child(2n){ }//2 4 6 8...行
+p:nth-child(2n-1){ }//1 3 5 7...
+p:nth-child(3n){ }//3 6 9...
+
+//p:nth-child(2)找p标签父级下第二个子元素，并且这个元素必须是p标签，如果是别的标签就不行了
+
+有时我们并不关心父级下是什么标签，只想将它做我们想要的样式，那可以这样做
+body *:nth-child(2){ }//body是父级的时候，这样写
+
+body *:nth-last-child(2){ }//找到倒数第2个，nth-last-child代表从后往前数，别的和nth-child没有区别
+
+p:nth-of-type(2){ }//找p标签父级下第二个p标签
+
+body *:nth-of-type(2){ background:#f00;}//找body下任何一种标签的第二个，例如
+
+<p>1</p>
+<h1>1</h1>
+<p>2</p>//变红
+<h1>2</h1>//变红
+<p>3</p>
+<h1>3</h1>
+<p>4</p>
+<h1>4</h1>
+
+p:nth-last-of-type(2)同理
+
+p:first-child=p:nth-child(1)
+p:last-child=p:nth-last-child(1)
+p:first-of-type=p:nth-of-child(1)
+p:last-of-type=p:nth-last-of-type(1)
+
+以下是用的不太多的的选择器
+p:empty//找到p中没有内容的标签
+
+p *:only-of-type{ background:#ff0;}//以下的span和a链接都会加背景色
+<p>
+	<span></span>
+	<a href="#"></a>
+</p>
+
+p *:only-child{ background:#ff0;}
+
+新浪头部
+<ul class="list">
+	<li>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+	</li>
+	<li>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+	</li>
+	<li>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+		<a href="#"></a>
+	</li>
+</ul>
+
+.list li{ width:150px; border-right:1px solid #000; float:left;}
+.list li:last-of-type{ border:none;}//最后的边框清掉
+
+.list li a:nth-of-type(3n-2){ font-weight:bold;}//每行的第一个元素加粗
+
+.list li:nth-child(3) a:nth-child(2){ color:#f00;}
+
+新增伪类
+<a href="#div1">div1</a>
+<a href="#div2">div2</a>
+<a href="#div3">div3</a>
+
+<div id="div1">div1</div>
+<div id="div2">div2</div>
+<div id="div3">div3</div>
+
+div{ width:300px; height:300px; background:#000; color:#fff; display:none;}
+div:target{ display:block;}//target代表点击的div对应的hash值
+
+表单下的伪类
+<input type="text" value="请输入"/>
+
+input{ width:100px; height:30px; color:#000;}
+input:enabled{ color:red;}
+input:disabled{ color:blur;}
+
+//以上两个表单伪类没有太大意义，但是下面的伪类就不一样了
+<input type="textarea"/>
+
+input:checked{ width:100px; height:100px;}
+
+
+
+
+
+<h1>h1</h1>
+<p>p</p>
+<h1>h1</h1>
+<h1>h1</h1>
+
+p~h1{ background:red;}//p后面的h1背景将变色
+
+
+这两个伪类配合一下可以做出来些东西——模拟单选框
+<label>
+	<input type="radio" name="tab"/>
+	<span></span>
+</label>
+<label>
+	<input type="radio" name="tab"/>
+	<span></span>
+</label>
+<label>
+	<input type="radio" name="tab"/>
+	<span></span>
+</label>
+
+
+label{ float:left; margin:0 5px; overflow:hidden; position:relative;}
+label input{ position:absolute; left:-50px; top:-50px;}
+span{ float:left: width:50px; height:50px; border:3px solid #000;}
+
+input:checked~span{ background:red;}
+
+文本新增样式
+
+<p></p>
+
+
+p{ font:12px/30px "宋体";}
+p:first-line{ background:red;}//第一行文本
+p:first-letter{ font-size:30px;}//第一个字符，但是这里如果设置了第一个字符的话就无法选中该文字了
+p::selection{ background:#F60; color:#0f0;}//选定的文字的样式
+p:before{ content:"miaov"}//按照标准的话和selection一样是双冒号，但是写成单冒号也是识别的
+p:after{ }//添加到末尾
+
+
+p:not(.h2){ }//排除掉加了.h2样式的p标签
+
+新增颜色模式
+如果想让文字透明，要设置color:rgba(255,255,255,0.5);
+如果想让背景透明，要设置background:rgba(255,255,255,0.5);
+
+注意：如果让边框颜色透明，是有问题的，边框会把背景漏出来，这个问题在稍后的课程中有解决办法
+
+h1{ font:100px/200px "微软雅黑"; text-shadow:0 0 10px red;}//水平方向偏移，垂直方向偏移，模糊度，阴影颜色
+阴影可以加多层
+
+利用阴影做浮雕效果
+h1{ color:#fff; text-shadow:2px 2px 4px #000;}
+
+文字阴影
+
+文字描边
+h1{-webkit-text-stroke:2px #f00;}//第一个参数代表宽度，第二个参数代表描边的颜色
+
+文字排版(全兼容)
+<style>
+p{ width:300px; border:1px solid #000; direction:rtl; unicode-bidi:bidi-override;}//文字排版一定要和unicode-bidi:bidi-override;配合共同使用
+</style>
+
+超出显示省略号(全兼容)
+<p></p>
+
+p{ width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}//加white-spacing就是强制不换行，即使加了宽也不换行
+text-overflow设置为clip是没有省略号
+
+自定义字体
+@font-face{
+	font-family:"miaov";
+	src:url("1-webfont.eot");
+	src:url("1-webfont.eot?#iefix") format("embedded-opentype"),
+		url("1-webfont.woff") format("woff"),
+		url("1-webfont.ttf") format("truetype"),
+		url("1-webfont.svg#untitledregular") format("svg"),
+	font-weight:normal;
+	font-style:normal;
+}
+body{ body-family:"miaov"; font-size:100px;}
+
+弹性盒模型
+display:box display:inline-box//使用弹性盒模型的时候父元素必须要加这条样式，加了之后默认使块元素水平居中
+box-orient：显示方式 horizontal vertical//水平或者垂直显示
+box-direction:排列方式normal reverse;
+
+<div class="box">
+	<div>1</div>
+	<div>2</div>
+	<div>3</div>
+	<div>4</div>
+	<div>5</div>
+</div>
+
+.box{ 100px; border:10px solid #000; padding:10px; display:-webkit-box; -webkit-box-orient:vertical;}//会垂直显示
+.box div{ width:100px; height:100px; background:red; border:1px solid #fff;}
+
+
+.box{ 100px; border:10px solid #000; padding:10px; display:-webkit-box; -webkit-box-orient:horizontal;}//会水平显示
+.box div{ width:100px; height:100px; background:red; border:1px solid #fff;}
+
+一般情况下我们希望水平显示的时候比较多，vertical没什么太大的意义，不加
+
+.box{ 100px; border:10px solid #000; padding:10px; display:-webkit-box; -webkit-box-direction:reverse;}//不加box-orient默认会水平显示，这里同时会倒序显示，即依次显示5、4、3、2、1
+.box div{ width:100px; height:100px; background:red; border:1px solid #fff;}
+
+可以通过box-ordinal-group设置具体的显示位置
+.box{ 100px; border:10px solid #000; padding:10px; display:-webkit-box; font-size:20px; color:#fff;}
+.box div{ width:100px; height:100px; background:red; border:1px solid #fff;}
+.box div:nth-of-type(1){ -webkit-box-ordinal-group:2;}
+.box div:nth-of-type(2){ -webkit-box-ordinal-group:3;}
+.box div:nth-of-type(3){ -webkit-box-ordinal-group:4;}
+.box div:nth-of-type(4){ -webkit-box-ordinal-group:5;}
+.box div:nth-of-type(5){ -webkit-box-ordinal-group:1;}
+
+box-flex定义盒子的弹性空间
+.box{ 100px; border:10px solid #000; padding:10px; display:-webkit-box; font-size:20px; color:#fff;}
+.box div{ height:100px; background:red; border:1px solid #fff;}
+.box div:nth-of-type(1){ -webkit-flex:1;}
+.box div:nth-of-type(2){ -webkit-flex:2;}//是1的2倍
+.box div:nth-of-type(3){ -webkit-flex:3;}//是1的3倍
+.box div:nth-of-type(4){ -webkit-flex:4;}//是1的4倍
+.box div:nth-of-type(5){ -webkit-flex:5;}//是1的5倍
+
+子元素的尺寸=盒子的尺寸*子元素的box-flex属性值/所有子元素的box-flex属性值的和
+
+如果某个子元素宽度已经写死了，那么剩下几个子元素按比例分配剩下的空间，例如
+
+.box{ 100px; border:10px solid #000; padding:10px; display:-webkit-box; font-size:20px; color:#fff;}
+.box div{ height:100px; background:red; border:1px solid #fff;}
+.box div:nth-of-type(1){ -webkit-flex:300px;}
+.box div:nth-of-type(2){ -webkit-flex:2;}//是1的2倍
+.box div:nth-of-type(3){ -webkit-flex:3;}//是1的3倍
+.box div:nth-of-type(4){ -webkit-flex:4;}//是1的4倍
+.box div:nth-of-type(5){ -webkit-flex:5;}//是1的5倍
+这里2、3、4、5按照2:3:4:5的比例来分配
+
+box-pack 富予空间的管理（水平方向上）
+
+.box{ 100px; border:10px solid #000; padding:10px; display:-webkit-box; -webkit-box-direction:reverse; -webkit-box-pack:end; font-size:20px; color:#fff;}//富裕空间靠左，所有子元素全部靠右。box-pack的值除此之外还有center、start、justify，justigy是平均分布，justify更具有实际的意义
+.box div{ height:100px; background:red; border:1px solid #fff;}
+
+box-align 富予空间的管理（垂直方向上）end star center
+
+盒模型阴影
+
+.box{ width:100px; height:100px; margin:100px; background:#f00; box-shadow:10px 10px 10px #00f;}
+
+inset可选参数
+
+.box{ width:100px; height:100px; margin:100px; background:#f00; box-shadow:inset 10px 10px 10px #00f;}//内阴影效果
+
+模糊半径的后面有个可选参数，扩展半径
+.box{ width:100px; height:100px; margin:100px; background:#f00; box-shadow:10px 10px 10px 10px #00f;}//在原有的基础上向外扩展10px之后再模糊
+
+和文字阴影一样也可以多层叠加
+
+倒影（只在webkit内核下支持）
+img{ display:block; margin:200px auto; -webkit-box-reflect:below;}//below|above|left|right这是必选参数
+第二个参数是倒影和元素中间的距离
+第三个参数是设置渐变
+img{ display:block; margin:200px auto; -webkit-box-reflect:below 10px -webkit-linear-gradient(rgba(0,0,0,1) 0,rgba(0,0,0,0) 100%);}
+
+css3实现拖拽改变层大小
+.box{ width:100px; height:100px; background:url(miaov.jpg); border:5px solid #000; resize:both; overflow:auto;}//resize一定要和overflow:auto配合使用
+
+除此之外resize还有horizontal、vertical两种值
+
+盒模型的怪异模式，怪异解析
+IE中不加文档声明会有怪异模式
+box-sizing:content_box;标准盒模型如果设置为border-box则为怪异模式
+怪异模式下我们设置的width变成了可视区宽，内容宽变成了width(可视区宽)减去padding减去border
+
+响应式开发
+
+分栏布局
+<div class="wrap">
+	<p></p>
+</div>
+
+//第一种方法，限制宽度
+.wrap{ width:900px; border:1px solid #000; font:14px/28px "宋体"; color:#000; text-indent:2em; -webkit-column-width:250px;}
+
+//第二种方法，限制栏数
+.wrap{ width:900px; border:1px solid #000; font:14px/28px "宋体"; color:#000; text-indent:2em; -webkit-column-count:4; -webkit-column-gap:30px; -webkit-column-rule:1px solid #000;}
+
+//webkit-column-gap:30px;栏间距
+//-webkit-column-rule:1px solid #000;分割线样式
+
+分栏功能只有webkit内核浏览器支持
+
+响应式：2010之后，移动互联网大兴，所以我们希望一个网站可以兼容多个终端
+
+<link rel="stylesheet" type="text/css" href="stylea.css" media="screen and (min-width:800px)">
+<link rel="stylesheet" type="text/css" href="stylea.css" media="screen and (min-width:400px) and (max-width:800px)">
+<link rel="stylesheet" type="text/css" href="stylea.css" media="screen and (max-width:400px)">
+
+移动端的横竖屏切换
+<link rel="stylesheet" type="text/css" href="stylea.css" media="all and (orientation:portrait)">
+<link rel="stylesheet" type="text/css" href="styleb.css" media="all and (orientation:landscape)">
+
+
+@media screen and (min-width:600px){
+	.wrap{ width:900px; border:1px solid #000; font:14px/28px "宋体"; color:#000; text-indent:2em; -webkit-column-count:4; -webkit-column-gap:30px; -webkit-column-rule:1px solid #000;}
+}
+
+@import url("indexc.css") screen and (min-width:400px) and (max-width:800px);
+
+@media screen and (max-width:400px){
+	.wrap{ width:900px; border:1px solid #000; font:14px/28px "宋体"; color:#000; text-indent:2em; -webkit-column-count:2; -webkit-column-gap:30px; -webkit-column-rule:1px solid #000;}
+}
+
+新增UI样式
+
+border-radius:10px 20px;//第一个值是左上角和右下角，第二个值是左下和右上
+
+border-radius:10px 20px 30px;//左上、右上、右下
+
+border-radius:10px 20px 30px 40px;//左上、右上、右下、左下
+
+border-radius:100px/150px;//x轴半径/y轴半径
+
+border-radius:10px 20px 30px 40px/40px 30px 20px 10px;
+
+border-radius:50%;百分号用起来相对更方便
+
+
+
+风车
+<div class="box">
+	<div></div>
+	<div></div>
+	<div></div>
+	<div></div>
+</div>
+
+.box{ width:400px; height:400px; margin:50px auto; transition:5s linear;}
+.box div{ width:180px; height:180px; margin:10px; border:1px solid #000; box-sizing:border-box; float:left; background:url() no-repeat}
+.box div:nth-child(1),.box div:nth-child(4){ border-radius:0 50%;}
+.box div:nth-child(2),.box div:nth-child(3){ border-radius:50% 0;}
+.box:hover{ -webkit-transform:rotate(720deg);}
+
+
+边框背景
+.box{ width:100px; height:100px; -webkit-border-image:url(bt_blue.png) 0 10; border-left-width:10px; border-right-width:10px;}
+border-image的后两个参数代表裁切的像素值，不加单位
+border-image-repeat
+
+边框颜色
+.box{ width:100px; height:100px; border:10px solid #000; -moz-border-left-colors:red blue yellow;}//只在FF下实现了，但是没有什么意义
+
+渐变
+//第一种写法
+.box{ width:300px; height:300px; border:10px solid #000; background-image:-webkit-linear-gradient(left top,red,blue);}
+//第二种写法
+.box{ width:300px; height:300px; border:10px solid #000; background-image:-webkit-linear-gradient(30deg,red,blue);}角度是逆时针的
+//第三种
+.box{ width:300px; height:300px; border:10px solid #000; background-image:-webkit-linear-gradient(60deg,red 30px,blue 100px);}
+//第四种
+.box{ width:300px; height:300px; border:10px solid #000; background-image:-webkit-linear-gradient(60deg,red 0,blue 50%,green 100%);}
+
+
+渐变平铺
+.box{ width:300px; height:300px; border:10px solid #000; background-image:-webkit-repeating-linear-gradient(60deg,red 0,blue 30px);}
+
+进度条
+<div class="box"></div>
+
+.box{ width:200px; height:30px; border:1px solid #000; background:-webkit-repeating-linear-gradient(left,green 0,green 10px,#fff 10px,#fff 20px); transition:3s;}//这种写法是没有渐变效果的
+
+.box:hover{ background-position:200px 0;}
+
+
+<div class="box"></div>
+.box{ width:300px; height:300px; background:url(bt_blue.png) no-repeat,url(border.png) repeat-y right 0;}//多背景，先写的在上后写的在下
+
+鼠标移到图片上有一条光斑从左上到右下划过
+
+.box{ width:300px; height:300px; background:-webkit-linear-gradient(-45deg,rgba(255,255,255,0) 0,rgba(255,255,255,0) 80px,rgba(255,255,255,0.9) 100px,rgba(255,255,255,0.9) 110px,rgba(255,255,255,0) 130px) no-repeat -200px,url(new.png) no-repeat; transition:3s;}
+.box:hover{ background-position:300px 0,0 0;}
+
+兼容IE
+.box{ width:300px; height:300px; background:-webkit-linear-gradient(red,blue); background:-moz-linear-gradient(red,blue);
+}
+ background:-ms-linear-gradient(red,blue);处理不了IE9，想要兼容IE9-，需要用滤镜
+
+径向渐变
+background:-webkit-radial-gradient(left top,red,blue);
+
+background:-webkit-radial-gradient(100px 50px,red,blue);
+
+background:-webkit-radial-gradient(100px 50px,100px 20px,red,blue);//第二组参数是半径
+对于第二组参数，火狐支持关键字
+
+背景尺寸
+background:url(miaov.jpg) no-repeat; background-size:100px 200px;//背景就变成宽100高200，也可以设置一个百分比，从而和父级的大小一致，此外还可以是contain和cover两个关键字
+
+如果有两张背景图，还可以用逗号分开即：background-size:100px 200px,200px 100px;
+
+背景图原点设置
+.box{ background:url(miaov.jpg) no-repeat 0 0; border:10px solid rgba(0,0,0,0.5); padding:50px; background-origin:border-box;}
+
+background-origin默认值是padding-box，还有content-box，border-box
+
+背景裁切
+background-clip:border-box;//默认是padding-box，还有content-box
+
+webkit内核下还有text这个值
+
+iPhone开机动画
+
+h1{ display:inline-block; color:rgba(); background:-webkit-linear-gradient(-30deg,rgba(255,255,255,0.5) 100px,rgba(255,255,255,1) 180px,rgba(255,255,255,1) 240px,rgba(255,255,255,0) 300px) no-repeat -300px 0; -webkit-background-clip:text; }
+
+js部分
+
+var n_left=-300;
+function to_move()
+{
+	n_timer=setInterval(function(){
+		n_left+=15;
+		o_h1.style.backgroundPosition=n_left+"px 0px";
+		if(n_left==1000)
+		{
+			n_left=300;
+			clearInterval(n_timer);
+		}
+	},20);
+}
+to_move();
+n_timer2=setInterval(function(){
+	to_move();
+},3000);
+
+
+遮罩
+.box{ width:800px; height:600px; background:url(miaov.jpg) no-repeat; background-size:100% 100%; -webkit-mask:url(mask.png) no-repeat right 0; transition:1s;}
+.box:hover{ -webkit-mask-position:100% 100%;}
+
+
+transition过渡
+.box{ width:100px; height:100px; background:red; transition:1s width ease-in-out;}//第二个参数不写的时候默认所有的样式都过渡，第三个参数不写的时候默认ease(先快后慢),其中功能最为强大的就是贝塞尔曲线了cubic-bezier(0.1,0.1,0.1,0.1)
+.box:hover{ width:200px; height:200px; background:blue;}
+
+变换多条样式：transition:1s width,2s height,3s background;
+
+transition:1s 2s width;//延迟2s执行
+
+
+//解决transitionend的bug
+o_box.onclick=function(){
+	this.style.width=this.offsetWidth+100+"px";
+};
+addEnd(o_box,end);
+function end()
+{
+	removeEnd(this,end);
+	this.style.width=this.offsetWidth+"px";
+}
+
+function addEnd(obj,fn)
+{
+	obj.addEventListener("WebkitTransitionEnd",fn,false);
+	obj.addEventListener("transitionend",fn,false);
+}
+
+function removeEnd(obj,fn)
+{
+	obj.removeEventListener("WebkitTransitionEnd",fn,false);
+	obj.removeEventListener("transitionend",fn,false);
+}
+
+2D变换
+-webkit-transform:rotate(360deg);
+-webkit-transform:skewX(45deg);//斜切
+-webkit-transform:skewX(15deg,30deg);//x轴斜切、y轴斜切
+
+斜切菜单
+<ul>
+	<li><a href="#">妙味课堂</a></li>
+	<li><a href="#">妙味课堂</a></li>
+</ul>
+
+li{ -webkit-transform:skewX(30deg);}
+a{ -webkit-transform:skewX(-30deg); display:block;}
+
+-webkit-transform:scaleX(2);//缩放函数
+-webkit-transform:scale(2);//x和y整体放大
+-webkit-transform:translateX(10px);//位移
+-webkit-transform:translate(100px,200px);
+
+控制变换的基点
+-webkit-transform-origin:right;//围绕右边终点
+-webkit-transform-origin:right top;//围绕右上角，也可以设置具体的数值，设置成具体的数值时是相对于动画元素的左上角来说的
+
+transform执行顺序问题：后写的先执行
+body:hover .box:nth-of-type(1){ -webkit-transform:translateX(100px) scale(0.5);}//先缩小到原来的一半，再往右走100px
+body:hover .box:nth-of-type(2){ -webkit-transform:scale(0.5) translateX(100px);}//先往右走了100px，然后再缩小到原来的一半，那往右走的这100px也被缩小到原来的一半，即只往右走了50px
+
+
+钟表效果
+
+<div id="wrap">
+	<ul>
+		<li></li>
+		<li></li>
+		<li></li>
+		<li></li>
+		<li></li>
+	</ul>
+	<div id="hour"></div>
+	<div id="min"></div>
+	<div id="sec"></div>
+	<div class="ico"></div>
+</div>
+
+
+#wrap{ width:200px; height:200px; border:2px solid #000; margin:100px auto; border-radius:50%; position:relative;}
+#wrap ul{ height:200px; position:relative;}
+#wrap ul li{ width:2px; height:10px; background:#000; position:absolute; left:99px; top:0; -webkit-transform-origin:center 100px;}
+//#wrap ul li:ntn-of-type(1){ -webkit-transform:rotate();}
+//#wrap ul li:ntn-of-type(2){ -webkit-transform:rotate(6deg);}
+//#wrap ul li:ntn-of-type(5n+1){ height:12px; -webkit-transform:rotate(6deg);}
+
+#hour{ width:6px; height:45px; background:#000; position:absolute; left:97px; top:55px; -webkit-transform-origin:bottom;}
+#min{ width:4px; height:65px; background:#999; position:absolute; left:98px; top:35px; -webkit-transform-origin:bottom;}
+#sec{ width:2px; height:80px; background:#f00; position:absolute; left:99px; top:25px; -webkit-transform-origin:bottom;}
+
+.ico{ width:10px; height:10px; background:#000; border-radius:50%; position:absolute; left:90px; top:90px;}
+
+js
+var o_css=document.getElementsByTagName("css");
+var aLi="";
+var s_css="";
+
+for(var i=0;i<60;i++)
+{
+	s_css+="#wrap ul li:ntn-of-type("+(i+1)+"){ -webkit-transform:rotate("+i*6+"deg);}";
+	a_li+="<li></li>";
+}
+
+o_list.innerHTML=a_li;
+o_css.innerHTML+=s_css;
+setInterval(to_time,1000);
+to_time();
+function to_time()
+{
+	var o_date=new Date();
+	var i_sec=o_date.getSeconds();
+	var i_min=o_date.getMinutes()+i_sec/60;
+	var i_hour=o_date.getHours()+i_min/60;
+
+	o_sec.style.WebkitTransform="rotate("+i_sec*6+"deg)";
+	o_min.style.WebkitTransform="rotate("+i_min*6+"deg)";
+	o_hour.style.WebkitTransform="rotate("+i_hour*30+"deg)";
+}
+
+
+#home{ transition:1s;}
+
+
+var b_off=true;
+
+for(var i=0;i<a_img.length;i++)
+{
+	a_img[i].onclick=function(){
+		this.style.transition="0.5s";
+		this.style.WebkitTransform="scale(2) rotate(-720deg)";
+		addEnd(this,end);
+	};
+}
+
+function end()
+{
+	this.style.transition="0.1s";
+	this.style.WebkitTransform="scale(1) rotate(-720deg)";
+	this.style.opacity=1;
+	removeEnd(this,end);
+}
+
+o_home.onclick=function(){
+	if(b_off)
+	{
+		this.style.WebkitTransform="scale(1) rotate(-360deg)";//负代表逆时针
+		for(var i=0;i<a_img.length;i++)
+		{
+			var oLt=toLT(iR,90/4*i);
+			a_img[i].style.transition="0.5s"+i*100+"ms";
+			a_img[i].style.left=oLt[i].l+"px";
+			a_img[i].style.top=oLt[i].t+"px";
+			a_img[i].style.WebkitTransform="rotate(-720deg)";
+		}
+	}
+	else
+	{
+		this.style.WebkitTransform="rotate(360deg)";//负代表逆时针
+		for(var i=0;i<a_img.length;i++)
+		{
+			
+			a_img[i].style.transition="0.5s"+(a_img.length-i-1)*100+"ms";
+			a_img[i].style.left=0;
+			a_img[i].style.top=0;
+			a_img[i].style.WebkitTransform="scale(1) rotate(0deg)";
+		}
+	}
+	b_off=!b_off;
+};
+function toLT(iR,iDeg)
+{
+	return {
+		l:iLeft=Math.round(Math.sin(iDeg/180*Math.PI)*iR),
+		t:iTop=Math.round(Math.cos(iDeg/180*Math.PI)*iR)
+	};
+}
+
+扇形导航
+<div id="menu">
+	<div id="menu_list">
+		<img src=""/>
+		<img src=""/>
+		<img src=""/>
+		<img src=""/>
+	</div>
+</div>
+<div id="home"></div>
+
+IE9以下的transform需要用滤镜兼容，需要理解transform的matrix
+
+标准的matrix()有6个参数，IE下的matrix只有4个参数
+matrix(1,0,0,1,0,0);
+matrix(a,b,c,d,e,f)
+
+
+Matrix(M11=a,M12=c,M21=b,M22=d);
+
+
+matrix实现位移
+沿着x向右移动:matrix(1,0,0,1,100,0); 即e+disX;
+沿着y: f+disY;
+
+IE 下没有后两个参数，所以不能通过滤镜实现位移
+
+matrix实现缩放
+X轴缩放 a=x*a c=x*c e=x*e
+Y轴缩放 b=y*b d=y*d f=y*f
+
+对于IE没有后两个参数e、f
+
+matrix实现斜切
+x轴倾斜 c=Math.tan(xDeg/180*Math.PI)
+y轴倾斜 b=Math.tan(yDeg/180*Math.PI)
+
+
+matrix实现旋转
+X轴旋转
+a=Math.cos(deg/180*Math.PI);
+b=Math.sin(deg/180*Math.PI);
+c=-Math.sin(deg/180*Math.PI);
+d=Math.cos(deg/180*Math.PI);
+Y轴旋转
+
+IE基点修正
+var iDeg=0;
+setInterval(function(){
+	iDeg++;
+	toRotate(oBox,iDeg);
+},30);
+
+
+3d
+<div class="box">
+	<div class="div"></div>
+</div>
+
+.div{ transition:1s; -webkit-transform-style:preserve-3d; -webkit-perspective:800px;}
+.box:hover .div{ -webkit-transform:rotateX(180deg);}
+
+立方体盒子
+
+<div class="wrap">
+	<div class="box">
+		<div>1</div>
+		<div>2</div>
+		<div>3</div>
+		<div>4</div>
+		<div>5</div>
+		<div>6</div>
+	</div>
+</div>
+.wrap{ perspective:500px;}
+.box{ position:relative; transform-style:preserve-3d; transition:2s;}
+.box div{ position:absolute;}
+.box div:nth-of-type(1){ left:0; top:-100px; transform-origin:bottom; transform:rotateX(90deg);}
+.box div:nth-of-type(2){ left:-100px; top:0; transform-origin:right; transform:rotateY(-90deg);}
+.box div:nth-of-type(3){ left:0; top:0;}
+.box div:nth-of-type(4){ left:100px; top:0; transform-origin:left; transform:rotateY(90deg);}
+.box div:nth-of-type(5){ left:0; top:100px; transform-origin:top; transform:rotateX(-90deg);}
+.box div:nth-of-type(6){ left:0; top:0; transform-origin:bottom; transform:translateZ(-100px);}
+
+.wrap:hover .box{}
+
+但是这个时候盒子围绕3这个面的中心旋转而不是立方体的中心转，而且6这个面试倒立的
+
+.box{ position:relative; transform-style:preserve-3d; transition:2s; transform-origin:center center -50px;}
+
+关于6这个面的问题我们可以加上rotateX(180deg);
+
+景深基点perspective-origin
+
+
+立体幻灯片
+
+
+
+
+

@@ -1,0 +1,569 @@
+第9课 滑动门
+
+第一种：三层嵌套
+
+/*注意，块元素不设置宽度的时候宽度是跟着父级走的，所以宽度直接加在了最里层的btnR上*/
+.btn{width:150px; background:url(img/btn.jpg) repeat-x;}
+.btnL{background:url(img/btnL.jpg) no-repeat;}
+.btnR{height:31px; background:url(img/btnR.jpg) no-repeat right 0;}
+
+<div class="btn">
+	<div class="btnL">
+		<div class="btnR">妙味课堂</div>
+	</div>
+</div>
+
+注：这种滑动门用了三层嵌套，结构较为繁琐，但是扩展性比较好
+
+第二种：两层嵌套
+
+.btn{ width:100px; background:url(img/btn2.jpg);}
+.btnR{ height:31px; background:url(img/btnR.jpg) no-repeat right 0;}
+
+<div class="btn">
+	
+</div>
+
+注：这种滑动门用了两层嵌套，结构较简单，但是扩展性差
+
+
+做导航条本身时，本身宽度很大，而且扩展性要求较高，因为多一个选项，少一个选项就可能差好几百像素，这时用三层嵌套
+做导航条中的每个选项的时候，宽度比较小，扩展性要求不高，可以用两层嵌套
+
+第二课时
+导航整体制作流程
+让元素宽度由内容撑开的五种方法：
+
+display:inline;		//不支持高度
+display:inline-block;	//不设宽度时的确由内容撑开，但在IE6、7下不支持块标签
+float;			//没有问题
+position:absolute;	//要给每个元素加left、top，比较麻烦
+position:fixed;		//本身时不兼容的
+
+
+<div class="nav">
+	<div class="navL">
+		<ul class="navR">
+			/*对于鼠标移入（也就是hover）只有a标签的hover才是全兼容的，所以我们的背景要往a标签上加，以a标签作为左角，span作为右角*/
+			<li>
+				<a class="active" href="#"><span>miaov</span></a>
+			</li>
+			<li>
+				<a href="#"><span>miaov</span></a>
+			</li>
+			<li>
+				<a href="#"><span>miaov</span></a>
+			</li>
+			<li>
+				<a href="#"><span>miaov</span></a>
+			</li>
+		</ul>
+	</div>
+</div>
+
+.nav{background:#0f0f14 url(img/navL.jpg) repeat-x;float:left;}
+.navR{background:url(img/navR.jpg) no-repeat right 0; height:40px; padding:4px 4px 0 3px;}
+.nav li{float:left; padding-left:1px;}
+/*注：此处给a和span加上浮动的目的就是让a和span里面的内容自动撑开*/
+.nav a{float:left; background:url(img/btnL.jpg) no-repeat;}
+.nav span{float:left; background:url(img/btnL.jpg) no-repeat right 0; height:31px; line-height:30px; font-size:14px; padding:0 18px;}
+
+.nav a:hover,.nav a.active{background:url(img/hoverL.jpg);}
+.nav a:hover span,.nav .active span{background:url(img/hoverR.jpg);}
+
+
+
+第三课时
+滑动门实现圆角
+<div class="box">
+	<div class="boxHead">
+		<div class="boxHeadL">
+			<div class="boxHeadR"></div>
+		</div>
+	</div>
+	<div class="boxC">
+    		&nbsp;&nbsp;页面内容<br/>
+        	&nbsp;&nbsp;页面内容<br/>
+        	&nbsp;&nbsp;页面内容<br/>
+        	&nbsp;&nbsp;页面内容<br/>
+        	&nbsp;&nbsp;页面内容<br/>
+        	&nbsp;&nbsp;页面内容<br/>
+	</div>
+	<div class="boxFoot">
+		<div class="boxFootL">
+			<div class="boxFootR"></div>
+		</div>
+	</div>		
+</div>
+
+.box{width:300px; margin:30px auto;}
+.boxHead{background:url(img/boxHead.png) repeat-x;}
+.boxHeadL{background:url(img/boxHeadL.png) no-repeat;}
+.boxHeadR{background:url(img/boxHeadR.png) no-repeat right 0; height:9px; overflow:hidden;}/* 在此需要加上overflow是因为IE6的19px问题 */
+.boxC{border-left:1px solid #e5e5e5;border-right:1px solid #e5e5e5;}
+.boxFoot{background:url(img/boxFoot.png) repeat-x;}
+.boxFootL{background:url(img/boxFootL.png) no-repeat;}
+.boxFootR{background:url(img/boxFootR.png) no-repeat right 0; height:9px; overflow:hidden;}/* 在此需要加上overflow是因为IE6的19px问题 */
+
+
+背景透明的圆角
+.btn{width:100px; background:url(img/btn.png) repeat-x;}
+.btnL{background:url(img/btnL.png) no-repeat;position:relative;left:-9px;}
+.btnR{background:url(img/btnR.png) no-repeat; height:25px;right:-18px;}
+
+<div class="btn">
+	<div class="btnL">
+		<div class="btnR"></div>
+	</div>
+</div>
+
+
+背景透明的圆角加强
+.btnL{width:100px;background:url(img3/btnL.gif) no-repeat;}
+.btnR{ background:url(img3/btnR.gif) no-repeat right 0;}
+.btn{height:25px;background:url(img3/btn.gif) repeat-x;margin:0 9px;}
+
+
+
+<div class="btnL">
+	<div class="btnR">
+    		<div class="btn"></div>
+    	</div>
+</div>
+
+第四课时 css sprite
+
+
+
+css兼容
+第一课时
+回顾之前出错多的地方
+
+问题1
+<div class="box">
+	<div class="left"></div>
+	<div class="right">
+		<div class="div"></div>	
+	</div>
+</div>
+
+
+.box{ width:400px;}
+.left{ width:200px; height:300px; background:red; float:left;}
+.right{ width:200px; height:200px; float:right;}
+.div{ width:180px; height:180px; background:blue; padding:15px;}
+
+
+
+注：标准浏览器下子元素不会撑开父元素设置好的宽和高，但在IE6下子元素会撑开父元素所设置好的宽和高，所以这个例子在IE6下会折行显示
+
+
+问题2
+加了浮动的元素如果不设置宽度，则宽根据内容自动撑开，例如
+<div class="box">
+	<div class="left">
+		<h3>左侧</h3>
+	</div>
+	<div class="right">
+		<h3>右侧</h3>
+	</div>
+</div>
+
+.box{ width:200px;}
+.left{ float:left; background:red;}
+.right{ float:right; background:blue;}
+h3{ margin:0; height:30px;}
+
+
+但是在IE6下，宽度不会根据内容撑开，而是继承了父级的宽度200px；
+解决的办法就是给对应父级下的所有块元素都加浮动，即
+.box{ width:200px;}
+.left{ float:left; background:red;}
+.right{ float:right; background:blue;}
+h3{ margin:0; height:30px; float:left;}
+
+问题三
+平时我们在写页面的时候如果想让两个div在同一行显示，都加浮动必然没有什么问题，但是实际工作中经常有人这样写
+.div1{ width:100px; height:100px; background:#f00; float:left;}
+.div2{ width:200px; height:100px; background:#0f0; margin:100px auto;}
+这种写法在标准浏览器下也没有什么问题，但是在IE6下，div1和div2虽然在同一行显示了，但是二者中间有3px间隙，这就是在IE6下3px距离问题，这个问题尽量避免这种写法就可以，将每个元素都加上浮动方为最佳答案
+
+问题四
+<p>
+	<h3></h3>
+</p>
+
+p{ width:100px; height:100px; background:#f00;}
+在这里只写了一个p标签，但是显示为两个块（标准非标准都是这样），所以还是尽量按照第二课中讲的标签嵌套规范来写
+
+
+兼容问题正式讲解
+1、IE6下最小高度问题：
+	IE6下元素高度小于19px的时候会被当做19px处理
+	解决：overflow:hidden;
+2、IE6下border属性dotted问题
+	IE6下border的属性设置为1px dotted的时候，会变成虚线而不是点线
+	解决：切背景，平铺
+3、margind传递问题
+	（1）
+	<div class="box">
+		<div class="div"></div>
+	</div>
+
+	.box{ background:blue;}//可以给.box加float:left;或者加overflow:hidden;zoom:1;但是加overflow:hidden;在IE6下是有问题的，在IE6下解决margin传递需要触发haslayout引擎，所以可以加浮动、zoom、宽高等
+	.div{ width:200px; height:200px; background:red; margin:100px;}
+
+
+	
+	（2）IE6下父级加了border的时候，子级的margin不见了
+	.box{ background:blue; border:1px solid #000;}
+	.div{ width:200px; height:200px; background:red; margin:100px;}
+	解决的方法还是触发父级的haslayout，例如加zoom:1;
+
+
+
+	总结：在IE6下设置元素的样式尽量加上zoom:1;来触发haslayout，其实很多的bug都是由于haslayout引擎引起的
+
+
+4、伪类的问题
+	IE6、7下只支持a标签的四个伪类，要想兼容需要借助js
+5、inline-block
+	IE6、7下不支持块标签的inline-block，但是也没什么解决办法
+6、float
+	（1）、IE6下的双边距bug
+		IE6下、块元素、有浮动三者条件具备的时候横向的margin值会被放大成2倍
+		解决办法：display:inline;
+
+		深入双边距bug
+		如果加了margin-right:一行元素的最右边一个会产生双边距bug
+		如果加了margin-left:一行元素的最左边一个会产生双边距bug
+	（2）、在IE6、7下，li本身没浮动，但是li内容加了浮动，li下就会产生一个间隙
+		其实在这里最直观的解决办法就是给li加浮动，但是父级加了浮动而不设置宽度的时候父级宽度就会随内容撑开，所以li还要加一个宽度，例如
+ul{ margin:0; padding:0; width:302px;}
+li{ list-style:none;height:30px;border:1px solid #000;float:left;width:300px;}
+a{ width:100px;float:left;height:30px;background:red;}
+span{ width:100px;float:right;height:30px;background:blue;}
+		解决办法：1、给li加浮动，并设置宽度
+			2、给li加vertical-align:top;
+	注：IE6下最小高度问题和li间隙共存的时候要给li加浮动，加宽度，设置overflow:hidden;
+
+	（3）、当一行子元素占有的宽度（是盒模型宽度）之和和父级相差超过3px的时候，或者有一行不满行状态的时候，最后一行子元素的下部margin在IE6下就会失效，但是暂时还没有什么行之有效的解决办法
+	（4）、IE6下文字溢出bug，子元素的宽度和父级的宽度相差小于3px的时候，两个浮动元素中间有注释或者内嵌元素的时候，解决办法就是用一个div把内嵌和注释包起来就可以，或者把父级的元素调大些
+	（5）、当浮动元素和绝对定位元素是并列关系的时候，在IE6下绝对定位的元素会消失
+		解决办法：在定位元素外面包div
+7、position:relative;
+	在IE6、7下子元素有相对定位的时候父元素的overflow就包不住子元素了，例如
+<div class="box">
+	<div class="div"></div>
+</div>
+
+.box{ width:200px; height:200px; border:1px solid #000; overflow:auto;}
+.div{ width:150px; height:300px; background:#00f; position:relative;}
+	解决办法：给父级也加相对定位
+.box{ width:200px; height:200px; border:1px solid #000; overflow:auto; position:relative;}
+.div{ width:150px; height:300px; background:#00f; position:relative;}
+8、在IE6下绝对定位元素的父级宽高是奇数的时候元素的right值和bottom值有1px的偏差，但是也没有什么解决的办法
+9、表格的问题
+10、表单的问题
+	（1）、IE6、7下输入类型的表单控件上下各有1px间隙，而且父级高度也多出2px，例如：
+.box{width:200px;height:32px;border:1px solid #f00;}
+.box input{ width:100px; height:30px; border:1px solid #000; margin:0; padding:0;}
+此时在IE6、7下.box的高度就不是32px了而是34px
+	解决办法：给input加浮动，脱离文档流
+
+	（2）、IE6、7下输入类型的表单控件加border:none无效，例如
+.box{width:200px;height:32px;border:1px solid #f00; background:yellow;}
+.box input{ width:100px; height:30px; border:none; margin:0; padding:0;float:left;}
+	如果写border:0;其实也可以，但是对性能有影响，不详说
+	解决办法：重置input的背景
+.box{width:200px;height:32px;border:1px solid #f00; background:yellow;}
+.box input{ width:100px; height:30px; border:none; margin:0; padding:0;float:left;background:#fff;}
+
+	
+	（3）、IE6、7下输入类型的表单控件输入类型的表单控件加背景的时候，如果在里面输入文字input的背景就会向左滚动，例如
+.box{width:200px;height:32px;border:1px solid #f00; background:yellow;}
+.box input{ width:100px; height:30px; border:none; margin:0; padding:0;background:url(ball.png) no-repeat;}
+有的人通过将background设为background:url(ball.png) no-repeat fixed;可以解决IE6的问题，但是在IE7下背景就会略有错位，所以这样做并不好
+	解决办法：把背景加给父级，再清掉自己的背景，并将父级的大小设置成和子级一样的
+.box{width:100px;height:30px;border:1px solid #f00; background:yellow;background:url(ball.png) no-repeat;}
+.box input{ width:100px; height:30px; border:none; margin:0; padding:0;}
+	（4）、label不加for属性在IE6、7下是没有效果的
+	（5）、select在IE6下没办法设置高度
+11、png问题
+//引用一个外部js文件，但是这个文件又涉及到了vml语言，类似于SVG，在此超出我们的讨论范围，不详说
+.box{ width:400px; height:400px; background:url(img.png);}
+<script src="DD_belatedPNG 0.0.8a.js"></script>
+<script>
+DD_belatedPNG.fix(".box");//这个地方是调用了上面的js，fix方法里面参数是一个css选择器
+</script>
+但是这段脚本在除了IE6的浏览器外会报错，所以我们还要让这段脚本只让IE6解析
+<!--[if IE 6]>
+这段文字在IE6中会显示
+<![endif]-->
+
+
+<!--[if IE 7]>
+这段文字在IE7中会显示
+<![endif]-->
+
+以此类推，要注意大小写、是否有空格都不能错
+
+png的问题也可以用滤镜解决，但是已经几乎不用了，代码太多
+
+12、css hack（不建议使用）
+IE11之后就不支持hack写法了
+background:blue\9;IE9之前的浏览器会解析它
++background、*background IE7包括IE7之前的浏览器解析
+_background IE6包括IE6之前的浏览器解析
+@media screen and (-webkit-min-device-pixel-ratio:0){.box{background:blue;}}chrome解析
+
+13、!important
+!important用来提高解析优先级
+!important>style行间>ID>class>类型>默认
+例如background:red !important;即使行间又设置了背景的时候背景仍为red，但是!important也有兼容性问题，IE6下在!important后面再加一条同样的样式，会破坏掉!important的作用，会按照默认的优先级顺序来，即
+.box{ background:red !important; background:blue;}此时!important会失效
+
+特殊布局问题
+1、圣杯布局（双飞翼布局）
+左右宽度固定，中间宽度伸缩，并且中间先加载
+<div class="center"></div>//因为中间先加载
+<div class="left"></div>
+<div class="right"></div>
+
+.center{ height:600px; background:#f00; margin:0 200px;}
+.left{ width:200px; background:#0f0; height:600px; position:absolute; left:0; top:0;}
+.right{ width:200px; background:#00f; height:600px; position:absolute; right:0; top:0;}
+
+2、等高布局
+<div class="wrap">
+	<div class="left"></div>
+	<div class="right"></div>
+</div>
+body{ margin:0;}
+.wrap{ width:900px;margin:0 auto;overflow:hidden;}
+.left{width:200px;background:red;float:left;padding-bottom:10000px;margin-bottom:-10000px;}
+.right{width:700px;background:blue;float:right;padding-bottom:10000px;margin-bottom:-10000px;}
+
+在IE6下margin设置为负值的时候溢出的部分将被隐藏起来，解决办法就是给父级加position:relative;例如：
+<div class="box">
+	<div class="div1"></div>
+</div>
+
+.box{ float:left;border:1px solid #000; margin:20px;display:inline;}
+.box .div1{width:100px;height:100px;background:red;position:relative; margin-left:-30px;}
+
+css加强
+1、热区
+<img src="bigptr.jpg" usemap="#Map" />
+<map name="Map">
+	<area shape="circle" coords="378,122,45" href="#" >
+</map>
+
+首先shape属性代表热区形状是一个圆，coords中第一个参数代表圆心横坐标，第二个参数代表圆心纵坐标，第三个是半径
+shape是rect的时候，代表矩形 coords="左上角X，左上角Y，右下角X，右下角Y"
+shape是poly的时候，代表多边形 coords="第一个点X，第一个点Y，第二个点X，第二个点Y..."
+
+2、data uri
+优点：减少http请求次数
+缺点：无法被重复利用，会使文件变大
+
+3、iframe框架
+<iframe src="http://www.baidu.com" frameborder="0" scrolling="no"></iframe>
+frameborder设置边框宽度，scrolling设置有没有滚动条
+
+4、flash引入
+<embed src="1.swf" width="400" height="400"></embed>
+为了语义化，建议加上<object>，代表媒体的东西，即
+<object>
+	<embed src="1.swf" width="400" height="400"></embed>
+</object>
+
+flash默认有一个白色的背景，当body的背景不是白色的时候就会与flash背景不相容，可以用一个蒙版盖起来，即
+body{ background:#000;}
+.box{ width:300px; height:300px; background:pink;position:absolute;left:0;top:0;}
+
+<object>
+	<embed src="1.swf" width="400" height="400"></embed>
+</object>
+<div class="box"></div>
+但是这样做在IE下会发现flash在.box的上面，盖不住，那么现在就需要加上param(flash插件)，即
+body{ background:#000;}
+.box{ width:300px; height:300px; background:pink;position:absolute;left:0;top:0;}
+
+<object>
+	<param name="wmode" value="transparent">
+	<embed src="1.swf" width="400" height="400" wmode="transparent"></embed>
+</object>
+<div class="box"></div>
+
+5、引入视频
+在html5中直接用video标签以及一套接口
+
+6、词内断行和省略号
+font:14px/24px Arial;代表字体大小14px，行高24px
+p{width:200px; border:1px solid #000; font:14px/24px Arial;}
+<p>aaaaaaaaaa aaaaaaaaaa aaaaaaaaaaaaaaaaaa 1111111111111111111111111111111111111111111</p>
+此时在页面中就会发现由于每行末尾剩下的的空间不够一个单词的长度了，所以就会折行显示，而单词过长的时候又会溢出显示范围
+
+word-wrap:break-word;超出的会折行显示，别的不管
+word-break:break-all;超出的，不够的自动调整好（用的更多）
+white-space:nowrap
+nowrap:强制文字不换行
+p{width:200px; border:1px solid #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}//text-overflow是css3新加的样式，默认为clip，不显示省略号，设置为ellipsis的时候显示省略号
+
+7、盒模型的怪异模式，怪异解析
+<div class="box">
+	<div class="div"></div>
+</div>
+怪异模式：
+可视宽：设置宽度
+内容宽：设置宽度-padding-border
+IE6-8下如果没有文档声明的时候就会导致盒模型解析的怪异模式，所以要加上
+<!doctype html>
+
+
+如果在标准浏览器下想要进入怪异模式，需要加css3中的一条新的样式：box-sizing：border-box;这样就会进入怪异模式，如果是content-box就是标准模式
+8、隐藏元素常用的方法
+display:none;原始文档位置不保留
+visibility:hidden;保留原始文档位置
+
+9、css兼容fixed
+<div class="box">
+	<div class="div"></div>
+</div>
+
+.box{height:2000px;}
+.div{ width:100px; height:100px; background:red;position:fixed;left:100px;top:100px;}
+这样就实现了固定定位，但是IE6不兼容
+
+方法一
+html{height:100%;overflow:hidden;}
+body{margin:0;height:100%;overflow:auto;}
+.box{height:2000px;}
+.div{ width:100px; height:100px; background:red;position:absolute;left:100px;top:100px;}
+这种方法只适合面试，工作中不适用
+
+方法二 hack写法
+.box{height:2000px;}
+.div{ width:100px; height:100px; background:red;position:fixed;left:100px;top:100px;_position:absolute;_top:expression(eval(document.documentElement.scrollTop+100))}
+这种方法很吃资源，极大的占用内存和CPU，所以不推荐使用，而且对后期维护也不太好，最好还是通过js来解决
+
+
+未知宽高的img如何在容器里水平垂直
+
+方法一：
+<div class="box">
+	<img src="bigpic.jpg"/><span></span>
+</div>
+
+.box{ width:800px; height:600px; border:2px solid #000; text-align:center;}
+.box span{ display:inline-block; height:100%; vertical-align:middle;}
+.box img{vertical-align:middle;}
+
+
+方法二：
+<div class="box">
+	<span><img src="bigpic.jpg"/></span>
+</div>
+
+.box{ width:800px; height:600px; border:2px solid #000;display:table;}
+span{ display:table-cell; text-align:center; vertical-align:middle;}//span是模拟了一个单元格
+
+但是这种方法IE6、7下有问题，因为IE6、7不支持table-cell和table，那么兼容IE6、7要这样写
+.box{ width:800px; height:600px; border:2px solid#000;display:table;position:relative;overflow:hidden;}
+span{ display:table-cell; text-align:center; vertical-align:middle;*position:relative;vertical-align:top;left:-50%;top:-50%;}
+
+
+列表的文字溢出
+
+整站规划
+1、样式表划分
+/* reset */
+
+/* end reset */
+
+/* public */
+
+/* end public */
+
+/* index */
+
+/* end index */
+
+/* product */
+
+/* end product */
+
+2、写包含样式的时候能够找到并且不影响其他元素就可以，没有必要从外到里都写一遍
+
+3、样式重置
+用到哪个加哪个
+从淘宝上复制一套过来，最好删减一下
+
+4、如果最外层包个很大的div，即
+<div class="container">
+	<div class="header"></div>
+	<ul class="nav"></ul>
+	...
+</div>
+由于浏览器是读完一个闭合标签显示一个，所以这样写就会导致加载的时候开始一篇空白然后突然出现所有的内容，客户体验上不好，而且也不利于后期扩展，最好是这样分：
+
+
+以腾讯企业QQ页面为例
+<!--[if IE 6]>
+<script src="js/DD_belatedPNG_0.0.8a.js"></script>
+<script>
+DD_belatedPNG.fix("#nav a:hover,#nav .active");
+</script>
+<![endif]-->
+<div id="header">//这里我们不设置#header的width，那么#header的宽就跟着屏幕走，height设置为背景图的高度
+	<div class="header wrap"></div>//#header里面的内容是960px居中的，就加上wrap类
+</div>
+<ul id="nav" class="wrap">
+	<li class="active">
+		<a href="#">首&nbsp;页</a>
+	</li>
+	<li>
+		<a href="#">产品介绍</a>
+	</li>
+	<li>
+		<a href="#">企业空间</a>
+	</li>
+	<li>
+		<a href="#">成功案例</a>
+	</li>
+	<li>
+		<a href="#">如何购买</a>
+	</li>
+	<li>
+		<a href="#">软件下载</a>
+	</li>
+	<li>
+		<a href="#">产品帮助</a>
+	</li>
+</ul>
+<div id="picTab" class="wrap"></div>//如果后期发现.picTab是跟着屏幕走的，那么我就可以把.wrap这个类名去掉，然后改为
+<div id="picTab">
+	<div class="picTabC wrap"></div>//里面的内容该960px居中还居中，不受影响
+</div>
+<div id="whyQQ" class="wrap"></div>
+<div id="main" class="wrap"></div>
+<div id="footer" class="wrap"></div>
+...
+
+body{ background:url(../img/bg.gif) repeat-x #aaaaaa;}//颜色值写在后面而url写在前面代表如果前面的背景显示完了后面的颜色会跟着显示
+.wrap{ width:960px; margin:0 auto;}
+#header{ background:url(../img/head_bg.jpg) no-repeat center 0; min-width:960px;}//IE6下元素内容会把父元素撑开，所以子元素就会把父元素撑开，所以本身就没有问题
+.header{height:94px;}
+#nav{height:43px; background:url() no-repeat;}
+#nav li{float:left; width:118px; padding-right:8px; position:relative;}
+#nav a{display:block; padding-top:1px; height:42px; line-height:42px; font-size:16px; text-align:center; color:#ffffff; background:url() no-repeat center 50px;}
+#nav a:hover,#nav .active{background-position:center 0;}//鼠标移动的快的时候三角背景会闪，而且三角背景从左上角掉下来，解决办法就是给父级li加position:relative;，其次，引用该png文件的时候最好不要处理鼠标移入之后的，否则会有问题，所以#nav a:hover,#nav .active里面的 background:url() no-repeat center 0;应该加在#nav a里面，而js文件中只处理鼠标移入之前的，即DD_belatedPNG.fix("#nav a");这时，刷新页面会发现三角背景都出来了，这时，我们需要改变background-position:center 50px;的值来隐藏该背景，而鼠标hover的时候再将其置为正常
+
+5、ico图标在线制作就可以
+
+
+
+
+
+

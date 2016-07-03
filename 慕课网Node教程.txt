@@ -14,5 +14,35 @@ jade -P -w --obj '{"course":"jade"}'
 jade index.jade -P -w -O imooc.json
 
 
+======================================
+Scott Node
+var http=require("http");
+var cheerio=require("cheerio");
+var url="http://www.imooc.com/learn/348";
 
+function filterChapters(html){
+	var $=cheerio.load(html);
+	var chapters=$(".learnchapter");
+	var courseData=[];
+	chapters.each(function(item){
+		var chapter=$(this);
+		var chapterTitle=chapter.find("strong").text();
+		courseData.push({
+			chapterTitle:chapterTitle
+		});
+	});
+}
+http.get(url,function(res){
+	var html="";
+	res.on("data",function(res){
+		html+=data;
+	});
+	res.on("end",function(){
+		//console.log(html);
+		var res = filterChapters(html);
+		console.log(res);
+	});
+}).on("error",function(){
+	console.log("error");
+});
 

@@ -1,0 +1,582 @@
+ps基础知识
+gif支持透明，不支持半透明
+png8和gif特性一样
+png24支持透明，支持半透明
+
+JPG：网页中的大图，高清图（体积大）
+gif：网页中的小图标
+png8：也可以存gif
+png24：只要有透明，或者半透明，必须存成png24
+gif：只要有动画，必须存成gif
+
+矩形选框 + ctrl+T 再放大可以实现快速复制
+
+ctrl+alt+shift+e 新建一个图层，并将当前所有的图层都复制到该层中，这叫盖印可见图层
+
+ps中文字右方和下方会有1px的默认间隙
+
+ctrl+alt+shift+s 存为web格式
+
+
+2014年1月2日20:02:22
+1-4总结
+------------------------------------------------------------------------
+
+1、<meta charset="utf-8"></meta>写这条语句的时候注意，一定要保证此处的编码格式与ctrl+s保存的时候文档的格式相一致，否则网页中会出现乱码！
+
+
+2、background:url(bg.png) #F1F1F1 left top fixed这个里面在写的时候顺序无所谓先后，而且最好写成复合形式，因为css是编译型语言，边解释边执行，写的短，执行的自然就快！
+关于background-position:
+center center表示水平方向和垂直方向共同居中
+10px 20px表示背景在水平方向上向右偏移10px，在垂直方向上向下偏移20px
+
+
+3、关于border的子属性，属性dotted在设置的值比较大的时候在不同的浏览器中是有兼容问题的，例如，在ie中显示小圆点，而在chrome中显示小方块，而且在工作当中dotted的这个属性设计（美工）那边经常用的（质感较为细腻，效果比较好）但是IE6不兼容，而且目前没有有效解决办法！
+属性dashed在IE和chrome里面虚线之间间距显示的不一样
+
+2014年1月3日12:51:56
+6总结
+------------------------------------------------------------------------
+
+4、通常不会同时给上下相邻的两个盒子加margin-bottom和margin-top，因为会产生塌陷，例如：
+#div1{width:100px; height:100px; margin-bottom:30px;}
+#div2{width:100px; height:100px; margin-top:30px;}
+最终div1和div2的显示结果并不是两个块的上下距离变成60px；而是30px；这就是所谓的块状元素的塌陷问题！
+
+
+5、在父子级div相互套叠，给子div加margin-top时外边距会出bug，即子div会将margin-top的值传递给父级，得到不想要的结果
+注意：除了上述问题外，外边距的问题还有很多，所以除了margin:0 auto之外，应该尽量减少外边距的使用，而应该改用padding-top
+
+6、font-size的最小值为12px，而且font-size的值都是偶数，奇数是会出问题的
+
+
+7、深入理解line-height的值，line-height是给文字加的属性，其本质就是办公软件中的那个行高，例如：
+
+#div1{font-size:18px; line-height:30px; width:100px; height:100px;}
+
+在此，行高为30，其实就相当于文字有一个上下的间距，这个间距的值为（30-18）/2=6px；而我们常用的是line-height:100px;其实是当文字较少的时候让它在div中垂直方向居中的一个方法，如果进一步想让文字水平居中可以加text-align:center；即可实现；
+
+
+8、
+text-indent:32px;	代表首行缩进32px；
+text-indent:2em;	代表首行缩进2个汉字的大小；
+首行缩进的值也可以是负数
+
+
+9、
+font-style:italic;用户体验会很差；
+
+10、letter-spacing字符间距，可以在写js的时候用到
+
+
+2014年1月3日19:41:31
+第二课1总结
+
+11、<a href="#" target="_blank"></a>会新打开一个页面完成跳转
+<a href="#"></a>直接在本窗口中打开，效果同<a href="#" target="_self"></a>	
+
+
+12、在头部定义<base target="_blank"></base>之后就不用再每一个<a></a>中再写了，这是代码优化中的一部分重要内容，如果想在某一个标签不用新打开一个页面，就可以在对应链接里面单独去重写
+
+13、如果a标签的href属性是诸如zip、rar、ppt等等的文件类型，点击a标签的时候会将对应的这个文件下载下来
+
+
+14、如果a标签的href属性是其他元素的id值，就相当于锚点的作用
+
+
+15、<strong></strong>里面的内容，页面显示为粗体，但是该标签的作用重在SEO，所以该标签更重要的意思是强调，而且强调程度要比<em></em>要高，<em></em>里面的内容页面显示为斜体，但是也是强调的意思，强调程度比<strong></strong>要低；
+
+
+16、当页面中一段文字与别的文字样式不一样的时候，可以用span标签单独包起来
+
+
+17、
+有序列表
+<ol>order list
+	<li></li>	list
+	<li></li>
+	<li></li>
+	<li></li>
+</ol>
+无序列表
+<ul>unordered list
+	<li></li>	list
+	<li></li>
+	<li></li>
+	<li></li>
+</ul>
+定义列表
+<dl>defined list
+	<dt>	defined list title
+		<dd><dd/>
+		<dd><dd/>
+		<dd><dd/>
+		<dd><dd/>
+	</dt>
+</dl>
+
+
+18、在工作中，SEO隶属于SEM部门，但是与前端工作者有一定关系
+
+
+19、
+ol li{background:blue;}
+li{background:green;}
+ol中所有的li最终会显示成蓝色，因为同为标签选择符，谁的深度大谁就会重写前面所有与之重叠的属性；
+
+
+20、a标签伪类先后顺序：
+a:link
+a:visited
+a:hover
+a:active
+以保证它可以持续触发；
+
+
+21、IE6不支持除了a标签伪类之外的所有伪类
+
+
+2014年1月4日12:56:21
+第三课记录1
+------------------------------------------------------------------------
+
+22、标签重置（注意：面试官通常会问css reset是什么，其实是一种更加专业的说法而已）
+body,p,h1,h2,h3,h4,h5,h6,dl,dd{margin:0; font-size:12px;}
+ul,ol{margin:0; padding:0; list-style:none;}
+a{text-decoration:none;}
+img{border:none;}
+
+
+23、内嵌，行内，或者内联属性元素不支持上下的内边距和外边距；
+
+
+24、行内样式在代码中会识别换行等字符，例如
+<span>妙味课堂<span/>
+<span>妙味课堂<span/>
+<span>妙味课堂<span/>
+
+和
+
+<span>妙味课堂<span/><span>妙味课堂<span/><span>妙味课堂<span/>
+
+最终的显示效果是不一样的，前者在两个“妙味课堂”之间有空格，空格的宽度是样式表头清默认样式中font-size的一半，而后者没有
+
+25、	inline-block属性是在一行内显示的块；
+	设置了inline-block属性的元素如果没有加宽度，会根据内容的大小自动撑开
+	IE6,7不兼容块属性的inline-block；
+	块元素设置了inline-block之后可以并排显示
+	行内元素设置了inline-block之后可以识别宽width和高height
+	设置了inline-block的元素并排显示的时候中间会有间距这个间距是font-size的一半
+
+
+26、注意：<!--   注释的两边的空格一定要有！！！！  -->
+	/*   注释的两边的空格一定要有！！！！   */
+
+
+27、注意，以下写法错误：
+<ul>
+	<li></li>
+	<li></li>
+	<li></li>
+	<div></div><!--  在js中这个地方的div是获取不到的，因为诸如ul ol dl这些节点都有对应的子节点，在js获取子节点的时候浏览器只认它们对应的子节点，而不会认div，所以div在此根本获取不到    -->
+</ul>
+
+28、p、dt、h标签里面不可以包含块！！
+如果写成这种形式：
+<p>
+	<div></div>
+</p>
+
+审查元素当中会出现
+
+<p>
+	</p>
+<div></div>
+<p></p>
+
+即div会把p拆成两截；
+
+
+29、a不能嵌套a；
+
+
+30、尽量不要用内联嵌套块，该规则仅存在与w3c标准当中，实际上嵌套了，对于html，css，js没有影响
+
+
+2014年1月4日19:29:31
+------------------------------------------------------------------
+
+31、浮动
+	使块元素在同一行显示
+	使内嵌元素支持宽高，注：不用加display:block;
+	不设置宽度的时候宽度由内容撑开
+	IE6、7支持浮动
+	脱离文档流，按照指定的方向移动直到另外一个浮动元素停止
+	提升层级半层
+	____________
+	|
+
+32、clear控制元素的某个方向上不能有浮动元素
+
+33、清除浮动的方法
+<div class="box">
+	<div class="div"></div>
+</div>	
+
+.box{width:300px; margin:0 auto; border:10px solid #000;}
+.div{width:200px; height:200px; background:red; float:left;}
+
+上述代码中，.box明显包不住.div所以box的高度就成了0，清浮动的目的就是让box高度自适应
+
+解决方法：
+	（1）、给父级.box也加一个左浮动，但是不是完全之策，因为如果嵌套div很多的话，就要给每一个父级都加浮动，而且margin:0 auto;也不起作用了；
+	（2）、给父级.box加display:inline-block;但是问题几乎和第一种方法一样
+	（3）、给父级.box再加一个子div，并且设置clear:both;属性,不对它设置宽度和高度，这样就可以使其撑开自适应了，但是这种方法在IE6下不兼容
+即：
+
+<div class="box">
+	<div class="div"></div>
+	<div class="clear"></div>
+</div>	
+
+.box{width:300px; margin:0 auto; border:10px solid #000;}
+.div{width:200px; height:200px; background:red; float:left;}
+.clear{clear:both;}
+		
+
+		a、IE6下最小高度问题（兼容性问题）
+			在IE6中，任何小于19px的高度都被当做19px；
+			解决办法：1、加font-size:0;但是也解决不了所有问题，因为font-size:0;只能处理大于2px的高度，但是比2px高度高的就不可以了，具体解决办法留待以后讨论	
+	（4）、给父级.box加一个子元素<br clear="all"/>，注：br标签的clear和别的元素的clear功能是一样的，而且br标签本身没有高度，所以不存在上述19px和2px的问题；但是这种方法不符合w3c标准关于结构、表现、行为三者分离的要求，即clear属性不该写到html（即结构）里面
+	（5）通过伪类:after加
+		注意：所有的伪类不会改变html的结构
+		<p>妙味课堂</p>
+		
+		p{width:200px; border:1px solid #000;}
+		p:after{content:"!!!!"; background:red;}
+		这样做，最终的效果就是后面加的几个感叹号会有红色背景
+	也就是：
+<div class="box clear">
+	<div class="div"></div>
+</div>	
+
+.box{width:300px; margin:0 auto; border:10px solid #000;}
+.div{width:200px; height:200px; background:red; float:left;}
+.clear:after{content:""; display:block; clear:both;}	    
+
+	但是，这种方法在IE6、7下，有问题，因为IE6、7不支持除了a标签之外的所有伪类，但是当我们把上述程序拿到IE6、7下运行的时候会发现没有刚才所说的问题，即显示正常，这是为什么呢？当我们把.clear:after删掉之后，也就是
+
+
+<div class="box">
+	<div class="div"></div>
+</div>	
+
+.box{width:300px; margin:0 auto; border:10px solid #000;}
+.div{width:200px; height:200px; background:red; float:left;}
+
+
+会发现在IE6、7下仍然能够正常显示，这是因为加了浮动的.div的父级.box有宽度，如果父级加了height、width、zoom（除了normal之外的值）等属性，就会触发IE6、7中haslayout解析引擎，这个引擎将使元素的高度自适应，所以上面这段代码看起来正常显示了，但是当把.box的宽度去掉之后就不会正常显示了，因为去掉了宽度就失去了触发haslayout引擎的工具。而在我们的工作中，经常会让宽高自适应，所以很多情况是不会触发这个引擎的，这个时候，就要专门给IE6、7这两个浏览器加上一句.clear{zoom:1;}因为zoom的值只要不是normal就可以触发haslayout引擎，那么zoom的作用是什么呢？当我们把zoom的值改为2的时候就会发现，元素宽高变为原来2倍，同理，zoom值为0.5的时候元素宽高缩小为原来的一半，这就是zoom的作用，但是zoom又在火狐下不兼容，所以要加两个.clear，这也是现在公司里经常用到的一种方法，最终代码如下：
+
+<div class="box clear">
+	<div class="div"></div>
+</div>	
+
+.box{width:300px; margin:0 auto; border:10px solid #000;}
+.div{width:200px; height:200px; background:red; float:left;}
+.clear{zoom:1;}/*  为了兼容IE6、7  */
+.clear:after{content:""; display:block; clear:both;}/* 为了兼容非IE6、7  */
+
+	
+	（6）、给父级.box加属性overflow:hidden;但是在IE6下不兼容；所以还是要配合zoom:1来使用，这种方法也不建议使用
+
+
+综上所述，清浮动最好的方法是第五种方法
+
+
+34、IE6下双边距的bug
+
+bug出现条件：
+	（1）、在IE6下
+	（2）、加了浮动
+	（3）、有水平方向的margin值
+
+解决办法：display:inline;
+
+问：display:inline;证明该元素是行内样式，既然是行内样式宽和高就不起作用，但是这里的宽和高明显起作用，这是为什么呢？
+答：因为解决该bug的时候一定会给元素加浮动，既然加了浮动，那么就一定是块元素，这样去理解该问题就会迎刃而解
+
+35、强烈建议：在一行显示的元素如果用了浮动，那整行都要用浮动，否则在IE6、7下在加了浮动的块元素和文字之间有空隙，而且如果这种情况发生在li中那么IE6、7下会折行显示
+
+36、IE6、7下li之间间距的问题
+
+在IE6、7下，如果li本身没有浮动，但是li内的元素加了浮动，那么li之间就会多出几px的间距（注意在这里要ul下的li下的子元素必须都要加浮动，否则会出现35这样的问题）
+解决办法：
+	（1）、给li加浮动，但是问题会很多
+	（2）、给li加vertical-align值可以是任意
+37、彻底解决IE6下19px的问题
+给较小高度元素加overflow:hidden;
+
+38、关于vertical-align，用的时候要注意：
+	加vertical-align的是inline-block属性的元素，如果有多个元素同时运用vertical-align属性的时候，最好是一样的属性值，不是一样的属性值的时候暂时本人没有发现问题
+例如：
+<div class="box">
+	<span class="span1"></span>
+	<span class="span2"></span>
+</div>
+
+.box{height:200px;border:2px solid #000; text-align:center;}
+.span1{ width:100px;height:200px;background:Red; display:inline-block; vertical-align:middle;}
+.span2{ width:200px;height:100px;background:blue; display:inline-block; vertical-align:middle;}
+
+39、图片下的空隙问题
+
+下面这段代码：
+<div class="box">
+	<img src="img/pic.jpg" /><img src="img/pic.jpg" /><img src="img/pic.jpg" />
+</div>
+
+.box{border:10px solid #000;background:Red;}
+
+在图片的下方会有一个小高度
+
+解决办法：
+加img{ vertical-align:top;}即
+
+<div class="box">
+	<img src="img/pic.jpg" /><img src="img/pic.jpg" /><img src="img/pic.jpg" />
+</div>
+
+.box{border:10px solid #000;background:Red;}
+img{ vertical-align:top;}
+
+
+40、注意：对于img标签，在高版本的浏览器下鼠标移入图片的时候会显示title属性的内容，而在低版本的浏览器中鼠标移入图片的时候会显示alt属性的内容，alt属性的内容在图片加载不进来的时候会显示
+
+41、相对定位position:relative;不会改变元素本身的性质，也就是说元素该是块还是块，该是内联还是内联，原来该在哪还在哪儿
+
+
+42、绝对定位position:absolute;使内联元素支持宽高、使元素脱离文档流、使块属性元素撑开宽度
+
+
+43、定位元素默认后者层级高于前者
+
+
+44、如下代码：
+.box1{width:100px; height:100px; background:#f00; position:absolute;}
+.box2{width:100px; height:100px; background:#0f0; position:absolute;}
+.box3{width:100px; height:100px; background:#00f;}
+
+<div class="box1"></div>
+<div class="box2"></div>
+<div class="box3"></div>
+
+
+由于定位元素层级默认后者高于前者，所以页面中是没有办法显示出box1的，如果想显示，那么只需将z-index的值设置为1足够，我们可以理解为.box1 .box2 .box3的z-index分别为0.1 0.2 0.3而实际并非如此
+
+
+
+45、如果加了定位的元素的父级没有加定位，那么该元素将相对于HTML定位，注意：不是相对于body定位
+
+
+46、注意：在如下代码中
+.parent a{ position:absolute; width:100px; height:100px;}那么a标签就会按照块元素显示方式进行显示，因为绝对定位本身就会使元素支持宽和高，所以就不用加display:block;了
+
+
+47、如下代码中
+
+.parent{ border:2px solid red; padding:10px; width:300px; height:300px; margin:90px auto; position:relative;}
+.parent a{width:100px; height:100px; line-height:100px; text-align:center; background:red; position:absolute;color:#fff; font-weight:bold; text-decoration:none;}
+
+.link1{top:10px;left:10px;}
+.link2{top:10px;right:10px;}
+.link3{top:110px;right:110px; background:blue;color:yellow;}
+.link4{left:10px;bottom:10px;}
+.link5{right:10px;bottom:10px;}
+
+预览之后会发现.link3并没有按照背景蓝色，字体颜色黄色显示，这是因为在
+
+.parent a{...}
+
+这一行当中，其层级（标签选择符）要比.link3（class类选择符）要高，所以虽然.link3写在了后面，但是仍然不会覆盖前面的
+
+.parent a{...}
+
+后面覆盖前面只适用于同种类型的选择符
+
+
+
+.parent{ border:2px solid red; padding:10px; width:300px; height:300px; margin:90px auto; position:relative;}
+.parent a{width:100px; height:100px; line-height:100px; text-align:center; background:red; position:absolute;color:#fff; font-weight:bold; text-decoration:none;}
+
+.link1{top:10px;left:10px;}
+.link2{top:10px;right:10px;}
+a.link3{top:110px;right:110px; background:blue;color:yellow;}
+.link4{left:10px;bottom:10px;}
+.link5{right:10px;bottom:10px;}
+
+
+48、做类似于优酷的那种点击登陆出现弹窗效果的时候，需要加一个div，相对于整个文档定位，即
+
+.floats{ position:absolute; top:0; left:0; width:100%; height:100%; background:#000; filter:alpha(opacity:50); opacity:0.5;}
+
+注意此处的宽和高设置成100%而不是一个具体的数值，这样才可以使它不随浏览器大小改变而改变，但是这种写法IE6不兼容，因为HTML body本身是没有宽度的，所以要想在IE6下显示正常，就必须加上
+
+body,html{ height:100%;}
+
+此外还需要注意：IEtester对于滤镜不支持；
+
+做弹窗的时候，如果这样写代码：
+
+.alert{ width:400px; height:200px; border:2px solid #ccc; background:#fff; position:absolute; top:50%; left:50%;}
+
+那么.alert这个块的左边和上边距离可视区左边和上边值就是可视区的一半，而这并不是我们想要的，所以要加上margin-left:-202px; margin-top:-102px;（注意不是200px和100px，因为要计算盒模型的尺寸）即：
+
+.alert{ width:400px; height:200px; border:2px solid #ccc; background:#fff; position:absolute; top:50%; left:50%; margin-left:-202px; margin-top:-102px;}
+
+
+49、如下代码：
+
+<style type="text/css">
+body{ height:2000px;}
+.div1{ width:100px; height:100px; background:red; position:absolute; right:0; bottom:0;}
+</style>
+</head>
+
+<body>
+<div class="div1"></div>
+</body>
+
+当不给body加height的时候，一定是在右下角，加上height之后，当鼠标滚动的时候会发现红色div块会随鼠标滚动而向上滚动，也就是说可以理解为在鼠标不滚动的时候看来是右下角
+
+
+50、关于固定定位fixed，与absolute几乎一样，唯一不一样的地方就是不随鼠标滚动而滚动，而且与父级是否加absolute和relative没有关系
+
+51、position:fixed; 将会取消加在元素上的position:absolute; position:relative;
+
+52、position:inherit;在实际工作当中几乎不用
+
+53、IE6认为父级一定可以包住子级，所以当子级的高度大于父级的高度的时候，父级的高度自动撑高
+
+54、IE6下父级的overflow:hidden;是包不住子级的相对定位的，要解决这个问题，必须也要使父级变成定位元素（不管是相对定位relative还是绝对定位absolute）
+
+55、IE6下定位元素的宽高都是奇数的时候，IE6下定位元素的right和bottom会有1px的偏差，该问题没有什么解决的办法，就是尽量将值设置为偶数就可以了
+
+56、清除浮动的第7种方法，给父级加position:absolute;例如：
+
+#div1{ border:1px solid red; position:absolute;}
+#div2{ width:300px; height:300px; background:#f00; float:left;}
+
+<div id="div1">
+	<div id="div2"></div>
+</div>
+
+这样也可以做到清除浮动
+
+57、清除浮动的第8种方法，给父级加position:fixed;例如：
+
+#div1{ border:1px solid red; position:fixed;}
+#div2{ width:300px; height:300px; background:#f00; float:left;}
+
+<div id="div1">
+	<div id="div2"></div>
+</div>
+
+这样也可以做到清除浮动
+
+58、表格注意事项：
+
+（1）、不要给table、th、td之外的元素加样式，如果给thead、tr、tbody、tfoot加的话是有兼容问题的
+（2）、表格的清零：
+	th,td{ padding:0;}
+	table{ border-collapse:collapse;}/*  边框间距     */
+
+	一般来说表格都有边框，所以加上
+	th,td{ border:1px solid #000;}
+
+（3）、table标签的基本特性就是display:table，不是block，不是inline，不是inline-block，也就是说display的值有table这一项
+（4）、给table加width和height属性的时候单元格默认平分table宽度和高度，th里面的文字默认加粗，并且左右上下居中显示，td里面的内容默认上下居中，左右居左显示
+（5）、table决定了整个表格的宽度，即使在给th、td设置了宽度之后，在审查元素当中也的确显示设置的值，但是实际显示仍然以平分table宽为准
+（6）、表格里面的每一列必须都有宽度，否则在某一单元格内文字增多的时候会将单元格撑宽，会导致整个表格显示混乱
+（7）、同一竖列继承最大宽度
+（7）、同一横行继承最大高度
+
+
+59、表格单元格的合并
+<td colspan="2"></td>代表横向合并两个单元格（即合并同一行中的两个单元格），注意合并的时候一定要去掉被合并的单元格
+<td rowspan="3"></td>代表纵向合并两个单元格（即合并同一列中的两个单元格），注意合并的时候一定要去掉被合并的单元格
+
+
+60、
+<input type="submit" value="OK" name="">此处name在我们前端领域内是没有什么用途的，但是把它写上并置为空是为了更好的和后台交流
+
+61、用单选按钮的时候
+<input type="radio" name="gender" /> :man
+<input type="radio" name="gender" /> :woman
+
+一定要将name的值设置成一样的
+
+62、
+
+<input type="radio" name="gender" id="a" /> <label for="a">man</label>
+<input type="radio" name="gender" id="b" /> <label for="b">woman</label>
+这样做就可以做到点击man和woman也可以选到单选按钮，如果不考虑低版本的浏览器，可以写成
+<label>
+	<input type="radio" name="gender" />man
+</label>
+<label>
+	<input type="radio" name="gender" />woman
+</label>
+
+63、
+<select>
+	<option>1999</option>
+	<option>1998</option>
+	<option>1997</option>
+	<option selected>1996</option>
+	<option>1995</option>
+	<option>1994</option>
+</select>
+
+
+页面显示的时候有selected的那个option就会被选中
+
+
+64、清零补充
+form{ margin:0;}
+input{ margin:0; padding:0;} input不能加宽和高，否则有兼容问题
+select{ margin:0;}
+textarea{ margin:0; padding:0;}
+
+select不能加高，可以加高
+
+textarea{ resize:none;}解决了文本域可以自由拖动的问题
+textarea{ outline:none;}解决了文本域的焦点线兼容问题
+textarea{ overflow:hidden;}解决了所输入文字超出文本域范围的时候自动放大
+
+65、解决IE6下input背景滚动问题
+可以在input外面套一个div
+<div class="box">
+	<input type="text" class="text"></input>
+</div>
+
+.text{ width:300px; height:40px; border:1px solid blue; background:url(sun.jpg) 0 center no-repeat #ffc;}
+
+将.box的样式设置为何.text一模一样的，即
+.box{ width:300px; height:40px; border:1px solid blue; background:url(sun.jpg) 0 center no-repeat #ffc;}
+
+再加上
+.box input{ width:300px; height:40px; border:none; background:none;}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,3 +1,7 @@
+ÑÏ¸ñÄ£Ê½ÏÂµÄJavaScript£º
+Èç¹û²»Í¨¹ıvar¶¨Òå±äÁ¿£ºa=10;»á±¨´í
+var a=010;»á±¨´í£¬²»ÔÊĞíĞ´°Ë½øÖÆÊı
+
 undefinedÊÇwindow¶ÔÏóµÄÊôĞÔ£¬²¢²»ÊÇ±£Áô×Ö»òÕß¹Ø¼ü×Ö£¬ËùÒÔundefined±¾Éí¿ÉÒÔ×÷Îª±äÁ¿Ãû£¬ÀıÈç
 var undefined=10;
 alert(undefined);//ÔÚIE6-8ÏÂµ¯³öµÄÊÇ10£¬ËùÒÔÔÚÄ³Ğ©ä¯ÀÀÆ÷ÀïÃæundefinedÊÇ¿ÉÒÔ±»ĞŞ¸ÄµÄ£¬ËùÒÔjQueryÔ´ÂëÔÚ×îÍâ²ãµÄÄäÃûº¯ÊıÀïÃæ´«ÈëÁËundefined×÷Îª²ÎÊı
@@ -7,7 +11,7 @@ alert(undefined);//ÔÚIE6-8ÏÂµ¯³öµÄÊÇ10£¬ËùÒÔÔÚÄ³Ğ©ä¯ÀÀÆ÷ÀïÃæundefinedÊÇ¿ÉÒÔ±»ĞŞ¸
 
 ==========Ô´ÂëµÚÒ»²¿·Ö===========
 Ò»Ğ©È«¾Ö±äÁ¿µÄ¶¨Òå
-var rootjQuery=jQuery(document);
+var rootjQuery; ½«À´»á±»¸³ÖµÎªjQuery(document); ½«Æä¸³Öµ¸ø±äÁ¿µÄµÄÔ­ÒòÒ»·½ÃæÊÇÎªÁËÑ¹Ëõ£¬ÁíÒ»·½ÃærootjQueryµÄ¿É¶ÁĞÔ½Ï¸ß
 var readyList;//ÓëDOM¼ÓÔØÓĞ¹Ø
 var core_strundefined=typeof undefined;//´æ´¢×Ö·û´®ĞÎÊ½µÄundefined£¬ÓÃÀ´ĞŞÕıÒÔÏÂÎÊÌâ
 	ÅĞ¶ÏÒ»¸öÊôĞÔ»òÕß±äÁ¿ÊÇ²»ÊÇundefined£¬ÓĞÁ½ÖÖ·½·¨
@@ -47,6 +51,7 @@ var rmsPrefix = /^-ms-/;//Æ¥ÅäIEÇ°×º
 //-webkit-transform-origin-->webkitTransformOrigin ÆäËûä¯ÀÀÆ÷Ê××ÖÄ¸¶¼ÊÇĞ¡Ğ´
 //-ms-transform-origin-->MsTransformOrigin IEä¯ÀÀÆ÷Ê××ÖÄ¸Òª´óĞ´
 var rdashAlpha = /-([\da-z])/gi;//ÔÚ×ª2d 3dµÈCSS3µÄ±ä»»ÄÇÒ»¿éÓĞÓÃµ½
+½«-2d×ª³É2d£¬¼´½«ºáÏßÈ¥µô
 
 //×ªÍÕ·åµÄ»Øµ÷º¯Êı
 var fcamelCase = function( all, letter ) {
@@ -79,16 +84,27 @@ init:function(){
 	}
 	if(typeof selector==="string"){
 		//Çé¿öÓÖºÜ¶à
-		//$("#div1") $(".box") $("div") $("<li>")
+		//$("#div1") $(".box") $("div") $("#div1 div.box")
+		//$("<li>") $("<li><a href='javascript:;'></a></li>")		
 	}else if(selector.nodeType){
+		//$(document)
 		//$(document.getElementById("div1")) ¼´´¦ÀíDOMÔªËØ
 	}else if(jQuery.isFunction(selector)){
-		
+		//$(function(){})
 	}
 	if ( selector.selector !== undefined ) {
 		//´¦Àí´«ÈëµÄÊÇjQuery¶ÔÏóµÄÇé¿ö
+		//$($("div"))
 	}
 	return jQuery.makeArray( selector, this );
+}
+
+jquery¶ÔÏó£º
+{
+	0:"li",
+	1:"li",
+	2:"li",
+	length:3
 }
 
 //selectorÊÇ×Ö·û´®µÄÊ±ºòµ¥¶À·ÖÎö
@@ -99,6 +115,8 @@ if(typeof selector==="string"){
 	}
 	else
 	{
+		//rquickExpr=/^(?:\s*(<[\w\W]+>)[^>]*|#([\W-]*))$/g;
+		match = rquickExpr.exec(selector);
 		//´¦ÀíÀàËÆ$("#div1") $(".box") $("div") $("#div1 li.box") $("<li>aaa")(¼ÓÉÏÕâÖÖÊÇÎªÁËËµÃ÷Èç¹û¿ªÍ·ÊÇ<¶ø½áÎ²²»ÊÇ>µÄÒ²·ûºÏelseÀïÃæµÄÇé¿ö)
 		match = rquickExpr.exec( selector );
 		//matchÎªnullÊ± $(".box") $("div") $("#div1 li.box")

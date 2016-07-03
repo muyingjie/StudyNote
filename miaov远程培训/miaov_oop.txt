@@ -1,0 +1,413 @@
+oop的特点
+抽象：抓住核心问题
+封装：只能通过对象来访问方法
+继承：
+多态：
+
+工厂方式的对象创建方法与系统对象的创建方法不一样的地方
+
+——没有new
+
+	注：当new去调用一个函数的时候，这个时候函数中的this就是创建出来的对象，而且函数中的返回值直接就是this了，这种叫做隐式返回（即不写return自动返回），而正常的函数如果不写return默认返回undefined
+	new后面的函数就是构造函数
+
+
+var a=[1,2,3];
+var b=[1,2,3];
+alert(a==b);//false因为存的是地址，虽然存的是两个一样的数组，但是这两个数组在内存中不同的地方存储着
+
+var a=[1,2,3];
+var b=a;
+alert(a==b);//true
+
+
+var a=[1,2,3];
+var b=a;
+b=[1,2,3,4];//写这句话的时候b当中将不再存储数组[1,2,3]的地址，而存储重新生成的[1,2,3,4]的地址，重新赋一个对象的时候a和b之间的引用关系就会被打断
+alert(a);
+
+
+原型：去改写对象下面公用的方法和属性，使公用的属性和方法在内存中只存一份，从而提高性能
+
+面向对象选项卡
+
+<div id="div1">
+	<input class="active" type="button" value="1"/>
+	<input type="button" value="1"/>
+	<input type="button" value="1"/>
+	<div style="display:block">111</div>
+	<div>222</div>
+	<div>333</div>
+	
+</div>
+
+window.onload=function(){
+	var oPar=document.getElementById("div1");
+	var aInput=oPar.getElementsByTagName("input");
+	var aDiv=oPar.getElementsByTagName("div");
+
+	for(var i=0;i<aInput.length;i++)
+	{
+		aInput.index=i;
+		aInput[i].onclick=function(){
+			for(var i=0;i<aDiv.length;i++)
+			{
+				aInput[i].className="";
+				aInput[i].style.display="none";
+			}
+			aDiv[this.index].style.display="block";
+		};
+		
+	}
+};
+
+先变形，变形的原则就是尽量不要出现函数嵌套函数，可以有全局变量
+把onload中除了赋值之外的语句放到一个单独的函数中
+
+var oPar=null;
+var aInput=null;
+var aDiv=null;
+
+window.onload=function(){
+	oPar=document.getElementById("div1");
+	aInput=oPar.getElementsByTagName("input");
+	aDiv=oPar.getElementsByTagName("div");
+
+	init();
+};
+
+function init(){
+	for(var i=0;i<aInput.length;i++)
+	{
+		aInput.index=i;
+		aInput[i].onclick=change;
+	}s
+}
+
+function change(){
+	for(var i=0;i<aDiv.length;i++)
+	{
+		aInput[i].className="";
+		aInput[i].style.display="none";
+	}
+	aDiv[this.index].style.display="block";
+}
+
+改成面向对象的原则：全局变量就是属性，函数就是方法，onload中创建对象，改变this指向问题
+
+this被修改的时候经常在事件和定时器当中
+
+尽量让面向对象中的this指向new出来的对象
+
+window.onload=function(){
+	var t1=new Tab("div1");
+	t1.init();
+};
+
+function Tab(id){
+	this.oPar=document.getElementById(id);
+	this.aInput=this.oPar.getElementsByTagName("input");
+	this.aDiv=this.oPar.getElementsByTagName("div");
+	this.iNow=0;
+}
+
+Tab.prototype.init=function(){
+
+	var _this=this;
+	for(var i=0;i<this.aInput.length;i++)
+	{
+		this.aInput.index=i;
+		this.aInput[i].onclick=function(){
+			_this.change(this);
+		};
+	}
+};
+
+Tab.prototype.change=function(obj){//此处的obj指的是一个按钮
+	for(var i=0;i<this.aDiv.length;i++)
+	{
+		this.aInput[i].className="";
+		this.aInput[i].style.display="none";
+	}
+	obj.className="active";
+	this.aDiv[obj.index].style.display="block";
+};
+
+Tab.prototype.autoPlay=function(){
+	var _this=this;
+
+	setInterval(function(){
+		if(_this.iNow==_this.aBtn.length)
+		{
+			_this.iNow=0;
+		}
+		else
+		{
+			_this.iNow++;
+			for(var i=0;i<_this.length;i++){
+				_this.aInput[i].className="";
+				_this.aDiv[i].style.display="none";
+			}
+			_this.aInput[_this.iNow].className="active";
+			_this.aDiv[_this.iNow].style.display="block";
+		}
+
+	},2000);
+};
+面向对象的复用性很强
+
+
+面向对象的拖拽
+<script>
+window.onload=function(){
+	var oDiv=document.getElementById("div");
+
+	var disX=0;
+	var disY=0;
+	oDiv.onmousedown=function(ev){
+		var oEvent=ev||event;
+		disX=ev.clientX
+	};
+};
+</script>
+
+
+包装对象
+var str="hello";
+console.log(typeof str);//"string"
+str.charAt(0);
+str.indexOf("e");
+
+既然返回的是string类型，不是object类型，那么为什么string类型有charAt和indexOf方法呢？
+
+引入包装对象：
+null和undefined没有自己的包装对象，别的基本类型都有自己的包装对象String Number Boolean
+
+var str="hello";
+str.charAt(0);//基本类型会找到对应的包装对象类型，然后包装对象把所有的属性和方法给了基本对象，最后包装对象就会消失
+
+var str="hello";
+str.number=10;//str找到对应的包装对象String，然后把number这一属性给str，然后number属性就消失了，再在下面调用是调用不到的，如果想要调用到必须使用String.prototype.number=10;才可以
+console.log(str.number);//undefined
+
+原型链：实例对象与原型对象之间的链接，叫原型链
+
+function Aaa(){
+	this.num=20;
+}
+Aaa.prototype.num=10;
+
+var a1=new Aaa();
+alert(a1.num);//20
+
+原型链的最外层是Object.prototype
+
+a1=>Aaa.prototype=>Object.prototype
+
+function Aaa(){}
+Object.prototype.number=30;
+var a1=new Aaa();
+alert(a1.num);//30
+
+面向对象的一些属性和方法
+hasOwnProperty看是不是对象自身下面的属性，自己有而别人没有的属性
+
+var arr=[];
+arr.num=10;
+Array.prototype.num2=20;
+
+console.log(arr.hasOwnProperty("num"));//true
+console.log(arr.hasOwnProperty("num2"));//false不是光arr有如果有了别的数组对象也有这个num2属性
+
+constructor:查看对象的构造函数
+
+当我们写一个函数（不一定非得是构造函数）的时候，例如
+function Aaa(){
+}
+程序会自动给构造函数的原型加上constructor属性，即
+Aaa.prototype.constructor=Aaa;
+
+而hasOwnProperty属性在Object.prototype下面的一个方法，即
+console.log(a1.hasOwnProperty==Object.prototype.hasOwnProperty);//true
+
+Aaa.prototype的constructor属性经常被不经意的被改变，例如
+function Aaa(){}
+Aaa.prototype={
+	name:"a",
+	age:20
+};
+var a1=new Aaa();
+alert(a1.constructor);//返回的构造函数是function Object(){}
+
+当Aaa.prototype被重新赋了一个json之后，Aaa.prototype就相当于{ name:"a",age:20 }.prototype了，而json的prototype的constructor属性自然就是Object了，这时一定要修正Aaa.prototype.constructor的值，即
+Aaa.prototype={
+	constructor:Aaa,
+	name:"a",
+	age:20
+};
+
+for(var attr in Aaa.prototype){
+	alert(attr);//注：constructor属性是不会被for...in循环到的
+}
+
+instanseof:对象与构造函数在原型链上是否有关系
+console.log(a1 instanceof Aaa);//true
+console.log(a1 instanceof Object);//true
+
+instanceof和constructor都可以用来作类型判断，但都不是最好的方法，而toString才是最好的方法
+
+toString:系统对象下面的toString都是自带的，自己写的对象的toString都是通过原型链找到Object下的，即
+var arr=[];
+alert(arr.toString==Object.prototype.toString);//false
+
+function Aaa(){}
+var a1=new Aaa();
+alert(a1.toString==Object.prototype.toString);//true
+
+对于系统对象，例如数组对象，它的toString方法在Array.prototype下
+a1=>Array.prototype=>Object.prototype
+
+toString的作用就是把对象转成字符串
+
+console.log([1,2,3].toString());//"[1,2,3]"
+通常情况下我们都会重写toString方法
+
+toString还可以做进制转换
+
+var num=255;
+console.log(num.toString(16));//ff
+
+//利用toString做类型判断
+var arr=[];
+console.log(Object.prototype.toString.call(arr));//"[object Array]"
+如果是
+var json={};
+console.log(Object.prototype.toString.call(json));//"[object Object]"
+
+如果是正则
+console.log(Object.prototype.toString.call(reg));//"[object RegExp]"
+
+有些特殊情况下instanceof和constructor会不管用，但是toString什么时候都比较准确
+
+继承
+属性继承：调用父类的构造函数call
+function CreatePerson(name,sex)
+{
+	this.name=name;
+	this.sex=sex;
+}
+CreatePerson.prototype.showName=function(){
+	alert(this.name);
+};
+function CreateStar(name,sex,job)
+{
+	CreatePerson.call(this,name,sex);
+	this.job=job;
+}
+extend(CreateStar.ptototype,CreatePerson.prototype);
+CreateStar.ptototype.showJob=function(){
+	alert(this.job);
+};
+方法的继承：要通过拷贝继承，拷贝继承又分深拷贝和浅拷贝，深拷贝要用递归
+
+function extend(obj1,obj2){
+	for(var attr in obj2){
+		obj1[attr]=obj2[attr];
+	}
+}
+
+拖拽的继承
+window.onload=function(){
+	var d1=new Drag("div1");
+	d1.init();
+};
+function Drag(id){
+	this.obj=document.getElementById(id);
+	this.disX=0;
+}
+
+类式继承
+function A(){
+	this.name="小明";
+}
+A.prototype.showname=function(){
+	alert(this.name);
+};
+
+function B(){
+}
+B.prototype=new A();
+b1.showName();
+console.log(b1.name);//"小明"
+
+面试的时候经常问如何通过一句话实现继承可以这样回答
+B.prototype=new A();
+但是这句话是有很多问题的，例如
+问题1：
+console.log(b1.constructor);//function Aaa(){}，所以最好改一下b1的constructor的指向，即
+B.prototype.constructor=B;
+问题2：
+假设父类属性值是一个数组，例如
+function A(){
+	this.name=[1,2,3];
+}
+A.prototype.showname=function(){
+	alert(this.name);
+};
+
+function B(){
+}
+B.prototype=new A();
+B.prototype.constructor=B;
+var b1=new B();
+b1.name.push(4);
+var b2=new B();
+console.log(b2.name);//[1,2,3,4]
+
+要做属性和方法继承的时候要分开继承
+function A(){
+	this.name=[1,2,3];
+}
+A.prototype.showname=function(){
+	alert(this.name);
+};
+
+function B(){
+	A.call(this);
+}
+
+var F=function(){};
+F.prototype=A.prototype;
+B.prototype=new F();
+B.ptototype.constructor=B;
+//这里引入F主要是为了避免方法继承而只是属性继承
+var b1=new B();
+
+b1.name.push(4);
+
+var b2=new B();
+console.log(b2.name);//[1,2,3]
+
+原型继承
+var a={
+	name:"小明"
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
