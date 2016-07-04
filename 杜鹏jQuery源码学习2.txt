@@ -77,7 +77,7 @@ init:function(selector,context,rootjQuery){
 //平时调的时候我们通常只写一个参数$("li")，其实还可以加上第二个参数指定其上下文，例如$("li","ul")是选取ul下的li
 
 //init中selector的类型非常之多，我们先把框架搭出来
-init:function(){
+init:function(selector,context,rootjQuery){
 	if(!selector){
 		//处理$(undefined) $(null) $("") $(false)等情况
 		//return this;
@@ -115,13 +115,12 @@ if(typeof selector==="string"){
 	}
 	else
 	{
-		//rquickExpr=/^(?:\s*(<[\w\W]+>)[^>]*|#([\W-]*))$/g;
-		match = rquickExpr.exec(selector);
-		//处理类似$("#div1") $(".box") $("div") $("#div1 li.box") $("<li>aaa")(加上这种是为了说明如果开头是<而结尾不是>的也符合else里面的情况)
+		//rquickExpr=/^(?:\s*(<[\w\W]+>)[^>]*|#([\W-]*))$/g; 
+		//$("<li>aaa")(加上这种是为了说明如果开头是<而结尾不是>的也符合else里面的情况)
 		match = rquickExpr.exec( selector );
 		//match为null时 $(".box") $("div") $("#div1 li.box")
 		//match不为null时 $("#div1") $("<li>aaa")
-		//而且，当exec方法没有全局匹配g的限制时，除了匹配符合条件的字符串之外还会匹配各个子项，所以
+		//而且，exec方法除了匹配符合条件的字符串之外还会匹配各个子项，所以
 		//匹配到$("#div1")时，match就成了["#div1",null,"div1"]
 		//匹配到$("<li>aaa")时，match就成了["<li>aaa","<li>",null]
 		//而接下来也是通过match里面null值的位置不同而进一步分开
@@ -135,6 +134,8 @@ if(typeof selector==="string"){
 			//context的构造器如果不是jQuery的话就认为它是原生对象了，直接将context赋给了context，实际上绝大多数情况context是document
 			context = context instanceof jQuery ? context[0] : context;
 			//parseHTML的作用就是将字符串转成节点数组，最后通过merge合并成了满足条件的jQuery对象，这是merge对内的方法
+			//merge对外的用法就是数组合并，$.merge([1,2],[3.4]); //[1,2,3,4]
+			//merge在内部可以合并json
 			jQuery.merge( this, jQuery.parseHTML(
 				match[1],
 				context && context.nodeType ? context.ownerDocument || context : document,
@@ -142,6 +143,7 @@ if(typeof selector==="string"){
 			) );
 			
 			//针对$("<li>",{title:"hi",html:"abcd"})
+			//var rsingleTag = (/^<([\w-]+)\s*\/?>(?:<\/\1>|)$/);
 			//rsingleTag只能匹配$("<li>") $("<li></li><li></li>")这种单标签的形式
 			//所以下面的if意思就是 选择器匹配单标签 而且还是第二个参数是对象自变量 的情况
 			if(rsingleTag.test(match[1])&&jQuery.isPlainObject(context)){
@@ -180,7 +182,7 @@ if(typeof selector==="string"){
 	//$(".box") $("div") $("#div1 li.box") 这三种情况match是null
 	else if(!context || context.jquery)
 	{
-		//首先要搞明白rootjQuery是document，所以
+		//rootjQuery = jQuery(document);
 		//当context不存在时，就是将rootjQuery作为父级，rootjQuery就是$(document)，这样就变成了 $(document).find(selector)
 		//当context存在时，看context.jquery是否为真，如果为真的话也可以进入该条件内
 		//context.jquery的真假正好对应如下两种调用形式
@@ -210,6 +212,7 @@ if ( selector.selector !== undefined ) {
 	this.context = selector.context;
 }
 //处理selector是数组 json等情况
+//var aDiv=document.getElementsByTagName("div");
 //aDiv.push(oDiv);这样是要报错的，因为aDiv没有push方法，而$.makeArray(aDiv)就不会报错了
 //我们这里的makeArray方法传入了两个参数，第二个参数其实代表我们想要转成的json的形式
 //例如我们需要aDiv这个集合变成形如
@@ -222,10 +225,13 @@ if ( selector.selector !== undefined ) {
 //}
 //这种形式，那么就需要这样调用 $.makeArray(aDiv,{length:0});最后length属性就会加上
 return jQuery.makeArray( selector, this );
+init函数到此为止分析完了
+
 
 //下面两个属性之前分析选择器的时候提到很多了
 selector:"",
 length:0,
+//toArray将jQuery实例化对象转换为数组
 toArray:function(){
 	//slice不传参的时候代表截取整个数组，然后改变其指向
 	return core_slice.call( this );
@@ -244,6 +250,7 @@ get: function( num ) {
 pushStack: function( elems ) {
 	//将elems转换成类json
 	var ret = jQuery.merge( this.constructor(), elems );
+	//如果是$("div").pushStack($("span"))这样调用的话this就是$("div")，即ret.prevObject就是$("div")
 	ret.prevObject = this;
 	ret.context = this.context;
 	return ret;

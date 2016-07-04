@@ -1412,6 +1412,106 @@ expanderModule.controller("someController",function($scope){
 
 ===============================路由
 <html ng-app="routerApp">
+<script src="angular-1.3.0.js"></script>
+<script src="angular-ui-router.js"></script>
+<script>
+	m1.config(["$routeProvicer",function($routeProvider){
+		$routeProvider.when("/aaa",{	//aaa后面还可以跟上一个冒号:后面再加一个参数
+			template:"aaa{{name}}",
+			controller:"Aaa"
+		}).when("/bbb",{
+			template:"bbb{{name}}",
+			controller:"Bbb"
+		}).when("/ccc",{
+			template:"ccc{{name}}",
+			controller:"Ccc"
+		}).otherwise({
+			redirectTo:"aaa"
+		});
+	}]);
+	m1.run(["$rootScope",function($rootScope){
+		$rootScope.$on("$routeChangeStart",function(){
+			//路由切换时触发
+		});
+		$rootScope.$on("$routeChangeSuccess",function(){
+			//路由切换成功时触发
+		});
+	}]);
+	m1.controller("Aaa",["$scope",function($scope){
+		$scope.name="111";
+	}]).controller("Bbb",["$scope",function($scope){
+		$scope.name="222";
+	}]).controller("Ccc",["$scope",function($scope){
+		$scope.name="333";
+	}]):
+</script>
+<body>
+	<a href="#aaa">aaa</a>
+	<a href="#bbb">bbb</a>
+	<a href="#ccc">ccc</a>
+	<div ui-view></div>
+	
+	<!--第二种方式-->
+	<a href="javascript:;" ng-click="$location.path('aaa')">aaa</a>
+	<a href="javascript:;" ng-click="$location.path('bbb')">bbb</a>
+	<a href="javascript:;" ng-click="$location.path('ccc')">ccc</a>
+	<div ui-view></div>
+</body>
+</html>
+==================
+ngAnimate
+CSS3形式 无需改变js和html，只需要在css中加类即可:ng-enter ng-enter-active ng-leave ng-leave-active
+.box{ width:200px; height:200px; background:#f00; transition:1s all;}
+.box.ng-enter{ opacity:0;}
+.box.ng-enter-active{ opacity:1;}
+.box.ng-leave{ opacity:1;}
+.box.ng-leave-active{ opacity:0;}
+//按队列淡入
+.box.ng-enter-stagger{animation-delay:100ms;}
+
+<input type="checkbox" ng-model="bBtn" />
+<div ng-if="bBtn" class="box"></div>
+==================
+ng-view实现动画只需要给加了ng-view指令的元素加上动画类
+==================
+除此之外还有ng-if ng-view ng-repeat ng-include ng-switch都可以实现动画的效果
+这些指令都是创建销毁元素类型的指令
+==================
+对于改变元素样式，例如使元素隐藏消失的指令 ng-show ng-hide则是另外一套类
+ng-hide-add
+ng-hide-add-active
+ng-hide-remove
+ng-hide-remove-active
+===================
+js实现动画效果
+//m1是模块名 .box是要加动画的元素
+//当要加动画的元素所用的指令是创建销毁元素类型的指令时，即ng-if类型的指令时
+//需要如下定义，属性leave和enter是固定的
+m1.animation(".box",function(){
+	return {
+		leave:function(element,done){
+			//当动画结束之后需要执行指令干的事情，即done函数
+			$(element).animation({width:0,height:0},1000,done);
+		},
+		enter:function(element,done){
+			$(element).css({"width":0,"height":0});
+			$(element).animation({width:200,height:200},1000,done);
+		}
+	};
+});
+//当要加动画的元素所用的指令是隐藏显示元素类型的指令时，例如ng-show
+m1.animation(".box",function(){
+	return {
+		addClass:function(element,sClass,done){
+			$(element).animation({width:0,height:0},1000,done);
+		},
+		removeClass:function(element,sClass,done){
+			$(element).animation({width:200,height:200},1000,done);
+		}
+	};
+});
+=====================
+<html ng-app="routerApp">
 <link rel="stylesheet" href="bootstrap.css" />
 <link rel="stylesheet" href="index.css" />
 <script src="angular-1.3.0.js"></script>
