@@ -329,8 +329,163 @@ jQuery.extend=jQuery.fn.extend=function(){
 ==========================扩展一些工具方法============================
 expando:生成一个唯一的字符串
 noConflict:防冲突
+//////////////////源码
+var
+	// Define a local copy of jQuery
+	jQuery = function (selector, context) {
+
+		// The jQuery object is actually just the init constructor 'enhanced'
+		// Need init if jQuery is called (just allow error to be thrown if not included)
+		return new jQuery.fn.init(selector, context);
+	};
+var
+
+	// Map over jQuery in case of overwrite
+	_jQuery = window.jQuery,
+
+	// Map over the $ in case of overwrite
+	_$ = window.$;
+
+jQuery.noConflict = function (deep) {
+	if (window.$ === jQuery) {
+		window.$ = _$;
+	}
+
+	if (deep && window.jQuery === jQuery) {
+		window.jQuery = _jQuery;
+	}
+
+	return jQuery;
+};
+///////////////////////
+//先调用一次noConflict方法把$暂存一下，后期再想使用$时可以用miaov来代替
+var miaov=$.noConflict();
+var $=123;
+miaov(function(){
+	alert($);
+});
+///////////////////////////
+<script>
+	var $=123;
+</script>
+<script src="jquery.js"></script> //执行到_$ = window.$这一句时就是把123赋值给了_$，但是window.jQuery = window.$ = jQuery;会把jQuery赋值给window.$
+<script>	
+	var miaov=_$.noConflict(); //会判断window.$和jQuery是否相等 此时二者是相等的 所以会执行window.$ = _$ 此时_$是123，$就会被赋值为123 最终会返回jQuery函数对象，所以miaov存储的是jQuery函数对象，这之后如果再需要用到jQuery，就用miaov代替即可，而$被替换成了123
+	miaov(function(){
+		alert($);
+	});
+</script>
 15集
 首先需要知道DOMContentLoaded事件触发的时候是DOM结构就加载完成的时候，而window.onload是等页面中图片、Flash文件等等都加载完毕的时候才触发
+调用堆栈
+$(function(){});
+$(document).ready(function(){});
+$(document).on("ready",function(){
+	
+});
+
+var readyList;
+jQuery.fn.ready = function (fn) {
+
+	// Add the callback
+	jQuery.ready.promise().done(fn);
+
+	return this;
+};
+jQuery.extend({
+
+	// Is the DOM ready to be used? Set to true once it occurs.
+	isReady: false,
+
+	// A counter to track how many items to wait for before
+	// the ready event fires. See #6781
+	readyWait: 1,
+
+	// Hold (or release) the ready event
+	//holdReady通常和getScript配合使用 用来延迟$(function(){})中的function的执行
+	//$.getScript(); 动态加载外部js的一个方法
+	//eg:加载a.js是一个异步过程，为了先弹出1再弹出2，需要用holdReady处理一下
+	//$.holdReady(true);
+	//$.getScript("a.js",function(){
+	//	console.log(1);
+	//	$.holdReady(false);
+	//});
+	//$(function(){
+	//	console.log(2);
+	//});
+	holdReady: function (hold) {
+		if (hold) {
+			jQuery.readyWait++;
+		} else {
+			jQuery.ready(true);
+		}
+	},
+
+	// Handle when the DOM is ready
+	ready: function (wait) {
+
+		// Abort if there are pending holds or we're already ready
+		if (wait === true ? --jQuery.readyWait : jQuery.isReady) {
+			return;
+		}
+
+		// Remember that the DOM is ready
+		jQuery.isReady = true;
+
+		// If a normal DOM Ready event fired, decrement, and wait if need be
+		if (wait !== true && --jQuery.readyWait > 0) {
+			return;
+		}
+
+		// If there are functions bound, to execute
+		// $(function(arg){ console.log(this); }); arg其实就是传进来的jQuery，document就是函数当中的this
+		readyList.resolveWith(document, [jQuery]);
+
+		// Trigger any bound ready events
+		if (jQuery.fn.triggerHandler) {
+			jQuery(document).triggerHandler("ready");
+			jQuery(document).off("ready");
+		}
+	}
+});
+function completed() {
+	document.removeEventListener("DOMContentLoaded", completed);
+	window.removeEventListener("load", completed);
+	jQuery.ready();
+}
+
+jQuery.ready.promise = function (obj) {
+	if (!readyList) {
+
+		readyList = jQuery.Deferred();
+
+		// Catch cases where $(document).ready() is called
+		// after the browser event has already occurred.
+		// Support: IE9-10 only
+		// Older IE sometimes signals "interactive" too soon
+		if (document.readyState === "complete" ||
+			(document.readyState !== "loading" && !document.documentElement.doScroll)) {
+
+			// Handle it asynchronously to allow scripts the opportunity to delay ready
+			window.setTimeout(jQuery.ready);//IE下DOM还没加载完成readyState就会变成"complete"
+
+		} else {
+
+			// Use the handy event callback
+			document.addEventListener("DOMContentLoaded", completed);
+
+			// A fallback to window.onload, that will always work
+			//有的浏览器可能onload比DOMContentLoaded先触发
+			window.addEventListener("load", completed);
+		}
+	}
+	return readyList.promise(obj);
+};
+
+// Kick off the DOM ready check even if the user does not
+jQuery.ready.promise();
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //isFunction的使用
 function show(){}
 $.isFunction(show);//true
@@ -350,6 +505,7 @@ isArray:Array.isArray,//ECMA5已经完全支持Array.isArray方法
 
 //isWindow的源码
 isWindow: function( obj ) {
+	//由于后面要obj.window这样去访问obj的属性，所以要先将undefined和null排除
 	return obj != null && obj === obj.window;
 },
 先来解释第一个条件obj!=null
@@ -387,6 +543,8 @@ jQuery.each("Boolean Number String Function Array Date RegExp Object Error".spli
 {}.toString.call(new Date)=='[object Date]' //true
 
 低版本的Safari和chrome在 typeof RegExp 返回function，其余返回object 所以要加上typeof obj === "function"
+
+跨iframe操作的时候constructor和instanceof判断类型可能会出错
 第19级
 //判断是否是对象自变量，所谓对象自变量就是json或者new Object()的形式
 isPlainObject: function( obj ) {
@@ -402,6 +560,10 @@ isPlainObject: function( obj ) {
 	// The try/catch suppresses exceptions thrown when attempting to access
 	// the "constructor" property of certain host objects, ie. |window.location|
 	// https://bugzilla.mozilla.org/show_bug.cgi?id=814622
+	//core_hasOwn = {}.hasOwnProperty
+	//isPrototypeOf是原型对象的一个方法
+	//try 里面实际上是判断 obj.constructor.prototype.isPrototypeOf 是否存在
+	//str.constructor.prototype.isPrototypeOf(new String("aaa")) 判断str.constructor.prototype是否是new String("aaa")的原型
 	try {
 		if ( obj.constructor &&
 				!core_hasOwn.call( obj.constructor.prototype, "isPrototypeOf" ) ) {
@@ -510,6 +672,7 @@ globalEval: function( code ) {
 		// If the code includes a valid, prologue position
 		// strict mode pragma, execute code by injecting a
 		// script tag into the document.
+		//eval在严格模式下不可以用
 		if ( code.indexOf("use strict") === 1 ) {
 			script = document.createElement("script");
 			script.text = code;
@@ -522,6 +685,7 @@ globalEval: function( code ) {
 	}
 },
 
+eval既是window对象下的属性，又是一个关键字
 function test(){
 	var val=eval;
 	val("var a=1;");
@@ -536,7 +700,7 @@ test();
 alert(a);//1
 
 function test(){
-	eval("var a=1;");
+	eval("var a=1;"); //直接调用eval，就会将eval当成关键字来用，只在局部作用域内起作用
 }
 test();
 alert(a);//报错
@@ -544,6 +708,8 @@ alert(a);//报错
 //转驼峰
 // Convert dashed to camelCase; used by the css and data modules
 // Microsoft forgot to hump their vendor prefix (#9572)
+//-ms-transition   msTransition  IE转驼峰之后第一个字母是小写
+//-moz-transition  MozTransition
 camelCase: function( string ) {
 	return string.replace( rmsPrefix, "ms-" ).replace( rdashAlpha, fcamelCase );
 },
@@ -688,6 +854,7 @@ merge: function( first, second ) {
 	return first;
 },
 
+//通过回调过滤得到新数组
 grep: function( elems, callback, inv ) {
 	var retVal,
 		ret = [],
@@ -739,6 +906,8 @@ map: function( elems, callback, arg ) {
 	// Flatten any nested arrays
 	return core_concat.apply( [], ret );
 	//这里的return不写成直接返回回去ret的原因，是为了避免复合数组，也就是形如[[2],[3],[4],[5]]这样的数组
+	//var arr=[1]; arr.concat([2]); 返回的是[1,2]
+	//var arr=[1]; arr.concat(2); 返回的是[1,2]
 },
 
 
@@ -750,6 +919,7 @@ $("input:eq(0)").click($.proxy(show,window));
 $("input:eq(1)").click(function(){
 	$("input:eq(0)").off();
 });
+//和事件相关
 guid: 1,
 
 
