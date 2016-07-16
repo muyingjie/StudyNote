@@ -327,8 +327,23 @@ if(projectData.name){
 	}
 }
 
-
-
+=====================================
+//监听文件自动压缩
+var fs=require("fs");
+var filedir="./miaov/source";
+fs.watch(filedir,function(ev,file){
+	//这里不需要判断file是否有内容
+	//console.log(ev+"/"+file);
+	
+	//只要有一个文件发生了变化，我们就需要对这个文件夹下的文件进行读取，然后合并
+	fs.readdir(filedir,function(err,dataList){
+		var arr=[];
+		dataList.forEach(function(f){
+			var info=f.statSync(filedir+"/"+f);
+			console.log(info);
+		});
+	});
+});
 
 
 

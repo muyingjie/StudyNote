@@ -51,3 +51,48 @@ function createMap(){
 		}
 	}
 }
+
+
+排列
+var arr=["A","B","C","D"];
+function show(arr,num){
+	var resultNum=0;
+	var iNow=1;
+	
+	if(num==1){
+		return arr.length;
+	}
+	
+	function change(arr,iNow){
+		for(var i=0;i<arr.length;i++){
+			var result=arr.concat();
+			result.splice(i,1);
+			
+			if(iNow==num){
+				resultNum+=result.length;
+			}else{
+				change(result,iNow+1);
+			}
+		}
+	}
+	change(arr,iNow+1);
+	return resultNum;
+}
+console.log(show(arr,3));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

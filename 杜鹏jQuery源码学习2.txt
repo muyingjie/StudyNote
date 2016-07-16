@@ -1209,6 +1209,9 @@ function bbb(){
 cb.add(aaa);
 cb.add(bbb);
 cb.fire();
+//以上代码是先弹出1 再弹出2 再弹一次1 再弹一次2这样的顺序，虽然在aaa中又调用了一次fire，但是这是放到stack中放到下一次执行
+
+//lock只是锁住了fire，但是其他操作并没有锁住，而disabled是禁用当前回调对象
 --------------
 jQuery.Callbacks = function( options ) {
 	options = typeof options === "string" ?
@@ -1452,8 +1455,157 @@ Deferred: function( func ) {
 		};
 		deferred[ tuple[0] + "With" ] = list.fireWith;
 	});
+	
+promise下的方法
+state
+always
+then
+promise
+pipe
+done
+fail
+progress
 
-33-38没看
+deferred下的方法
+resolve
+reject
+notify
+deferred会调用promise的promise方法继承下面的方法
+state
+always
+then
+promise
+pipe
+done
+fail
+progress
+
+
+promise: function( obj ) {
+	//从下方调用可以看出，此处的obj即为deferred，这里就是将promise上的方法扩展给deferred
+	return obj != null ? jQuery.extend( obj, promise ) : promise;
+}
+promise.promise( deferred );
+
+=================
+function aaa(){
+	var dfd=$.Deferred();
+	setTimeout(function(){
+		dfd.resolve();
+	},2000);
+	return dfd;
+}
+var newDfd=aaa();
+newDfd.done(function(){
+	alert("成功");
+}).fail(function(){
+	alert("失败");
+});
+newDfd.reject();
+
+上述代码会执行失败的回调，而不会执行成功的回调，也就是说aaa里面返回给外面的dfd被reject修改了，如果我们不希望让外界修改dfd的状态，那么可以在函数最后返回dfd.promise，dfd.promise实际上是返回了一个不能修改状态的Deferred对象，所以可以改成下面的形式
+function aaa(){
+	var dfd=$.Deferred();
+	setTimeout(function(){
+		dfd.resolve();
+	},2000);
+	return dfd.promise();
+}
+var newDfd=aaa();
+newDfd.done(function(){
+	alert("成功");
+}).fail(function(){
+	alert("失败");
+});
+newDfd.reject();
+
+==================================
+pipe方法 链式调用
+var dfd=$.Deferred();
+setTimeout(function(){
+	dfd.resolve("hi");
+},1000);
+
+var newDfd=dfd.pipe(function(v){
+	return v+"111";
+});
+
+newDfd.done(function(v){
+	alert(v);//弹出hi111
+});
+===================================
+$.when方法
+function aaa(){
+	var dfd=$.Deferred();
+	dfd.resolve();
+	return dfd;
+}
+function bbb(){
+	var dfd=$.Deferred();
+	dfd.resolve();
+	return dfd;
+}
+//注意：when里面的参数必须是延迟对象，而不能是其他类型的值，非延迟对象的参数会被忽略
+$.when(aaa(),bbb()).done(function(){
+	alert("成功");
+}).fail(function(){
+	alert("失败");
+});
+
+
+when: function( subordinate /* , ..., subordinateN */ ) {
+	var i = 0,
+		resolveValues = core_slice.call( arguments ),
+		length = resolveValues.length,
+
+		// the count of uncompleted subordinates
+		remaining = length !== 1 || ( subordinate && jQuery.isFunction( subordinate.promise ) ) ? length : 0,
+
+		// the master Deferred. If resolveValues consist of only a single Deferred, just use that.
+		deferred = remaining === 1 ? subordinate : jQuery.Deferred(),
+
+		// Update function for both resolve and progress values
+		updateFunc = function( i, contexts, values ) {
+			return function( value ) {
+				contexts[ i ] = this;
+				values[ i ] = arguments.length > 1 ? core_slice.call( arguments ) : value;
+				if( values === progressValues ) {
+					deferred.notifyWith( contexts, values );
+				} else if ( !( --remaining ) ) {
+					deferred.resolveWith( contexts, values );
+				}
+			};
+		},
+
+		progressValues, progressContexts, resolveContexts;
+
+	// add listeners to Deferred subordinates; treat others as resolved
+	if ( length > 1 ) {
+		progressValues = new Array( length );
+		progressContexts = new Array( length );
+		resolveContexts = new Array( length );
+		for ( ; i < length; i++ ) {
+			if ( resolveValues[ i ] && jQuery.isFunction( resolveValues[ i ].promise ) ) {
+				resolveValues[ i ].promise()
+					.done( updateFunc( i, resolveContexts, resolveValues ) )
+					.fail( deferred.reject )
+					.progress( updateFunc( i, progressContexts, progressValues ) );
+			} else {
+				--remaining;
+			}
+		}
+	}
+
+	// if we're not waiting on anything, resolve the master
+	if ( !remaining ) {
+		deferred.resolveWith( resolveContexts, resolveValues );
+	}
+
+	return deferred.promise();
+}
+======================================
+
+//jQuery不建议在外部使用support，support只是在jQuery内部使用
 jQuery.support = (function( support ) {
 	var input = document.createElement("input"),
 		fragment = document.createDocumentFragment(),
@@ -1562,12 +1714,12 @@ jQuery.support = (function( support ) {
 
 		container = document.createElement("div");
 		//left设置成-9999为了移出可视区，避免影响正常页面的浏览
-		//2.0.3版本中这句话没什么用了
+		//2.0.3版本中margin-top:1px这句话没什么用了
 		container.style.cssText = "border:0;width:0;height:0;position:absolute;top:0;left:-9999px;margin-top:1px";
 
 		
 		body.appendChild( container ).appendChild( div );
-		//2.0.3版本中这句话没什么用了
+		//2.0.3版本中div.innerHTML = ""这句话没什么用了
 		div.innerHTML = "";
 
 		div.style.cssText = "-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;padding:1px;border:1px;display:block;width:4px;margin-top:1%;position:absolute;top:1%";

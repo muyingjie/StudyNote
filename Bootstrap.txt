@@ -1,0 +1,38 @@
+Bootstrap
+
+github.com/twbs
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge"> 让IE以最高版本渲染页面
+<meta name="viewport" content="width=device-width,initial-scale=1"> 手机适配
+
+容器
+container-fluid
+	流体布局
+container
+	固定布局 根据不同分辨率container的width值会变化 
+	>=1200 1170 
+	>=992  970 
+	>=768  750 
+	<768   auto
+
+container和container-fluid都有padding，所以这两个类来最好不要嵌套使用，而是选择并列使用
+
+可以通过给container类加一个width来强制指定其固定布局,width:1000px !important;这样不管在什么尺寸下都是1000px的宽度
+
+col-lg-3 大屏幕(>=1200) 分辨率大于1200时才会占屏幕的1/4显示，如果屏幕尺寸小于1200，就会垂直显示
+col-md-3 中等屏幕 >=992
+col-sm-3 小屏幕 >=768
+col-xs-3 移动端 <768
+
+
+栅格系统组合模式
+lg代表大屏幕，每行是12/3=4个，md代表中等屏幕，每行是12/4=3个，sm是小屏幕，每行是12/6=2个
+<div class="col-lg-3 col-md-4 col-sm-6"></div>
+<div class="col-lg-3 col-md-4 col-sm-6"></div>
+<div class="col-lg-3 col-md-4 col-sm-6"></div>
+
+
+
+
+
+
