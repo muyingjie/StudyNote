@@ -1777,26 +1777,30 @@ function Data() {
 	// Old WebKit does not have Object.preventExtensions/freeze method,
 	// return new empty object instead with no [[set]] accessor
 	//Object.preventExtensions/freeze这些方法的作用都是防止修改对象的方法，例如：
-	------------------------
-	var obj={name:"hello"};
-	Object.freeze(obj);//这样一来，obj的属性就不可以被修改了，但是老版本的WebKit浏览器没有这个方法，所以jQuery选择了另一种方法 —— Object.defineProperty这个是ECMA5的新方法
-	------------------------
-	//Object.defineProperty这一方法接收3个参数，第一个是目标对象，第二个是键，第三个是值，作用是给目标对象增加一属性，属性名和值分别就是传入的键值对
-	------------------------
-	var obj={name:"hello"};
-	Object.defineProperty(obj,0,{
-		get:function(){return {};}
-	});
-	alert(obj[0]);
-	obj[0]=123;
-	alert(obj[0]);//并没有被改成123
-	------------------------
+	//------------------------
+	//var obj={name:"hello"};
+	//Object.freeze(obj);//这样一来，obj的属性就不可以被修改了，但是老版本的WebKit浏览器没有这个方法，所以jQuery选择了另一种方法 
+	//—— Object.defineProperty这个是ECMA5的新方法
+	//------------------------
+	//Object.defineProperty这一方法接收3个参数，第一个是目标对象，第二个是键，第三个是值，作用是给目标对象增加一属性，属性名和值分
+	//别就是传入的键值对
+	//------------------------
+	//var obj={name:"hello"};
+	//Object.defineProperty(obj,0,{
+	//	get:function(){return {};}
+	//});
+	//obj下面的属性0所对应的值就是get函数里面的返回值{}，这个值不可以修改，因为没有写set方法
+	//alert(obj[0]);
+	//obj[0]=123;
+	//alert(obj[0]);//并没有被改成123
+	//------------------------
+	//在jQuery源码内部首先给cache添加了一个0的属性，该属性不能修改，由于cache对象是一个元素对应一个键，其他扩展到这个元素上的数据时可以修改的，属性名1 2 3 4依次往后排，0属性对应的空对象在实例化方法key中有用到，上来之后的第一个if判断:Data.accepts(owner)为假时，说明是属性节点或文本节点，然后直接返回0属性对应的只读空对象
 	Object.defineProperty( this.cache = {}, 0, {
 		get: function() {
 			return {};
 		}
 	});
-
+	//这个随机值会分配给调用data的对象，值得注意的是我们在jQuery外部调用data方法时所有的元素都会有这样一个随机值属性，而且每个对象的随机值属性名都是一样的，但是值不一样，属性值从1开始依次++，
 	this.expando = jQuery.expando + Math.random();
 }
 
@@ -1813,8 +1817,46 @@ Data.accepts = function( owner ) {
 		owner.nodeType === 1 || owner.nodeType === 9 : true;
 };
 
+Data.prototype = {
+	key: function( owner ) {
+		// We can accept data for non-element nodes in modern browsers,
+		// but we should not, see #8335.
+		// Always return the key for a frozen object.
+		if ( !Data.accepts( owner ) ) {
+			return 0;
+		}
+
+		var descriptor = {},
+			// Check if the owner object already has a cache key
+			unlock = owner[ this.expando ];
+
+		// If not, create one
+		if ( !unlock ) {
+			unlock = Data.uid++;
+
+			// Secure it in a non-enumerable, non-writable property
+			try {
+				descriptor[ this.expando ] = { value: unlock };
+				Object.defineProperties( owner, descriptor );
+
+			// Support: Android < 4
+			// Fallback to a less secure definition
+			} catch ( e ) {
+				descriptor[ this.expando ] = unlock;
+				jQuery.extend( owner, descriptor );
+			}
+		}
+
+		// Ensure the cache object
+		if ( !this.cache[ unlock ] ) {
+			this.cache[ unlock ] = {};
+		}
+
+		return unlock;
+	},
+
 Data.prototype={
-	key:
+	key(owner): 得到owner的expando属性值，其值为 2 3 4 ...
 	set:
 	get:
 	access
@@ -1868,7 +1910,8 @@ data: function( key, value ) {
 			return data;
 		}
 
-
+============================================
+//队列模块
 //结构
 $.extend({
 	queue
@@ -1885,16 +1928,35 @@ $.fn.extend({
 });
 
 ---------------------使用
+//queue相当于push操作 dequeue相当于shift操作
 function a(){alert(1);}
 
 function b(){alert(2);}
 
-$.queue(document,"ql",a);
+$.queue(document,"ql",a); //在document下创建了q1队列，将函数a添加到队列中
 $.queue(document,"ql",b);
 或者$.queue(document,"ql",[a,b]);
 
+$.queue(document,"q1");//查看队列q1
+
 $.dequeue(document,"ql");//取出并执行a函数
 $.dequeue(document,"ql");//取出并执行b函数
+
+//实例方法
+$(document).queue("q1",aaa);
+$(document).queue("q1",bbb);
+console.log($(document).queue("q1"));
+$(document).dequeue("q1");//取出并执行a函数
+$(document).dequeue("q1");//取出并执行b函数
+
+$(this).animate({width:200},2000).queue("fx",function(){}).animate({left:300},2000);
+//由于中间的queue没有进行出队操作，所以不会再往下运动了，就卡到中间了
+$(this).animate({width:200},2000).queue("fx",function(){
+	$(this).dequeue();
+}).animate({left:300},2000);
+$(this).animate({width:200},2000).queue("fx",function(next){
+	next();//和$(this).dequeue();是一回事
+}).animate({left:300},2000);
 ------------------width先到了300 然后height才到了300
 $("#div1").animate({"width":300},2000);
 $("#div2").animate({"height":300},2000);
@@ -1912,6 +1974,29 @@ $("#div1").animate({"width":300},2000,function(){
 	$("#div1").animate({"height":300},2000);
 });
 
+-----------------------------------------------------------------
+$(this).animate({width:300},2000,function(){
+	var _this=this;
+	var timer=setInterval(function(){
+		_this.style.height=_this.offsetHeight+1+"px";
+		if(_this.offsetHeight==200){
+			clearInterval(timer);
+		}
+	},30);
+}).animate({left:300},2000);
+//上面这段代码在元素的高度变高的同时，left也会变，因为setInterval是一个异步的函数
+
+$(this).animate({width:300},2000).queue(function(next){
+	var _this=this;
+	var timer=setInterval(function(){
+		_this.style.height=_this.offsetHeight+1+"px";
+		if(_this.offsetHeight==200){
+			clearInterval(timer);
+			next();
+		}
+	},30);
+}).animate({left:300},2000);
+=========================================
 queue: function( elem, type, data ) {
 	var queue;
 
@@ -1931,6 +2016,665 @@ queue: function( elem, type, data ) {
 		return queue || [];
 	}
 },
-=======================逐行分析jQuery源码30集以后
+======================================
+//下面这个例子中只看到了animate入队操作，并没有发现有出队操作
+$(this).animate({width:300},2000);
+$(this).animate({height:300},2000);
+$(this).animate({left:300},2000);
+在queue实例化对象中可以看到：
+queue: function( type, data ) {
+	var setter = 2;
+
+	if ( typeof type !== "string" ) {
+		data = type;
+		type = "fx";
+		setter--;
+	}
+
+	if ( arguments.length < setter ) {
+		return jQuery.queue( this[0], type );
+	}
+
+	return data === undefined ?
+		this :
+		this.each(function() {
+			var queue = jQuery.queue( this, type, data );
+
+			// ensure a hooks for this queue
+			jQuery._queueHooks( this, type );
+
+			if ( type === "fx" && queue[0] !== "inprogress" ) {
+				jQuery.dequeue( this, type ); //源码内部调用的出队
+			}
+		});
+},
+
+_qeueHooks的作用是在一个队列里面所有函数都出队执行完毕之后将data_priv对应的数据清空
+
+=======================================================================
+$(this).animate({width:300},2000).delay(2000).animate({left:300},2000); //两个动画之间停顿2秒钟
+====================promise
+$(this).animate({width:300},2000).animate({left:300},2000);
+//所有函数执行完毕之后会调用promise
+$(this).promise().done(function(){
+	alert(123);
+});
+
+================================属性操作
+jQuery.fn.extend({
+	attr
+	removeAttr
+	prop
+	removeProp
+	addClass
+	removeClass
+	toggleClass
+	hasClass
+	val
+});
+jQuery.extend({
+	valHooks
+	attr
+	removeAttr
+	attrHooks
+	propFix
+	prop
+	propHooks
+});
+
+
+attr 和 prop的区别：
+原生方法中有
+	//attr调用方式
+	oDiv.setAttribute("title","hello");
+	
+	//prop调用方式
+	oDiv.title="hello";
+	oDiv["title"]="hello";
+
+对于title这种原来DOM对象本来就有的属性，attr和prop没什么差别，但是对于自定义属性就有差别了
+$("#div1").attr("miaov","aaa"); //在控制台中查看会发现在html中存在该属性
+$("#div1").prop("miaov","bbb"); //在控制台中查看会发现在html中不存在该属性
+
+
+$("#div1").attr("miaov"); //可以获取自定义属性
+$("#div1").prop("miaov"); //在FF下获取不到自定义属性
+
+
+<a href="www.miaov.com"></a>
+$("a").attr("href"); //拿到www.miaov.com
+$("a").prop("href"); //得到file:///E:miaov/xxx/www.miaov.com
+
+
+<div id="div1" miaov="妙味"></div>
+$("#div1").removeProp("id");
+alert($("#div1").prop("id"));//即使删除也可以弹出来
+
+用prop时最好不要操作元素自带的属性，例如id href等，可能会出问题，如果用attr的话可以删掉
+
+attr: function( elem, name, value ) {
+	var hooks, ret,
+		nType = elem.nodeType;
+
+	// don't get/set attributes on text, comment and attribute nodes
+	if ( !elem || nType === 3 || nType === 8 || nType === 2 ) {
+		return;
+	}
+
+	// Fallback to prop when attributes are not supported
+	//ele是document或者window的时候会进该if分支
+	if ( typeof elem.getAttribute === core_strundefined ) {
+		return jQuery.prop( elem, name, value );
+	}
+
+	// All attributes are lowercase
+	// Grab necessary hook if one is defined
+	//jQuery.isXMLDoc是Sizzle里面的一个方法，判断是否为xml元素
+	//进入该if分支的情况是 不是文本节点或者即使是文本节点但不是xml节点
+	//if里面做了兼容处理
+	if ( nType !== 1 || !jQuery.isXMLDoc( elem ) ) {
+		name = name.toLowerCase();
+		hooks = jQuery.attrHooks[ name ] ||
+			//jQuery.expr.match.bool是一个正则，匹配值为布尔类型的属性
+			//<input type="checkbox" checked="checked" />
+			//$("input").attr("checked") checked
+			//$("input").prop("checked") true
+			
+			//原生中的oInput.setAttribute("checked",true); 是不会被选中的
+			//jQuery中已经做了兼容处理$("input").attr("checked",true);也是可以将复选框选中的
+			//之所以被选中就是因为在boolHook里面做了处理
+			( jQuery.expr.match.bool.test( name ) ? boolHook : nodeHook );
+	}
+
+	if ( value !== undefined ) {
+
+		if ( value === null ) {
+			jQuery.removeAttr( elem, name );
+
+		} else if ( hooks && "set" in hooks && (ret = hooks.set( elem, value, name )) !== undefined ) {
+			return ret;
+
+		} else {
+			elem.setAttribute( name, value + "" );
+			return value;
+		}
+
+	} else if ( hooks && "get" in hooks && (ret = hooks.get( elem, name )) !== null ) {
+		return ret;
+
+	} else {
+		//jQuery.find就是Sizzle对象
+		ret = jQuery.find.attr( elem, name );
+
+		// Non-existent attributes return null, we normalize to undefined
+		return ret == null ?
+			undefined :
+			ret;
+	}
+},
+attrHooks: {
+	//目前只有在设置type属性的时候会出现兼容问题
+	type: {
+		set: function( elem, value ) {
+			if ( !jQuery.support.radioValue && value === "radio" && jQuery.nodeName(elem, "input") ) {
+				// Setting the type on a radio button after the value resets the value in IE6-9
+				// Reset value to default in case type is set after value during creation
+				var val = elem.value;
+				elem.setAttribute( "type", value );
+				if ( val ) {
+					elem.value = val;
+				}
+				return value;
+			}
+		}
+	}
+},
+
+removeAttr("miaov href id") 删除3个属性
+
+//tabIndex用于按tab键时光标切换顺序
+<input type="text" tabIndex=2 />
+<input type="text" tabIndex=1 />
+
+$(".div1").addClass(function(index){
+	//第一个.div1添加box0这个class，第二个.div1添加box1这个class，以此类推
+	return "box"+index;
+});
+
+removeClass()参数为空时就是把所有的class全部删除
+
+$("#div1").toggleClass("box1 box2",true); //相当于$("#div1").addClass("box1 box2")
+$("#div1").toggleClass("box1 box2",false); //相当于$("#div1").removeClass("box1 box2")
+
+$("#div1").toggleClass(false); //将所有的class全部删除
+$("#div1").toggleClass(true);  //将上次删除的class全都加上
+
+<select>
+	<option>111</option>
+	<option>222</option>
+	<option>333</option>
+	<option>444</option>
+</select>
+$("select").get(0).type //select-one
+
+
+<select multiple>
+	<option>111</option>
+	<option>222</option>
+	<option>333</option>
+	<option>444</option>
+</select>
+$("select").get(0).type //select-multiple 可以多选
+
+valHooks:option select radio checkbox
+
+val: function( value ) {
+	var hooks, ret, isFunction,
+		elem = this[0];
+
+	if ( !arguments.length ) {
+		if ( elem ) {
+			//valHooks:option select radio checkbox
+			//valHooks里面既有根据表单元素的type的值作为键再做进一步处理的(即去找valHooks下elem.type对应的值，例如：radio checkbox)，又有通过标签名作为键再做进一步处理的(即去找valHooks下elem.nodeName.toLowerCase()对应的值，例如：radio) 此外，select元素在单选和复选两种条件下的type属性值返回的分别是select-one和select-multiple，所以再进一步判断elem.nodeName.toLowerCase()，option元素也是同理，option不属于某种表单的type属性的值
+			hooks = jQuery.valHooks[ elem.type ] || jQuery.valHooks[ elem.nodeName.toLowerCase() ];
+
+			if ( hooks && "get" in hooks && (ret = hooks.get( elem, "value" )) !== undefined ) {
+				return ret;
+			}
+
+			ret = elem.value;
+
+			return typeof ret === "string" ?
+				// handle most common string cases
+				ret.replace(rreturn, "") :
+				// handle cases where value is null/undef or number
+				ret == null ? "" : ret;
+		}
+
+		return;
+	}
+
+	isFunction = jQuery.isFunction( value );
+
+	return this.each(function( i ) {
+		var val;
+
+		if ( this.nodeType !== 1 ) {
+			return;
+		}
+
+		if ( isFunction ) {
+			val = value.call( this, i, jQuery( this ).val() );
+		} else {
+			val = value;
+		}
+
+		// Treat null/undefined as ""; convert numbers to string
+		if ( val == null ) {
+			val = "";
+		} else if ( typeof val === "number" ) {
+			val += "";
+		} else if ( jQuery.isArray( val ) ) {
+			val = jQuery.map(val, function ( value ) {
+				return value == null ? "" : value + "";
+			});
+		}
+
+		hooks = jQuery.valHooks[ this.type ] || jQuery.valHooks[ this.nodeName.toLowerCase() ];
+
+		// If set returns undefined, fall back to normal setting
+		if ( !hooks || !("set" in hooks) || hooks.set( this, val, "value" ) === undefined ) {
+			this.value = val;
+		}
+	});
+}
+
+========================================事件驱动
+jQuery.event={
+	global,
+	add,//重点
+	remove,//重点
+	trigger,//重点
+	dispatch,
+	handlers,//确定事件执行顺序
+	props,//jQuery中共享原生Js的event属性
+	fixHooks,//具体的event兼容
+	keyHooks,//键盘事件的event兼容
+	mouseHooks,//鼠标事件的event兼容
+	fix,//event对象的兼容处理
+	special,
+	simulate
+};
+jQuery.removeEvent=function(elem,type,handle){};
+jQuery.Event=function(src,props){};
+jQuery.Event.prototype={
+	isDefaultPrevented,
+	isPropagationStopped,
+	isImmediatePropagationStopped,
+	preventDefault,
+	stopPropagation,
+	stopImmediatePropagation
+};
+jQuery.fn.extend({
+	on
+	one
+	off
+	trigger
+	triggerHandler
+});
+jQuery.each( ("blur focus focusin focusout load resize scroll unload click dblclick " +
+	"mousedown mouseup mousemove mouseover mouseout mouseenter mouseleave " +
+	"change select submit keydown keypress keyup error contextmenu").split(" "), function( i, name ) {
+
+	// Handle event binding
+	jQuery.fn[ name ] = function( data, fn ) {
+		return arguments.length > 0 ?
+			this.on( name, null, data, fn ) :
+			this.trigger( name );
+	};
+});
+jQuery.fn.extend({
+	hover:
+	bind:
+	unbind:
+	delegate:
+	undelegate:
+});
+============================60
+on方法
+$("#div1").on("click",{name:"hello"},function(ev){
+	ev.data.name //hello
+});
+$("ul").on("click","li",{name:"hello"},function(ev){
+	ev.data.name //hello
+});
+jQuery.fn.on=function(types,selector,data,fn,/*internal use*/one){
+	
+};
+
+on: function( types, selector, data, fn, /*INTERNAL*/ one ) {
+	var origFn, type;
+
+	// Types can be a map of types/handlers
+	//对应这种写法：
+	//$("#div1").on(
+	//	"click":function(){
+	//		alert(123);
+	//	},
+	//	"mouseover":function(){
+	//		alert(456);
+	//	},
+	//);
+	if ( typeof types === "object" ) {
+		// ( types-Object, selector, data )
+		if ( typeof selector !== "string" ) {
+			// ( types-Object, data )
+			data = data || selector;
+			selector = undefined;
+		}
+		for ( type in types ) {
+			this.on( type, selector, data, types[ type ], one );
+		}
+		return this;
+	}
+
+	if ( data == null && fn == null ) {
+		// ( types, fn )
+		fn = selector;
+		data = selector = undefined;
+	} else if ( fn == null ) {
+		if ( typeof selector === "string" ) {
+			// ( types, selector, fn )
+			fn = data;
+			data = undefined;
+		} else {
+			// ( types, data, fn )
+			fn = data;
+			data = selector;
+			selector = undefined;
+		}
+	}
+	if ( fn === false ) {
+		fn = returnFalse;
+	} else if ( !fn ) {
+		return this;
+	}
+
+	//针对$().one方法
+	if ( one === 1 ) {
+		origFn = fn;
+		fn = function( event ) {
+			// Can use an empty set, since event contains the info
+			//jQuery() 不写任何参数的时候返回的是当前jQuery对象 相当于jQuery(this)
+			//因此这句话把事件函数给取消了
+			jQuery().off( event );
+			return origFn.apply( this, arguments );
+		};
+		// Use same guid so caller can remove using origFn
+		fn.guid = origFn.guid || ( origFn.guid = jQuery.guid++ );
+	}
+	return this.each( function() {
+		jQuery.event.add( this, types, fn, data, selector );
+	});
+},
+
+$("#input").trigger("focus"); //input会得到焦点
+$("#input").triggerHandler("focus"); //input不会得到焦点 不会触发当前事件的默认行为
+
+
+精简版事件系统
+function add(obj,types,fn){
+	obj.listener=obj.listener||{};
+	obj.listener[types]=obj.listener[types]||[];
+	obj.listener[types].push(fn);
+	
+	obj.addEventListener(types,fn,false);
+}
+function remove(obj,types,fn){
+	obj.removeEventListener(types,fn,false);
+	
+	delete obj.listeners[types]
+}
+function trigger(obj,types){
+	var arr=obj.listeners[types]||[];
+	for(var i=0;i<arr.length;i++){
+		arr[i]();
+	}
+}
+
+var aaa=function(){alert(1);};
+
+add(oDiv,"click",aaa);
+remove(oDiv,"click",aaa);
+
+add(oSpan,"show",aaa);
+trigger(oSpan,"show");
+
+DOM元素上缓存的数据：
+elemData={
+	events:{
+		"click":[ //委托方式加上的方法会放在数组最开头，此时对象当中对应的selector的值就是要委托给的元素选择器
+			{
+				data:undefined,
+				guid:3,
+				handler:function(){},
+				namespace:"",//用于标记某个绑定的函数，可以在解绑定的时候通过命名空间单独解绑该函数而不解绑其他函数
+				needsContext:false,//有委托的情况下是false，没有委托的情况下是undefined，委托时有伪类的时候，即$("#div1").on("click","span:first",function(c){});的情况下该值是true
+				origType:"click",//绑定mouseenter事件时origType的值为mouseenter，type的值为mouseover
+				selector:"span", //如果有委托这一项有值，没委托这一项没值
+				type:"click"
+			},
+			{}, //这里面的对象既有绑在elem上的，也有委托在elem上的
+			delegateCount:0
+		],
+		"mouseover":[
+			{},
+			{},
+			delegateCount:0
+		]
+	},
+	handle:function(e){} //真正的事件函数，即直接绑定在DOM元素上的函数是该函数
+};
+
+$().on("click",function(){});->jQuery.event.add->jQuery.event.dispatch
+
+$().on("click",function(){
+	return false;//阻止冒泡和阻止默认事件，也可以将阻止冒泡和阻止默认事件分开写：
+	//event.preventDefault();
+	//event.stopPropagation();
+});
+
+clientX clientY是所有浏览器都兼容的 这两个是到可视区的距离
+pageX pageY在IE低版本是不兼容的 这两个是距离页面的距离 jQuery已经做过兼容处理，把事件对象修正成都可以获取到pageX pageY了
+
+判断鼠标左中右三个键最好用mousedown事件：
+$(document).on("mousedown",function(ev){
+	//ev.which 可以得到按下的是哪个键
+});
+监听click事件的话在IE浏览器中可能会在点击右键的时候出现默认菜单
+
+$(document).on("mousedown",function(ev){
+	//ev实际上是jQuery修正过的event对象
+	//ev.originalEvent是原生的event
+	//在移动端开发中只有原生对象下才有changedTouches属性，在jQuery的事件对象下是没有的
+});
+
+document.onkeydown=function(ev){
+	var ev=ev||window.event;
+	alert(ev.which);//功能类似keyCode，但是高版本浏览器不支持ev.which
+};
+
+document.onkeypress=function(ev){
+	//ev.keyCode 在onkeypress这个事件下keyCode不起作用，必须用charCode
+};
+
+ev.which融合了keyCode和charCode
+
+在移动端开发中deviceready事件的event对象没有target属性
+
+$("div").on("click",function(ev){
+	alert(1);
+});
+$("span").on("click",function(ev){
+	alert(2);
+	ev.stopPropagation();
+});
+$("span").on("click",function(ev){
+	alert(3);
+});
+//以上结果会弹出2 3 阻止冒泡给div 但是span上绑的事件都执行了
+
+
+$("div").on("click",function(ev){
+	alert(1);
+});
+$("span").on("click",function(ev){
+	alert(2);
+	ev.stopImmediatePropagation();
+});
+$("span").on("click",function(ev){
+	alert(3);
+});
+//以上结果会只弹出2
+
+jQuery.event.special
+load
+focus
+blur
+click
+beforeunload
+mouseenter
+mouseleave
+focusin
+focusout
+
+jQuery中的trigger(主动触发)会冒泡，但是load是不允许冒泡的，例如：
+$(window).load(function(){
+	alert(1);
+});
+$(img).load(function(){
+	alert(2);
+});
+不能因为img的load完成而触发window的load事件，所以jQuery在special里做了修正
+focus事件也是同理，不可以冒泡
+
+$("#input").on("click",function(){});
+$("#input").trigger("click");
+
+
+$(".href").on("click",function(){
+	alert(1);
+});
+$(".href").trigger("click");//主动触发的时候只会弹出1，并不会跳到href属性对应的页面
+_default: function (event) {
+	return jQuery.nodeName(event.target, "a");
+}
+
+判断a是否包含b
+function elContains(a,b){
+	return a.contains ? (a!=b && a.contains(b)) : !!(a.compareDocumentPosition(b) & 16);
+}
+oDiv1.onmouseover=function(ev){
+	var ev=ev||window.event;
+	var a=this;
+	var b=ev.relatedTarget;
+	if(!elContains(a,b) && a!=b){
+		oSpan1.innerHTML+="1";
+	}
+};
+oDiv1.onmouseout=function(ev){
+	var ev=ev||window.event;
+	var a=this;
+	var b=ev.relatedTarget;
+	if(!elContains(a,b) && a!=b){
+		oSpan1.innerHTML+="2";
+	}
+};
+
+=====================================================DOM操作
+$.fn.extend({
+	find
+	//has是找$(div)下有没有.box
+	has		$("div").has(".box").css({"border":"1px solid #000"});
+	//not和filter是找$("div")自身有没有.box
+	not		$("div").not(".box").css({"border":"1px solid #000"});
+	filter	$("div").filter(".box").css({"border":"1px solid #000"});
+	is
+	
+});
+
+function winnow(elements, qualifier, not) {
+	if (jQuery.isFunction(qualifier)) {
+		return jQuery.grep(elements, function (elem, i) {
+			/* jshint -W018 */
+			return !!qualifier.call(elem, i, elem) !== not;
+		});
+
+	}
+
+	if (qualifier.nodeType) {
+		return jQuery.grep(elements, function (elem) {
+			return (elem === qualifier) !== not;
+		});
+
+	}
+
+	if (typeof qualifier === "string") {
+		if (risSimple.test(qualifier)) {
+			return jQuery.filter(qualifier, elements, not);
+		}
+
+		qualifier = jQuery.filter(qualifier, elements);
+	}
+
+	return jQuery.grep(elements, function (elem) {
+		return (indexOf.call(qualifier, elem) > -1) !== not;
+	});
+}
+
+76
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

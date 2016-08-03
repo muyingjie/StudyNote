@@ -1,0 +1,128 @@
+明日科技PHP
+
+PHP标记风格
+<?php
+	echo "这是XML风格标记";
+?>
+
+
+PHP的8种数据类型：boolean integer float/double string array object resource null
+
+<?php
+	$boo=true;
+	if($boo==true){
+		
+	}
+?>
+
+
+0 0.0 "0" "" 只声明没有赋值的数组 都是假
+
+双引号中的字符串所包含的变量会自动被替换成实际数值，单引号包含的变量按普通字符输出
+
+当表达式的值超出int表示范围时会转换成float型
+
+浮点数之间不可以比较大小
+
+$arr1=array(1,2,3,4);
+$arr2=array(0=>"php",1=>"mysql",2=>"apache");
+
+声明数组后数组中元素个数可以自由更改，只要给数组赋值，数组就会自动增加长度
+
+使用资源类型系统会自动启用垃圾回收机制，不必手动释放内存
+
+null不区分大小写，被赋予null的3种情况：
+还没有赋任何值
+被赋值null
+被unset函数处理过的变量
+
+
+is_null() 判断变量是否为null，返回boolean类型
+if(is_null($str)){
+	echo "空";
+}
+
+从PHP4开始 unset函数不再有返回值
+
+$num="3.14";
+settype($num,"integer");
+echo $num; //3 原变量值变了
+
+$num="3.14";
+echo (integer)$num;//"3.14" 原变量值不变
+
+内置检测类型的函数
+is_bool
+is_string
+is_float/is_double
+is_integer/is_int
+is_null
+is_array
+is_object
+is_numeric
+
+//定义常量
+define(string constant_name,mixed value[,case_sensitive=true]);
+
+//获取常量的值
+方式1：直接写常量名
+方式2：mixed constant(string const_name);
+
+//判断常量是否定义
+bool defined(string constant_name)
+
+//预定义常量
+__FILE__		PHP程序文件名
+__LINE__		PHP程序行数
+PHP_VERSION
+PHP_OS
+TRUE
+FALSE
+NULL
+E_ERROR			该常量指到最近的错误处
+E_WARNING		该常量指到最近的错误处
+E_PARSE			该常量指到解析语法有潜在问题处
+E_NOTICE		该常量为发生不寻常处的提示单并不一定是错误处
+
+上述以E开头的预定义常量是PHP的错误调试部分，详情请参考error_reporting()函数
+
+//可变变量
+$change_name="trans";
+$trans="123";
+echo $$change_name;//123
+
+//预定义变量
+$_SERVER["SERVER_ADDR"] 当前运行脚本所在服务器的IP地址
+$_SERVER["SERVER_NAME"]
+$_SERVER["REQUEST_METHOD"]
+$_SERVER["REMOTE_ADDR"] 正在浏览当前页面用户的IP地址
+$_SERVER["REMOTE_HOST"] 正在浏览当前页面用户的主机名，反向域名解析基于该用户的REMOTE_ADDR
+$_SERVER["SCRIPT_FILENAME"] 当前执行脚本的绝对路径名，注意：如果脚本在CLI中被执行，作为相对路径，如file.php或者.../file.php，$_SERVER["SCRIPT_FILENAME"]将包含用户指定的相对路径
+$_SERVER["SERVER_PORT"] 服务器所使用的端口，默认为80，如果使用SSL安全连接，则这个值为用户设置的HTTP端口
+$_SERVER["SERVER_SIGNATURE"] 包含服务器版本和虚拟主机名的字符串
+$_SERVER["DOCUMENT_ROOT"] 当前运行脚本所在的文档根目录，在服务器配置文件中定义
+$_COOKIE
+$_SESSION
+$_POST
+$_GET
+$GLOBALS 由所有已定义全局变量组成的数组，变量名就是该数组的索引，它可以称得上是所有超级变量的超级集合
+
+$m xor $n 当$m和$n一真一假的时候返回真
+
+$err=@(5/0); //可以屏蔽错误信息
+
+//引用传递
+function example(&$m){
+	$m=$m*5+10;
+	echo $m; //15
+}
+$m=1;
+echo $m;//15;
+
+//默认参数
+function values($prices,$tax=""){
+	$price=$price+($price*$tax);
+}
+
+
+

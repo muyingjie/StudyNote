@@ -79,9 +79,23 @@ php_value include_path "f:/php0421/shop"
 
 纯php文件一定要将最后的结束标识省略
 
+mysql_connect("localhost","root","123456");
+mysql_query("set names utf8");
+mysql_query("select * from student_info");
+Array([student_id]=>1 [student_name]=>zhang);
 
+mysql_fetch_assoc($result);//键值数组格式
+Array([student_id]=>1 [student_name]=>zhang);
 
+mysql_fetch_row($result); //下标数组格式
+Array([0]=>1 [1]=>zhang);
 
+mysql_fetch_array($result);//既有下标 又有数组
+
+mysql_fetch_object($result);//返回对象
+Object([student_id]=>1 [student_name]=>zhang);
+
+mysql_close($link);//断开连接 注意不是关闭连接
 
 
 
