@@ -97,6 +97,233 @@ Object([student_id]=>1 [student_name]=>zhang);
 
 mysql_close($link);//断开连接 注意不是关闭连接
 
+==============================================
+
+MySQLDB的封装
+class MySQLDB{
+	public $host;
+	public $port;
+	public $user;
+	public $pass;
+	public $charset;
+	public $dbname;
+	public $link;
+	
+	public function __contruct($options){
+		$this->host=isset($options["host"]) ? $options["host"] : "127.0.0.1";
+		$this->port=isset($options["port"]) ? $options["port"] : "3306";
+		$this->user=isset($options["user"]) ? $options["user"] : ""; //默认为匿名用户
+		$this->pass=isset($options["pass"]) ? $options["pass"] : "";
+		$this->charset=isset($options["charset"]) ? $options["charset"] : "utf8";
+		$this->dbname=isset($options["dbname"]) ? $options["dbname"] : "";
+		
+		if($link=mysql_connect("$this->host:$this->port",$this->user,$this->pass)){
+			$this->link=$link;
+		}else{
+			echo "数据库连接失败";
+			die;
+			return false;
+		}
+		
+		$sql="set names $this->charset";
+		if(!mysql_query($sql,$this->link)){
+			echo "SQL执行失败";
+		}
+		
+		$sql="use `$this->dbname`";
+		if(!mysql_query($sql,$this->link)){
+			echo "SQL执行失败";
+		}
+	}
+}
+$config=array(
+	"host"=>"127.0.0.1",
+	"port"=>"3306",
+	"user"=>"root",
+	"pass"=>"1234",
+	"charset"=>"utf8",
+	"dbname"=>"test"
+);
+$db=new MySQLDB($config);
+
+==============================================
+
+主机解析URL，分发路由，确定交给哪个平台哪个控制器的哪个方法处理
+查询到结果之后再返回给客户端
+↓	↑
+转交给控制器	对于控制器而言，把相同的功能提取出来，定义一个总控制器，其他控制器继承自它
+↓	↑
+模型	上传类	验证码类	
+↓	↑
+数据库连接
+↓	↑
+数据库
+
+
+项目目录结构
+shopcz
+	application	应用程序目录
+		controllers
+			home		前台
+			admin		后台
+		models
+		views
+			home		前台
+			admin		后台
+		config		配置目录
+	framework	框架目录
+		core
+		database
+		libraries	验证码类 上传类放在这里
+		helpers		工具函数
+	public		公共资源目录
+		images
+		style
+		js
+		upload
+	index.php	入口文件
+	
+单一入口	
+index.php?p=admin&c=goods&c=add
+
+framework/core:
+Framework.class.php
+<?php
+class Framework{
+	//定义一个主方法
+	public static function run(){
+		self::init();
+		self::autoload();
+		self::dispatch();
+	}
+
+	//1 项目初始化
+	private static function init(){
+		//定义数据常量
+		//define("ROOT_PATH",getcwd()."/");
+		//DIRECTORY_SEPARATOR 实际上就是正斜线
+		define("ROOT_PATH",getcwd().DIRECTORY_SEPARATOR);//根目录
+		define("FRAMEWORK_PATH",		ROOT_PATH."framework".DIRECTORY_SEPARATOR);//框架目录
+		define("APP_PATH",				ROOT_PATH."application".DIRECTORY_SEPARATOR);
+		define("CORE_PATH",				ROOT_PATH."core".DIRECTORY_SEPARATOR);
+		define("DB_PATH",				FRAMEWORK_PATH."database".DIRECTORY_SEPARATOR);
+		define("LIB_PATH",				FRAMEWORK_PATH."libraries".DIRECTORY_SEPARATOR);
+		define("HELPER_PATH",			FRAMEWORK_PATH."helpers".DIRECTORY_SEPARATOR);
+		define("CONTROLLER_PATH",		APP_PATH."controllers".DIRECTORY_SEPARATOR);
+		define("MODEL_PATH",			APP_PATH."model".DIRECTORY_SEPARATOR);
+		define("VIEW_PATH",				APP_PATH."views".DIRECTORY_SEPARATOR);
+		define("CONFIG_PATH",			APP_PATH."config".DIRECTORY_SEPARATOR);
+		
+		//载入配置文件
+		
+		//载入核心文件
+		
+		
+		//确定当前所访问的平台 控制器 方法以及相应的控制器和视图目录
+		define("PLATFORM",isset($_REQUEST["p"] ? $_REQUEST["p"] : "home"));
+		define("CONTROLLER",isset($_REQUEST["c"] ? ucfirst($_REQUEST["c"]) : "Index")); //ucfirst使首字母变成大写
+		define("ACTION",isset($_REQUEST["a"] ? $_REQUEST["a"] : "index"));
+		
+		define("CURR_CONTROLLER_PATH",CONTROLLER_PATH.PLATFORM.DIRECTORY_SEPARATOR);
+		define("CURR_VIEW_PATH",VIEW_PATH.PLATFORM.DIRECTORY_SEPARATOR);
+	}
+	//2 实现自动加载功能
+	private static function autoload(){
+		//将load方法注册为自动加载
+		spl_autoload_register(array(__CLASS__,"load"));
+	}
+	
+	private static function load($classname){
+		//此处的自动加载只加载控制器和模型
+		if(substr($classname,-10)=="Controller"){
+			require CURR_CONTROLLER_PATH.$classname.".class.php";
+		}else if(substr($classname,-5)=="Model"){
+			require MODEL_PATH.$classname.".class.php";
+		}
+	}
+	
+	//3 路由分发
+	private static function dispatch(){
+		//实例化控制器对象，调用方法
+		$controller_name=CONTROLLER."Controller";
+		$action_name=ACTION."Action";
+		
+		$controller=new $controller_name;
+		$controller->$action_name();
+	}
+}
+
+===================index.php
+<?php
+require "framework/core/Framework.class.php";
+Framework::run();
+
+单一入口的程序有一个特点：就是所有请求都是相对于index.php的
+
+定义基础控制器
+定义controller控制器
+
+PHP中require文件的时候如果要写相对路径，就相对于index.php来写，因为相对路径是相对于代码执行的位置而不是定义的位置
+
+用户表
+字段			类型			功能		备注
+user_id			int unsigned	主键		auto_increment
+user_name		varchar(20)		姓名		not null
+user_password	char(32)		密码		md5 not null
+login_time		int				登录时间	
+login_ip		int
+login_times		int				登录错误次数
+email			varchar(100)
+role_id			int				所属角色
+
+login_ip不用varchar(15) 因为int正好是4个字节 255正好是1个字节
+通过ip2long方法就可以将字符串类型的ip转换成整型
+
+
+当PHP程序运行时如果遇到没有定义过的类就执行注册到spl_autoload_register这个函数中的方法，并将没有定义过的类以参数的形式传入到这个方法中
+
+
+<?php
+header("Location:34.php");
+
+会跳到34.php页面，立即跳转，在浏览器中访问该页面时会302重定向，再请求34.php页面
+
+在php文件中写上setCookie("is_login","yes",time()+3600);代表给客户端一个响应，向客户端中写入is_login这样一个cookie，并设置其失效时间为一小时以后，注意此时给客户端响应的过期时间是格林威治零时区的时间，因此会比服务器设置的那个时间早8个小时
+
+
+setCookie将第二个参数设置为空字符串代表删除cookie
+
+
+如果访问一个已经销毁的cookie，同样会报错，例如is_login被销毁时，$_COOKIE["is_login"]会报错
+
+
+存储在浏览器端的每一个cookie叫cookie变量，我们可以通过$_COOKIE["height"]=170来增加一个$_COOKIE对象下的属性，$_COOKIE对象下的属性并不一定是cookie变量，通过$_COOKIE["height"]=170设置的名为height的cookie就不是cookie变量
+
+通过setCookie函数设置的cookie才是cookie变量
+
+$_COOKIE数组仅仅保存当前请求浏览器所携带的cookie数据，如有以下php文件：
+setCookie("name","abc");
+var_dump($_COOKIE);
+
+第一次请求时是没有name这个cookie的，第二次请求时才会有
+
+Cookie数据默认仅仅在当前目录及其子目录有效
+
+Cookie存在子域名概念
+默认情况下test.kang.com设置的cookie在shop.kang.com下访问不到，可以通过setCookie的第5个参数设置
+默认值为空字符串，表示当前域名
+可以设置成顶级域名，表示在该顶级域名下的所有子域名都生效
+
+
+
+
+
+
+
+
+
+
+
 
 
 

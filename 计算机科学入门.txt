@@ -1,0 +1,26 @@
+计算机科学入门
+搜索引擎的三步：
+Build a search engine
+find data->build an index->rank pages
+即通过网页抓取数据->建立索引，以便快速响应查询请求->页面排序，以便获取最佳查询结果
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

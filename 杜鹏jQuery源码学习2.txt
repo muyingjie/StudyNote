@@ -2600,7 +2600,39 @@ $.fn.extend({
 	not		$("div").not(".box").css({"border":"1px solid #000"});
 	filter	$("div").filter(".box").css({"border":"1px solid #000"});
 	is
-	
+	closest
+	index
+	add
+	addBack
+});
+function sibling(){}
+jQuery.each({
+	parent
+	parents
+	parentsUntil 可以传入截止位置
+	next
+	prev
+	nextAll
+	prevAll
+	nextUntil
+	prevUntil
+	siblings
+	children
+	contents
+},function(name,fn){});
+jQuery.fn.extend({
+	text
+	append
+	prepend
+	before
+	after
+	remove
+	empty
+	clone
+	html
+	replaceWith
+	detach
+	domManip
 });
 
 function winnow(elements, qualifier, not) {
@@ -2632,7 +2664,38 @@ function winnow(elements, qualifier, not) {
 	});
 }
 
-76
+$().children() 只存储元素节点
+$().contents() 存储所有节点，包括文本节点 注释节点
+
+如果在iframe下调用contents，将会返回document节点
+
+$("div").remove();
+$("div").detach();
+remove和detach都可以删除div
+
+remove将会把元素之前绑定的事件全部删掉，即使再将其还原回来(remove的返回值就是删除的节点，可以获取到它从而在后期再添加回来)这些事件也会被删除，通过data方法缓存的数据也会被清除
+
+$("div").text(); //只能获取到文本节点的内容
+
+$("div").clone(true);//返回的节点会将原来的div绑定的事件也一起克隆过来
+
+原生的innerHTML方法无法添加script和link标签，jQuery里面的html方法是可以的
+
+原生的innerHTML方法也无法添加不符合规范的添加方式，例如tr元素是不可以添加到span中，但是jQuery的html方法是可以的
+
+==========================================================样式操作
+function vendorPropName(){}
+function isHidden(){}
+function getStyles(){}
+function showHide(){}
+jQuery.fn.extend({
+	css
+});
+jQuery.extend({
+	cssHooks
+});
+
+88
 
 
 
