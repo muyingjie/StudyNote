@@ -314,15 +314,199 @@ Cookie存在子域名概念
 默认值为空字符串，表示当前域名
 可以设置成顶级域名，表示在该顶级域名下的所有子域名都生效
 
+session_start()可以开启session机制
+利用对$_SESSION数组的操作，可以完成对SESSION数据的操作
+增：$_SESSION["key"]=>value
+删：unset
+查：var_dump($_SESSION["key"])
+
+启用session后，当服务器接收到浏览器的请求时，服务器会检查浏览器是否携带了session_id，如果存在，则以浏览器携带的session_id为当前的session标识，如果没有，则服务器重新生成一个session_id
+
+在操作session时，使用数组变量$_SESSION，该变量在脚本结束时被自动销毁
+之所以下次请求还可以用，是因为
+可见，在$_SESSION被销毁之前，一定要将其数据保存起来，以便于下次再利用该数据将$_SESSION数组初始化，就是将数据保存在服务器端session数据区内，默认的数据区在服务器上是以文件的形式保存session数据的，在服务器操作系统的临时文件中
+C:\Windows\Temp
+
+详细使用
+开启，支持自动开启
+通过PHP配置文件php.ini设置脚本运行前自动开启，将session.auto_start值设置为1，一般不建议自动开启
+如果将session.auto_start设置为1之后，再执行session_start()会触发一个提示notice级别的错误
+
+$_SESSION数组仅支持字符串型下标
+
+$_COOKIE只能保存字符串类型的值，而$_SESSION可以保存任何PHP数据类型的值(不包括资源类型)
+当存储对象类型的值时需要在开启session之前require进来类文件，如果在php.ini中将session.auto_start设置为1，就无法在开启session之前引入类文件，因此会出错
+
+在php.ini中可以通过session.save_path保存session数据区
+
+session数据区的内容可能会很多，所以有可能有非常多的文件，此时需要分类存储session数据，可以通过配置session.save_path配置采用N级目录的形式来存储:session.save_path="1;e:/amp/temp" 这里面的1代表有1级子目录
+
+SESSION-ID的形成 默认是md5
+
+SESSION数据区(文件)的删除
+unset($_SESSION["key"])
+
+清除所有SESSION数据：$_SESSION=array()
+注意不是unset($_SESSION)
+
+unset删除的是变量 unset只是将栈中的引用和堆中的实体之间的关系切断
+
+不管是$_SESSION=array()还是unset($_SESSION)都无法将SESSION文件删除
+想要将物理文件删除必须调用session_destroy()
+
+session_destroy()仅仅用来删除文件，即使执行了session_destroy()再var_dump($_SESSION)还是会输出相应值
+
+完全删除SESSION
+session_destroy();
+$_SESSION=array();
+setCookie("PHPSESSID","",time()-1);
+
+PHPSESSID是存储在浏览器端cookie的一个key，这个名字可以在php.ini配置文件中修改：session.name=PHPSESSID
+可以使用PHP内置函数来获取这个key的名字：session_name()
+所以较为合适的写法应该是setCookie(session_name(),"",time()-1);
 
 
+PHP与数据区存储相关的函数操作，有6个：
+开始 结束 读 写 销毁 垃圾回收
+
+function sess_open(){
+	
+}
+
+function sess_close(){
+
+}
+
+function sess_read(){
+
+}
+
+function sess_write(){
+
+}
+
+function sess_destroy(){
+
+}
+
+function sess_gc(){
+
+}
+
+将以上自定义方法
+
+利用PHP内置函数session_set_save_handler()存储
+session_set_save_handler("sess_open","sess_close","sess_read","sess_write","sess_destroy","sess_gc")
+
+当SESSION机制需要操作SESSION数据区时，就有用户定义的相应函数完成
+此时默认机制不起作用，不以文件的形式进行存储
+
+依据我们的SESSION存储计划，来实现以上六个函数
+以SESSION的数据库存储为例完成
+
+SESSION入库
+SESSION数据表
+字段		类型			作用
+sess_id		varchar(32)		session_id
+sess_data	text			当前session数据，序列化好的数据
+expire		int				最后修改时间
 
 
+create table `session` (
+	sess_id varchar(32) primary key,
+	sess_data text,
+	expire int
+) charset=utf8;
+function sess_open(){
+	
+}
+
+function sess_close(){
+	return true;
+}
+//session机制开启时执行
+function sess_read($sess_id){
+	mysql_connect("127.0.0.1:3306","root","1234abcd");
+	mysql_query("set names gbk");
+	mysql_query("use `test`");
+	
+	$sql="select sess_data from `session` where sess_id=`$sess_id`";
+	$result=mysql_query($sql);
+	if($row=mysql_fetch_assoc($result)){
+		return $row["sess_data"];
+	}else{
+		return "";
+	}
+}
+
+//脚本周期结束时执行
+function sess_write($sess_id,$sess_data){
+	mysql_connect("127.0.0.1:3306","root","1234abcd");
+	mysql_query("set names gbk");
+	mysql_query("use `test`");
+	
+	$expires=time();
+	$sql="replace into `session` values ('$sess_id','$sess_data',0)";
+	//还可以写成insert into `session` values ('$sess_id','$sess_data',$expires) on duplicate key update sess_data='$sess_data';
+	//或者通过判断库里有没有这条记录，再分别执行insert和update
+}
+
+//php提供的系统方法session_destroy()执行时才会触发我们自己写的sess_destroy()
+//一旦销毁，sess_write就不执行了
+function sess_destroy($sess_id){
+	mysql_connect("127.0.0.1:3306","root","1234abcd");
+	mysql_query("set names gbk");
+	mysql_query("use `test`");
+	
+	$sql="delete from `session` where sess_id=$sess_id";
+	mysql_query($sql);
+}
+
+function sess_gc($max_lifetime){
+	mysql_connect("127.0.0.1:3306","root","1234abcd");
+	mysql_query("set names gbk");
+	mysql_query("use `test`");
+	
+	$expires=time();
+	//数据库字段尽量出现在表达式的一边，否则不利于mysql的查询优化
+	$sql="delete from `session` where expires<$expires-$max_lifetime";
+	mysql_query($sql);
+}
+session_set_save_handler("sess_open","sess_close","sess_read","sess_write","sess_destroy","sess_gc")
 
 
+php.ini中可以设置session生存时间session.gc_maxlifetime
 
 
+每次开启session机制时(session_start)，有几率的执行删除垃圾的操作
 
+可以把公共的操作例如数据库连接放在sess_start里面
+
+session默认是以文件的方式存储的，在php.ini中session.save_handler表示，但是session.save_handler只有一个可选值，有一些扩展可以将其设置为其他选项，比较常用的选项有files user memcache
+
+建议：如果通过session_set_save_handler自定义了session的相关方法，最好将session.save_handler改为user，可以在php中手动操作：init_set("session.save_handler","user");
+
+应该先执行session_set_save_handler，再执行session_start，即先设置处理器，再开启session
+但是有时php会自动开启session
+此时需要想办法将其设置为非自动开启，除了在php.ini中配置以外还可以在.htaccess文件中配置：
+php_flag session.auto_start 0
+
+session面试题
+session和cookie的联系，都是会话技术
+session和cookie的区别（从安全性 请求传输的数据量 对数据类型的支持 大小的限制 永久性保存的问题 角度说明），session位于服务器端，cookie位于客户端
+
+
+如何持久化session
+SESSIONID的有效期session.cookie_lifetime
+SESSION数据区的有效期session.gc_maxlifetime
+
+cookie禁用的话可以使用session吗？
+可以，只要找到代替cookie传递sessionID的方式即可
+利用get或post方式即可
+在php.ini配置session.use_only_cookies=1，该参数设置为1代表不仅仅使用cookie传递
+
+session.use_trans_sid=1;是否自动传输sessionID
+如果按照session.use_trans_sid=1配置，php会将所有的html代码中的链接地址部分增加上PHPSESSIONID参数
 
 
 

@@ -279,11 +279,11 @@ box-direction:排列方式normal reverse;
 box-flex定义盒子的弹性空间
 .box{ 100px; border:10px solid #000; padding:10px; display:-webkit-box; font-size:20px; color:#fff;}
 .box div{ height:100px; background:red; border:1px solid #fff;}
-.box div:nth-of-type(1){ -webkit-flex:1;}
-.box div:nth-of-type(2){ -webkit-flex:2;}//是1的2倍
-.box div:nth-of-type(3){ -webkit-flex:3;}//是1的3倍
-.box div:nth-of-type(4){ -webkit-flex:4;}//是1的4倍
-.box div:nth-of-type(5){ -webkit-flex:5;}//是1的5倍
+.box div:nth-of-type(1){ -webkit-box-flex:1;}
+.box div:nth-of-type(2){ -webkit-box-flex:2;}//是1的2倍
+.box div:nth-of-type(3){ -webkit-box-flex:3;}//是1的3倍
+.box div:nth-of-type(4){ -webkit-box-flex:4;}//是1的4倍
+.box div:nth-of-type(5){ -webkit-box-flex:5;}//是1的5倍
 
 子元素的尺寸=盒子的尺寸*子元素的box-flex属性值/所有子元素的box-flex属性值的和
 
@@ -291,11 +291,11 @@ box-flex定义盒子的弹性空间
 
 .box{ 100px; border:10px solid #000; padding:10px; display:-webkit-box; font-size:20px; color:#fff;}
 .box div{ height:100px; background:red; border:1px solid #fff;}
-.box div:nth-of-type(1){ -webkit-flex:300px;}
-.box div:nth-of-type(2){ -webkit-flex:2;}//是1的2倍
-.box div:nth-of-type(3){ -webkit-flex:3;}//是1的3倍
-.box div:nth-of-type(4){ -webkit-flex:4;}//是1的4倍
-.box div:nth-of-type(5){ -webkit-flex:5;}//是1的5倍
+.box div:nth-of-type(1){ -webkit-box-flex:300px;}
+.box div:nth-of-type(2){ -webkit-box-flex:2;}
+.box div:nth-of-type(3){ -webkit-box-flex:3;}
+.box div:nth-of-type(4){ -webkit-box-flex:4;}
+.box div:nth-of-type(5){ -webkit-box-flex:5;}
 这里2、3、4、5按照2:3:4:5的比例来分配
 
 box-pack 富予空间的管理（水平方向上）
@@ -331,17 +331,25 @@ css3实现拖拽改变层大小
 
 盒模型的怪异模式，怪异解析
 IE中不加文档声明会有怪异模式
-box-sizing:content_box;标准盒模型如果设置为border-box则为怪异模式
+box-sizing:content-box;标准盒模型如果设置为border-box则为怪异模式
 怪异模式下我们设置的width变成了可视区宽，内容宽变成了width(可视区宽)减去padding减去border
 
 响应式开发
 
 分栏布局
+column-width 栏目宽度
+column-count 栏目列数
+column-gap 栏目距离
+column-rule 栏目间隔线
 <div class="wrap">
-	<p></p>
+	<p>111</p>
+	<p>111</p>
+	<p>111</p>
+	<p>111</p>
+	<p>111</p>
 </div>
 
-//第一种方法，限制宽度
+//第一种方法，限制宽度，注意并不是一个p标签占一栏，而是根据内容来，一列满了就从下一列再开
 .wrap{ width:900px; border:1px solid #000; font:14px/28px "宋体"; color:#000; text-indent:2em; -webkit-column-width:250px;}
 
 //第二种方法，限制栏数
@@ -353,16 +361,16 @@ box-sizing:content_box;标准盒模型如果设置为border-box则为怪异模式
 分栏功能只有webkit内核浏览器支持
 
 响应式：2010之后，移动互联网大兴，所以我们希望一个网站可以兼容多个终端
-
+将以下所有的link都写入页面中，浏览器就会根据宽度不同引入不同的样式表
 <link rel="stylesheet" type="text/css" href="stylea.css" media="screen and (min-width:800px)">
-<link rel="stylesheet" type="text/css" href="stylea.css" media="screen and (min-width:400px) and (max-width:800px)">
-<link rel="stylesheet" type="text/css" href="stylea.css" media="screen and (max-width:400px)">
+<link rel="stylesheet" type="text/css" href="styleb.css" media="screen and (min-width:400px) and (max-width:800px)">
+<link rel="stylesheet" type="text/css" href="stylec.css" media="screen and (max-width:400px)">
 
-移动端的横竖屏切换
+移动端的横竖屏切换，将以下所有的link都写入页面中，浏览器就会在横竖屏切换时引入不同的样式
 <link rel="stylesheet" type="text/css" href="stylea.css" media="all and (orientation:portrait)">
 <link rel="stylesheet" type="text/css" href="styleb.css" media="all and (orientation:landscape)">
 
-
+除了引入不同的样式表之外还可以通过@media媒体查询来做
 @media screen and (min-width:600px){
 	.wrap{ width:900px; border:1px solid #000; font:14px/28px "宋体"; color:#000; text-indent:2em; -webkit-column-count:4; -webkit-column-gap:30px; -webkit-column-rule:1px solid #000;}
 }
