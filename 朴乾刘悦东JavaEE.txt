@@ -83,12 +83,18 @@ ENTITY 实体 就是对一大段内容的引用，可以简化代码的复用 �
 	参数实体 在dtd中引用的实体叫做参数实体
 			<!ENTITY % 实体名称 "实体内容">
 
+用Java来开发网站就是Javaweb
+不同的人在不同的时候根据不同的条件看到不一样的东西，就是动态web资源，典型的案例就是会员登录之后显示的欢迎...，会员名都是不一样的
+
+Java和数据库之间通过JDBC来交互
+JAVA_HOME环境变量配到JDK根目录下就可以，不用配置到bin目录下
+			
 JavaEE不仅仅是Socket编程，具体包括13门核心技术
 weblogic websphere支持上述的13种技术
 Tomcat只支持Jsp和Servlet规范
 
-一台Tomcat服务器上可以配置多个站点，各个站点实际上是在这台真实机里面运行着的虚拟主机
-一个tomcat可以认为是一台真实主机
+一台Tomcat服务器(物理机)上可以配置多个站点，各个站点实际上是在这台真实机里面运行着的虚拟主机
+一个tomcat服务器可以认为是一台真实主机
 一台真实主机可以配置多个站点
 这些站点在访问者看来访问他们就像在访问各自独立的主机一样
 所以我们可以认为这些站点都运行在tomcat这台真实主机当中的各自的虚拟虚拟主机中
@@ -97,13 +103,15 @@ Tomcat只支持Jsp和Servlet规范
 需要按照一定的方式组织成web应用虚拟主机才能使用
 一般来说我们会按照功能将某一功能相关的所有web资源组织成一个web应用然后再交给虚拟主机
 
+总结：一台物理机中可以有多个虚拟机，每台虚拟机中可以有多个web应用，web应用就是为了实现某个功能所相关的web资源的集合(html css js servlet jsp)
+
 配置web应用给虚拟主机：
 	方法1：在server.xml的<Host>标签中，配置<Context>标签，就可以为该虚拟主机配置一个web应用了
 		*web应用的虚拟路径映射：就是为web应用的真实存在的路径配置一个浏览器访问的虚拟路径
 		<Host name="localhost">
 			<Context path="/news" docBase="E:\news">
 		</Host>
-		*配置缺省web应用 将path属性设置为空
+		*配置缺省web应用 将path属性设置为空，即直接通过localhost域名访问到的页面
 		<Host name="localhost">
 			<Context path="" docBase="E:\news">
 		</Host>
@@ -121,9 +129,20 @@ Tomcat只支持Jsp和Servlet规范
 		这种配置方式不需要重启服务器，但用的还是不多
 
 	方法3：直接将web应用放置到虚拟主机管理的目录(这个目录默认是webapps)下，虚拟主机就可以找到这个web应用，只要将web应用文件夹的名称改为ROOT，这个web应用就是缺省web应用
+	
+		在tomcat8/conf/server.xml下
+		
+		//这里的Host标签就代表localhost这个域名管理的是webapps这个目录下的web资源，即该目录就是虚拟主机管理的目录
+		<Host name="localhost"  appBase="webapps" unpackWARs="true" autoDeploy="true">
+			<Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+				   prefix="localhost_access_log" suffix=".txt"
+				   pattern="%h %l %u %t &quot;%r&quot; %s %b" />
 
+		</Host>
+
+		我们通过localhost这个域名访问web应用的时候没有指定访问哪个web应用，就会访问缺省web应用(即ROOT文件夹)，ROOT下面默认存放了tomcat的相关信息
 web应用目录结构：
-news
+news(web应用名，webapps下面的一个文件夹)
 |
 |————静态资源和jsp都可以直接放在web应用的目录下，直接放在web应用下的内容，浏览器可以直接访问到
 |
@@ -136,9 +155,86 @@ news
 	在conf/server.xml中<Engine>标签下配置<Host>标签就可以为tomcat增加一台虚拟主机了
 	<Host name="www.baidu.com" appBase="E:/game"> game文件夹下面可以有WEB-INF，一旦有的话，里面的内容必须有classes lib web.xml
 
-	缺省虚拟主机：如果来访者是通过ip来访问，这个时候服务器无法判断当前要访问的是哪台虚拟主机中的资源，此时访问缺省虚拟主机，缺省虚拟主机可以在server.xml中engine标签上通过defaultHost来配置
+	缺省虚拟主机：如果来访者是通过ip来访问，这个时候服务器无法判断当前要访问的是哪台虚拟主机中的资源，此时访问缺省虚拟主机，缺省虚拟主机可以在server.xml中Engine标签上通过defaultHost来配置
 
 一个web应用可以没有web.xml，如果没有的话会继承conf目录下的web.xml文件
+
+打war包：在应用根目录下先选中所有文件生成zip格式的压缩包，再将扩展名改为war，并将该war包放在tomcat的webapps下即可
+
+每个web应用下WEB-INF文件夹里面的web.xml都可以配置访问web应用的主页，即路径中没有输入页面的名字之后显示的页面，通常来说tomcat webapps文件夹下所有web应用的web.xml都继承自conf/web.xml里面的<welcom-file-list>配置，该配置中有对首页的配置
+<welcome-file-list>
+	<welcome-file>index.jsp</welcome-file>
+	<welcome-file>index.html</welcome-file>
+</welcome-file-list>
+
+context.xml也是同理，每个Context标签对应一个web应用，所有context标签的父级是conf/context.xml这个标签，在conf/context.xml中可以做一些公共的配置：
+<Context>
+	//监听web.xml变化时重新加载web应用
+	<WatchResource>WEB-INF/web.xml</WatchResource>
+</Context>
+
+在HTTP1.0协议中，客户端与web服务器建立连接后，只能获得一个web资源
+HTTP1.1协议，允许客户端与web服务器建立连接后，在一个连接上获取多个web资源
+
+2.HTTP请求
+	2.1请求行
+					GET /books/java.html HTTP/1.1
+					请求方式 请求的资源名 所遵循的协议
+		2.1.1请求方式：GET、POST，
+					其中GET方式在请求资源的URL后跟“？参数名=参数值&参数名=。。。”方式传递参数，传输的数据内容最大为1K
+					其中POST方式在请求实体中传输数据
+					除了用Form表单明确用method指定用post方式提交数据以外，其他的方式都是GET提交方式
+
+	2.2请求头
+		Accept: text/html,image/*    客户端可以接受的数据类型
+		Accept-Charset: ISO-8859-1	客户端接受数据需要使用的字符集编码
+		Accept-Encoding: gzip,compress 客户端可以接受的数据压缩格式
+		Accept-Language: en-us,zh-cn  可接受的语言环境
+		Host: www.it315.org:80 想要访问的虚拟主机名
+		If-Modified-Since: Tue, 11 Jul 2000 18:23:51 GMT 这是和缓存相关的一个头，带着缓存资源的最后获取时间
+		Referer: http://www.it315.org/index.jsp 这个头表示当前的请求来自哪个链接，这个头和防盗链的功能相关
+		User-Agent: Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0) 客户端的一些基本信息
+		Cookie 会在后面讲会话技术的时候单讲
+		Connection: close/Keep-Alive 指定是否继续保持连接
+		Date: Tue, 11 Jul 2000 18:23:51 GMT 当前时间
+
+
+
+	2.3实体内容
+	
+	
+3.HTTP响应
+	3.1状态行
+		HTTP/1.1 200 OK
+		格式： HTTP版本号　状态码　原因叙述<CRLF>
+		状态码：
+			200：请求处理成功
+			302：请求重定向
+			304、307：服务器通知浏览器使用缓存
+			404：资源未找到
+			500：服务器端错误
+
+	3.2若干响应头
+			Location: http://www.it315.org/index.jsp  配合302实现请求重定向
+			Server:apache tomcat 服务器的基本信息
+			Content-Encoding: gzip 服务器发送数据时使用的压缩格式
+			Content-Length: 80 发送数据的大小
+			Content-Language: zh-cn 发送的数据使用的语言环境
+			Content-Type: text/html; charset=GB2312 当前所发送的数据的基本信息，（数据的类型，所使用的编码）
+			Last-Modified: Tue, 11 Jul 2000 18:23:51 GMT 缓存相关的头
+			Refresh: 1;url=http://www.it315.org 通知浏览器进行定时刷新，此值可以是一个数字指定多长时间以后刷新当前页面，这个数字之后也可以接一个分号后跟一个URL地址指定多长时间后刷新到哪个URL
+			Content-Disposition: attachment;filename=aaa.zip 与下载相关的头
+			Transfer-Encoding: chunked 传输类型，如果是此值是一个chunked说明当前的数据是一块一块传输的
+			Set-Cookie:SS=Q0=5Lb_nQ; path=/search 和cookie相关的头，后面课程单讲
+			ETag: W/"83794-1208174400000" 和缓存机制相关的头
+			Expires: -1 指定资源缓存的时间，如果取值为0或-1浏览就不缓存资源
+			Cache-Control: no-cache  缓存相关的头，如果为no-cache则通知浏览器不缓存
+			Pragma: no-cache   缓存相关的头，如果为no-cache则不缓存
+			以上三个头都是用来控制缓存的，是因为历史原因造成的，不同的浏览器认识不同的头，我们通常三个一起使用保证通用性。
+			Connection: close/Keep-Alive   是否保持连接
+			Date: Tue, 11 Jul 2000 18:23:51 GMT 当前时间
+	
+	3.3实体内容
 
 Servlet
 1、Servlet其实就是Sun公司提供的一种动态web资源开发技术 本质上就是Java程序 可以将Servlet加入到Servlet容器中运行
@@ -146,6 +242,32 @@ Servlet容器 能够运行Servlet的环境就叫Servlet容器 例如Tomcat
 web容器 能够运行web应用的环境就叫web容器 例如Tomcat
 
 2、具体做法：写一个类实现Sun公司定义的Servlet接口并将写好的类配置到tomcat中的web应用中
+
+package com.itheima;
+
+import java.io.*;
+import javax.servlet.*;
+
+//public class FirstServlet implements Servlet{
+public class FirstServlet extends GenericServlet{
+	public void service(ServletRequest req, ServletResponse res) throw ServletException, java.IOException{
+		res.getWriter().write("hello servlet");
+	}
+}
+
+//配置web.xml让某个虚拟路径可以访问上述servlet
+<web-app>
+	<servlet>
+		<servlet-name>FirstServlet</servlet-name>
+		<servlet-class>com.itheima.FirstServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>FirstServlet</servlet-name>
+		<url-pattern>/servlet/FirstServlet</url-pattern>
+	</servlet-mapping>
+</web-app>
+
+在浏览器中 访问http://localhost/new/servlet/FirstServlet即可访问到
 
 Servlet请求具体过程
 1、分析当前请求的是哪台虚拟主机

@@ -1,0 +1,142 @@
+王桂林C++
+
+C语言中可以间接修改常量的值
+const int a = 10;
+int *p = &a;
+*p = 100;
+
+//以下两种写法一样
+//看const修饰谁只需要把类型拿掉
+const int a;
+int const a;
+
+int *const p; //类型int去掉之后发现const修饰p，p这个地址不能改变，但是p指向的内容可以改变
+
+const int *const p;//类型int去掉之后发现，const既修饰了p，也修饰了*p，因此p这个地址以及该地址指向的内容都不可以改变
+
+C语言中不给const int a赋值，编译可以通过，但是C++中必须要给常量初始化，而且不可以间接给常量赋值
+
+//C++中：
+const int a = 100;
+int *p = &a; //编译直接报错 &a是const int *，变量p是int *，不可以转换
+
+C++不喜欢强制类型转换，因此上面的&a可以像下面这样使用，即将const int *赋给一个const int *
+const int *p = &a;
+
+//C语言中下面的写法没有问题
+char *p = malloc(100);
+
+但是malloc函数返回值类型是void *，由于C++不喜欢强转，因此需要手动转为char *类型，即
+char *p = (char *)malloc(100);
+
+C语言中表示真假用0和非0，也没有字符串类型，实际上string是c++中的一个类
+string s;
+bool b = true;
+bool b = false;
+
+bool类型的变量也可以被赋予整型，但是这是C++的缺陷，应该尽量避免
+
+C语言中的写法：enum SEASON b = SPRING;
+C++中的写法：SEASON b = SPRING; // 不必写enum，struct同理
+
+C++中sizeof(bool) 为1
+
+//C语言中的枚举可以赋值为枚举列表之外的值，但C++不可以，因此C++里的枚举是真正意义上的枚举
+enum SEASON b = SPRING;
+b = 10000;//10000不属于SPRING SUMMER AUTUMN WINTER中的任何一个
+
+之前枚举还可以充当宏（#define）来使用，而C++中要尽量避免宏，转而用const和枚举来代替
+
+
+C语言中不可以这样写：(a = b) = 100; 即表达式不可以被赋值，但在C++中是可以的：
+int a,b = 5;
+(a = b) = 100;//先将b赋给a，a就变成了5，同时括号内的表达式会变成a，然后又将100赋给了a
+printf("a = %d b = %d", a, b);//100 5
+
+int a,b = 5;
+(a = b) = 100;
+(a != b ? a : b) = 1000; //此时由于a和b不等，因此三元表达式将得到a，再将1000赋给a，a此时就变成了1000，而b还是5
+
+cin cout是类的实例化对象 功能相当于scanf和printf，但是scanf和printf是函数
+
+在C语言中：
+char name[30];
+scanf("%s", name);//这是一种不安全的写法，因为一旦输入超过30个字符，程序直接崩溃
+cin>>name; cin实际上也不安全 >>流输入运算符 >>还可以是右移操作符，这叫重载，>>的含义根据具体语义环境来决定
+
+C语言没有安全性而言
+fgets(name,0,stdin);//只读取输入的前29个字符
+
+C++中相对安全的是string，可以通过cout<<name.max_size()<<endl;来看string最多可以输入多少字符
+string name;
+cin>>name;
+
+cout<<"name = "<<name<<endl;等价于：
+cout<<"name = ";
+cout<<name;
+cout<<endl;
+
+cout<<setw(8)<<a<<endl; //需要包含#include <iomanip>
+
+cout<<setiosflags(ios::left)<<setw(8)<<a<<endl; //左对齐
+
+cout<<setw(10)<<setprecision(2)<<setiosflags(ios::fixed)<<b<<endl; //setprecision(2)设置小数点后2位
+
+cout<<hex<<a<<endl; //十六进制输出
+
+cout<<setfill('x')<<setw(8)<<a<<endl; //左边空余部分会被填充x
+
+cout<<setfill('x')<<setiosflags(ios::left)<<setw(8)<<a<<endl; //右边空余部分会被填充x
+
+float ret = abs(-5.5); //报错：ambiguous 二义性
+
+//重载的底层是通过倾轧来实现的，extern里面的函数定义不会被倾轧
+extern "C"{
+	void print(){
+	}
+}
+
+//extern也可以放在函数声明处
+extern "C" int mystrlen(char *p);
+
+//C++完全兼容C语言，引用C语言库文件的时候可能会冲突，倾轧机制可以来避免冲突
+
+C++程序引入C语言标准库作为头文件时用C++编译器编译会有倾轧行为，C语言标准库内部会通过extern来避免倾轧。
+
+
+该第五节了
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

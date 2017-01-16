@@ -1,0 +1,228 @@
+Minimum Required SDK最低支持版本，Target SDK，Compile With，Theme可以忽略
+任何一个看到的界面都是一个activity
+
+Android项目目录
+src
+	com.itheima.hello
+		MainActivity.java	//主activity，一个activity就是一个页面
+		public class MainActivity extends Activity{
+			protected void onCreate(Bundle savedInstanceState){
+				super.onCreate(savedInstanceState);
+				//设置显示内容，通过设置资源id指定该activity显示哪个布局文件，布局文件都在layout下
+				setContentView(R.layout.activity_main);
+			}
+		}		
+gen
+	com.itheima.hello
+		BuildConfig.java	//自动生成，不用动
+		R.java				//自动生成，不用动，里面有很多静态整型常量，代表资源的id
+Android 4.3					//在创建项目的时候编译版本选择哪个就是哪个版本
+	android.jar				//和android相关的类都在这里面定义
+Android Dependencies
+	android-support-v4.jar	//为了兼容低版本android，没什么用，这个包实际上是存在于libs里面，如果把libs里面的包删掉的话这里的Android Dependencies也就没了
+assets						//资源文件夹，专门存放资源，注意这里的资源和R文件里面的资源id没有任何关系，这里的资源是没有资源id的，这里存放的一般都是视频 音频等文件，通常通过io流来读取
+bin							//刚创建一个项目的时候什么都没有，当打包编译过之后就会有东西，每次把项目部署到模拟器中时都会先生成apk，将此apk在模拟器中运行
+libs						//第三方jar包
+res							//存放资源，例如图片，与assets的区别是这里面的资源有资源id，读取的时候直接通过id读取即可，不必通过io流来读取，比assets里面的资源利用起来方便的多，res下还存放很多xml文件，drawable系列文件夹存放图片，这里面的图片在R.java中都是有对应id的
+//drawable下的图片文件名在R.java中就是其中的一个属性名
+	layout					//布局文件夹，保存布局文件
+		activity_main.xml
+	menu					//菜单的配置文件
+	values					//
+		dimens.xml			//定义长度的资源id
+		strings.xml				//配置字符串资源，用string标签来定义字符串资源，string标签的name属性指定该string的资源id
+		styles.xml			
+AndroidManifest				//清单配置文件
+	//默认和src目录下的包名一样，但是和src下的包没有任何关系，这个属性值可以理解为一个apk的唯一标识，例如我们如果装过一个低版本的微信，再装一个高版本的微信时不会同时安装两个微信，就是因为这里的package名是一样的
+	<manifest 
+		package='com.itheima.hello'
+		android:versionCode="1" //随着开发进度往前走，这个值会逐渐变大，当安装一个apk时系统会先检查package是否有重复，如果有重复就会比较android:versionCode，versionCode值大的会覆盖值小的，小的不会覆盖大的
+		android:versionName="1.0">
+
+		<application
+			android:icon="@drawable/ic_launcher" //访问drawable内部类的一个资源id，即ic_launcher
+			>
+			//一个应用中可能有多个activity，带有intent-filter的activity才是应用的入口，点击应用图标的时候打开的activity就是入口activity
+			<activity
+				android:label="@string/lizhi" //应用的名字
+				android:icon="@dravable/photo2" //应用的图标
+				>
+				<intent-filter>
+					
+				</intent-filter>
+			</activity>
+		</application>
+
+project.properties
+	target=android-18
+
+//应用运行过程
+Android Project->Compilation and Packaging(编译打包成apk)->Android Package(.apk)->Signing(签名)->Device(将apk安装到手机或者模拟器中)
+
+.apk里面有直接打包进来的文件，比如图片、布局文件、AndroidManifest.xml等等，还有一些经过编译的文件
+签名的作用：即使将manifext下的package写成和别的应用一样，在手机上安装时也不会被覆盖，原因是因为应用都是有唯一签名的，对于公司来说签名是商业机密，非常重要
+
+
+//安装路径
+第三方应用保存路径：data/app
+系统应用保存路径：system/app
+data/data/包名：系统为每个应用提供的专属空间，都是以包名作为文件名，各个文件夹之间不可以访问
+
+DDMS 调试工具
+
+ADB Android debug bridge 建立eclipse和Android设备之间的连接
+
+adb start-server
+
+adb kill-server
+
+adb install E:\yyh.apk
+
+adb uninstall com.yingyonghui.market
+
+adb devices 列出与开发环境建立连接的Android设备的列表
+
+adb shell 进入Android命令行
+
+adb devices
+
+windows下重要指令netstat -ano 查看端口占用情况
+
+
+电话拨号器
+activity_main.xml
+<RelativeLayout>
+	//文本框
+	<Textview
+		android:layout_width="wrap_content" //match_parent是匹配父节点，即继承父级宽度
+		android:layout_height="wrap_content"
+		android:text="请输入号码"
+		/>
+	
+	//输入框
+	<EditText
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		/>
+</RelativeLayout>
+
+完了之后发现文本框和输入框是重叠的，想要改成不重叠的很简单，只需要将最外层的RelativeLayout改成LinearLayout即可，即改成线性布局，这样就会一排一排显示，一排显示满了，再折行显示，如果想让里面所有的空间垂直显示，可以个LinearLayout增加orientation="vertical"这一属性
+
+再加上按钮控件
+<Button
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:text="拨打"
+/>
+
+给拨打按钮监听点击事件
+protected void onCreate(Bundle savedInstanceState){
+	super.onCreate(savedInstanceState);
+	setContentView(R.layout.activity_main);
+	
+	//添加监听事件
+	//拿到按钮对象
+	//布局文件里面所有的控件都有对应的类
+	//注意不是通过Button bt=new Button();来拿到按钮对象的
+	//我们需要在控件中增加id属性来给控件加上id，然后通过id去获取按钮对象，即：
+	// <Button
+	//	android:id="@+id/bt_call" //正斜线后面的名字随便起
+	// 	android:layout_width="wrap_content"
+	// 	android:layout_height="wrap_content"
+	// 	android:text="拨打"
+	// />
+	//这样在R.java文件中就为这个按钮生成了一个id
+	Button bt=(Button)findViewById(R.id.bt_call);
+	bt.setOnClickListener(new MyListener());
+	
+	class MyListener implements OnClickListener{
+		public void onClick(View v){
+			//同样的，给EditText控件加id后，同时可以获取用户输入的号码
+			EditText et=(EditText)findViewById(R.id.et_phone);
+			String phone=et.getText().toString();
+			
+			//启动打电话的apk
+			Intent intent=new Intent(); //创建意图对象
+			//把动作封装到意图对象中
+			intent.setAction(intent.ACTION_CALL);
+			//打给谁
+			intent.setData(Uri.parse("tel:" + phone)); //tel用来告诉系统是打电话
+			//把动作告诉系统
+			startActivity(intent);
+		}
+	}
+}
+
+需要注意：必须在manifest里面增加uses-sdk 给应用添加打电话的权限才可以
+
+给按钮绑定事件的方法
+<Button
+	android:id="@+id/bt1">
+</Button>
+
+public class MainActivity extends Activity implements OnClickListener{
+	protected void onCreate(Bundle savedInstanceState){
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		
+		Button bt1=(Button)findViewById(R.id.bt1);
+		bt1.setOnClickListener(new OnClickListener(){
+			public void onClick(View v){
+				System.out.println("第一个按钮被点击");
+			}
+		});
+		
+		Button bt2=(Button)findViewById(R.id.bt2);
+		bt2.setOnClickListener(this);
+	}
+	
+	public void onClick(View v){
+		System.out.println("第二个按钮被点击");
+	}
+}
+
+<Button
+	android:onClick="getScore"> //如果按钮设置了onClick属性，则必须在main_activity里面定义一个和这个属性名一样的方法，
+</Button>
+public void getScore(View v){
+	System.out.println("aaa");
+}
+
+
+=================
+短信管理器
+//获取短信管理器
+SmsManager sm=SmsManager.getDefault();
+
+//切割短信
+ArrayList<String> smss=sm.divideMessage(content);
+
+//循环把所有的短信发送出去
+//sm.sendTextMessage(phone,scAddress,text,sentIntent,deliveryIntent);
+//scAddress是短信服务中心号码，发短信时会通过短信服务中心转发一下，通常该参数都会被设置为null
+//sentIntent是广播
+//deliveryIntent也是广播
+for(String string:smss){
+	sm.sendTextMessage(phone,null,content,null,null);
+}
+
+//系统会把触发这个方法的那个组件的对象作为view对象提供，因此可以通过对view对象的判断从而得知用户点了那个按钮
+public void getScore(View v){
+	int id = v.getId();
+	switch(id){
+		case R.id.wangzhe:
+			break;
+		case R.id.diamond:
+			break;
+	}
+}
+
+
+
+
+
+
+
+
+
+

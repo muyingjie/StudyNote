@@ -1,0 +1,280 @@
+杨中科C++
+
+自学部分：静态编译
+
+GTK控件
+Widget
+|
+|—Container——
+				|
+				|——Bin
+				|
+				|——
+				|
+|
+|—Entry(文本框)
+|
+|—Label
+
+
+void gtk_widget_show(widget); //让widget控件显示
+void gtk_widget_hide(widget);
+
+void gtk_widget_set_sensitive(widget, sensitive); //是否禁用
+void gtk_widget_set_size_request(int widget,int width,int height); //设置“建议的”大小
+void gtk_widget_destroy(widget) //销毁
+
+gtk_window_set_resizable(window, resizable); //设置是否可以缩放
+
+gtk_window_set_position(window, GTK_WIN_POS_CENTER_ALWAYS); //显示在屏幕正中间
+
+void gtk_window_maximize(window); //最大化
+
+void gtk_container_add(container, widget); //从container继承。比如可以将子控件widget添加到window中，window中只能有一个子控件
+
+注：上述的sensitive和resizable值只能是TRUE或FALSE，TRUE或FALSE是GTK提供的常量
+
+gtk函数命名规则:
+1、以gtk开头
+2、gtk_widget_代表这个函数可以应用于GtkWidget及所有子类。gtk_container_代表这个函数可以应用于GtkContainer及所有子类。
+3、gtk_***_new代表创建一个控件并返回它的引用
+4、gtk_AAA_get_BBB代表从AAA类型的控件的引用获得该控件的BBB属性的值
+5、git_AAA_set_BBB代表设置指定标识的类型为AAA的控件的BBB属性的值
+
+
+memset(void *,要填充的数据,要填充的字节数);
+memset的第一个参数可以接收任何类型的指针
+例如：
+这里申请的20个字节的内存最初时的数据是上次用这块内存的程序留下的，不会有自动清零的过程，我们自己在开发时也要注意在使用完内存之后一定要将该内存里的数据清空
+char str[20];
+//内存清零
+memset(str,0,sizeof(str));
+printf("%s", str);
+
+还可以用声明一个空数组来初始化内存，C语言中数组初始化时赋值的长度小于数组的长度时，剩下的值都会为0，但对于申请堆内存的情况只能使用memset
+
+int main(){
+	struct Person p1;
+	memset(&p1, 0, sizeof(struct Person));
+}
+
+由于每次在声明struct类型的变量都要写struct这个关键字，因此可以通过typedef来简化
+typedef struct Person Person;
+//这样一来就可以写成：
+Person p2;
+p2.name = "如鹏";
+p2.age = 6;
+
+
+最常用最简单的写法
+typedef struct Person{
+	char* name;
+	int age;
+}Person;
+
+//直接做的数据的拷贝，不是引用传递
+Person p2 = p1;
+
+//如果希望共享一块结构体空间，可以用指针来实现
+Person* p3 = &p1;
+printf("%s", p3->name); //aaa
+p1.name = "bbb";
+printf("%s", p3->name); //bbb
+
+
+当不确定想要存储什么类型的地址，但是又需要定义一个指针时可以定义为void*，void*不能用来&取值，也不能++--，因此不知道多少字节是一个数据单位，在使用之前必须把它转换为类型指针：
+int nums[] = {1,2,3,4,5};
+void* ptr1 = nums;
+int i = *ptr1; //报错
+
+应该在使用之前转换类型
+int nums[] = {1,2,3,4,5};
+void* ptr1 = nums;
+int* ptr2 = (int*)nums; //转换，疑问：为什么不是(int*)ptr1，为什么给nums转了类型，ptr1的类型也跟着转了
+printf("%d,%d",ptr1,ptr2);
+int i = *ptr2;
+printf("%d",i);
+
+memset函数的第一个参数就用到了void*类型，memset分析第一个参数不管遇到什么类型的指针都会将对应空间清零
+
+数据和指令都可以存在内存中，指针可以指向数据，自然也可以指向函数
+typedef void (*intFunc)(int i);
+void test1(int age){
+	printf("test1:%d", age);
+}
+int main(){
+	//由此可以看出，函数名也是一个指针
+	intFunc f1 = test1;
+	f1(8);
+}
+
+================================================================================
+//函数指针案例：任意类型的数据返回最大值
+typedef struct Dog{
+	char* name;
+	int age;	
+} Dog;
+typedef int (*compareFunc)(void* data1, void* data2);
+
+//data 待比较数组的首地址
+//unitSize 单元字节个数
+//size 数组长度
+
+void* max(void* data, int unitSize, int size, compareFunc func){
+	int i;
+	char* ptr = (char*)data;
+	char* max = ptr;
+	for(i = 1;i < size; i++){
+		char* item = ptr + i * unitSize; //计算第i个元素的首地址
+		
+		if(func(item, max) > 0){
+			max = item;
+		}
+		nums++;
+	}
+	//返回最大值的首地址
+	return max;
+}
+//data1 第一个被比较数字的首地址
+//data2 第二个被比较数字的首地址
+int intCompare(void* data1, void* data2){
+	int* ptr1 = (int*)data1;
+	int* ptr2 = (int*)data2;
+	int i1 = *ptr1;
+	int i2 = *ptr2;
+	return i1 - i2;
+}
+int dogCompare(void* data1,void* data2)
+{
+    Dog* dog1 = (Dog*)data1;
+    Dog* dog2 = (Dog*)data2;
+    return (dog1->age)-(dog2->age);
+}
+int main(){
+	int nums[] = {3,5,8,7,1};
+	int* pMax = max(nums, sizeof(int), sizeof(nums) / sizeof(int), intCompare);
+	int max = *pMax;
+	printf("%d", max);
+}
+
+================================================================================
+栈空间里分配的特点：出了函数范围，内存空间自动释放，使用比较方便，但是不能存放占用空间较大的数据
+
+int* getData(){
+	int nums[10] = {1,2,3,4,5,6,7,8};
+	return nums;
+}
+int* getData2(){
+	int nums1[10] = {8,7,6,5,4,3,2,1};
+	return nums1;
+}
+int main(){
+	int* num = getData();
+	printf("%d, %d, %d",num, num + 1, num + 2); //1, 2, 3
+	getData2(); //注意这里并没有将getData2返回的指针赋给任何变量
+	printf("%d, %d, %d",num, num + 1, num + 2); //8, 7, 6
+}
+出现以上结果的原因是getData首先用了一块内存，将1,2,3,4,5,6,7,8存进内存中，在getData执行完之后这块内存就被释放了，但是这块内存并没有清零，因此第一个printf能够打印出来1,2,3,函数getData2再调用，就会利用刚才getData释放的那块内存，因此出现了异常
+
+
+================================================================================
+堆内存
+int* nums = (int*)malloc(sizeof(int) * 10); //malloc返回的是void*
+nums[0] = 1;
+nums[1] = 2;
+free(nums);
+
+malloc和free需要引入头文件stdlib，如果不引入该头文件会警告，但不报错
+
+int* getData(){
+	int nums[10] = (int*)malloc(sizeof(int)*3); //malloc申请的内存不会在函数调用结束时自动释放
+	nums[0] = 1;
+	nums[1] = 2;
+	nums[2] = 3;
+	return nums;
+}
+int* getData2(){
+	int nums1[10] = (int*)malloc(sizeof(int)*3);
+	nums[0] = 4;
+	nums[1] = 5;
+	nums[2] = 6;
+	return nums1;
+}
+int main(){
+	int* num = getData();
+	printf("%d, %d, %d",num, num + 1, num + 2); //1, 2, 3
+	int* num2 = getData2();
+	printf("%d, %d, %d",num, num + 1, num + 2); //1, 2, 3 由于没有手动释放内存，因此此时虽然函数调用已经结束，但仍然可以访问到getData函数当初申请的那块空间
+	free(num); //由调用者释放内存
+	free(num2);
+}
+
+函数返回指针的方法
+1、在方法内malloc，用完了由调用者free，但是申请和调用距离比较远，很容易忘了释放内存，不推荐
+2、把局部变量定义为static，但是后一次调用会覆盖前一次调用
+char* getStr(){
+	static char[] str = "asafsadfa";
+	return str;
+}
+int main(){
+	char* str = getStr();
+}
+3、最推荐的做法：由调用者分配内存空间，只是把指针传递给函数，函数内部把数据拷贝到内存中。案例：从文件名分析文件名和扩展名
+void parseFileName(const char* fileName,char* name,char* ext){
+	char* ptr = fileName;
+	char* endPtr;
+	while(*ptr != '\0'){
+		ptr++;
+	}
+	endPtr = ptr;
+	//移动到了字符串的结尾
+	while(*ptr != '.'){
+		ptr--;
+	}
+	memcpy(name, fileName, (ptr - fileName) * sizeof(char));
+	memcpy(ext, ptr, (endPtr - ptr + 1) * sizeof(char));
+}
+int main(){
+	char str[] = "111.txt";
+	char name[20] = {0};
+	char ext[20] = {0};
+	parseFileName(str, name, ext);
+	
+}
+
+=============================================================
+GTK高级
+//instance控件在发生signalName信号时执行callback函数
+//回调callback的签名int btnOnClick(GtkWidget* widget, int data);
+//信号名以event结尾的要使用int onEventCallBack(GtkWidget* widget, GtkEvent* event, int data);
+void g_signal_connect(instance, char* signalName, callback, gpointer object)
+
+int main(){
+	gtk_init(NULL, NULL); //大多数库都会内置NULL这一常量
+	GtkWindow* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	g_signal_connect(window, "destroy", gtk_main_quit, NULL);
+	gtk_widget_show(window);
+	gtk_main();
+}
+
+=================================================================
+C语言开发网站
+printf("Content-Type:text/html;charset=gbk\r\n\r\n");
+这里的请求头里面的charset一定要和该文件的编码保持一致，这句话的意思表明这个文件是按照gbk来编码的，同时在发送到客户端之后告诉浏览器用gbk来解码
+
+//重定向
+Location:"http://www.baidu.com"
+
+//一旦遇到\r\n\r\n报文头就结束了
+printf("Content-Type:text/html;charset=gbk\r\n\r\n");
+
+//报文头中各项之间可以用\r\n来分割，各项之间顺序无所谓
+printf("Location:http://www.baidu.com\r\n");
+printf("Content-Type:text/html;charset=gbk\r\n\r\n");
+
+char str[] = {'0','0','0',0}; //'0' != 0  字符'0'的ASCII为48，而数字0的ASCII为0
+printf("%s",str); //"000"
+
+
+
+

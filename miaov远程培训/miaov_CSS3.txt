@@ -780,6 +780,44 @@ setInterval(function(){
 
 立体幻灯片
 
+======================================================================================
+animation动画
+//move是自己起的一个名字
+@-webkit-keyFrames move{
+	0%{
+		width:100px;
+	}
+	50%{
+		width:1000px;
+	}
+	100%{
+		width:500px;
+	}
+}
+.box{width:100px; height:100px; background:red; -webkit-animation: 2s 1s move ease-in 5 alternate;}
+运动类型ease-in可以通过animatin-timing-function来指定
+
+延迟时间1s可以通过animation-delay来指定
+
+动画重复次数可以通过animation-iteration-count来指定 infinite为无限次
+
+如果希望在移入的时候暂停：
+#wrap:hover .box{ -webkit-animation-play-state: paused;}
+
+animation-direction可以指定播放的顺序，默认是normal，alternate代表第一次正序播放，第二次倒序，第三次正序，第四次倒序...
+
+animationEnd事件
+addEventListener("webkitAnimatinEnd",function(){},false);
+
+
+
+
+
+
+
+
+
+
 
 
 

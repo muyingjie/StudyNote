@@ -1,0 +1,256 @@
+妙味html5
+
+oDiv.classList 类数组
+oDiv.classList.length
+oDiv.classList.add("box3");
+oDiv.classList.remove("box1");
+oDiv.classList.toggle("box2");
+
+
+可以通过JSON.stringify和JSON.parse来实现对象的深拷贝
+先将一个对象用stringify转成字符串类型，再通过parse转成对象赋给另一个变量，即可实现
+
+
+//获取DOM对象上data-前缀的自定义属性
+oDiv.dataset.miaov
+oDiv.dataset.miaovAll //data-miaov-all
+
+
+页面加载顺序是从上到下依次加载，因此script放到最上面的话可能会有延迟
+<script defer="defer"></script> //延迟加载 整个页面加载完才会加载 onload执行之前
+<script async="async"></script> //异步加载 script和页面里面的img等连接同时加载，但是很多个script都用async时哪个先加载完哪个后加载完就说不定了
+
+
+labjs库 异步库
+
+历史管理
+产生历史记录的方法：
+1、跳转页面
+2、hash的改变
+3、pushState（history的一个方法，需要服务器下运行才生效）	
+	pushState：三个参数：数据 标题(目前浏览器都没实现，通常传空字符串) 地址(可选，如果传了就会给当前地址再加一级)
+	onpopState事件
+		window.onpopstate = function(ev){
+			oDiv.innerHTML = ev.state;
+		};
+
+hash改变时会触发window.onhashchange事件
+
+拖拽
+oDiv.ondragstart = function(){
+	
+};
+//ondrag在拖拽过程中触发 只要是在dragstart dragend之间都会触发，不论鼠标是否在移动
+oDiv.ondrag = function(){
+	
+};
+oDiv.ondragend = function(){
+	
+};
+//上述3个事件不会创建新的DOM对象
+
+目标元素的拖拽事件
+oDiv.ondragenter = function(){
+	
+};
+oDiv.ondragover = function(){
+	
+};
+oDiv.ondragleave = function(){
+	
+};
+//目标元素上释放鼠标时触发，注意：要想触发drop事件，就必须在dragover中阻止默认事件，否则在dragover的过程中鼠标pointer显示禁止状态
+//但是在火狐下需要咋dragstart绑定的事件中设置dataTransfer对象的setData方法，dataTransfer是event事件对象下的一个属性对象
+ev.dataTransfer.setData("name","hello");
+ondrop事件绑定的函数中的事件对象也可以获取到dataTransfer
+dataTransfer还有getData方法
+oDiv.ondrop = function(){
+
+};
+
+//指定的元素 坐标X 坐标Y
+ev.dataTransfer.setDragImage(oDiv, 0, 0); //拖拽出来的阴影会是oDiv的阴影，鼠标在阴影的0,0位置
+
+
+同一域内窗口间通信的方式：
+iframe
+window.open
+
+
+<div>
+	<iframe id="myIframe" src="2.html">
+</div>
+
+通过oMyIframe.contentWindow.document就可以得到iframe里面的文档对象
+
+
+var newWindow = window.open("1.txt", "_blank");
+通过newWindow.document就可以拿到打开的窗口的window对象
+
+
+iframe的情况下contentWindow下的document不可以访问
+
+
+不同域下的iframe之间数据交互：postMessage(window对象下的一个方法)
+需要在父页面中接收消息的window对象下调用postMessage方法
+//参数1：发送的数据
+//参数2：接收数据的域名(需要加上域名)
+oMyIframe.contentWindow.postMessage("123", "http://www.b.com");
+
+子页面中通过message事件拿到父页面发过来的数据
+window.addEventListener("message", function(ev){
+	//ev事件对象保存了发送过来的内容
+	ev.data
+	//ev.origin可以获得发送消息的域
+});
+
+XHR Level2已经支持跨域了，新版本浏览器已支持XMLHttpRequest Level2：
+xhr.open("get", "http://www.b.com/ajax.php", true); //请求http://www.b.com这个域下的ajax.php方法
+xhr.send();
+
+但是需要后台配合，头信息需要设置为
+<?php
+header("Access-Control-Allow-Origin:http://www.a.com"); //设置http://www.a.com为允许访问的源，注意必须带上协议
+
+IE下如果想实现跨域请求，需要使用XDomainRequest对象来实现
+
+=====================================================
+上传
+传统的表单上传 
+//form标签里面的enctype属性值代表二进制数据类型
+<form method="post" action="post_file.php" enctype="multipart/form-data">
+	<input type="file" name="file" />
+	<input type="submit" value="上传" />
+</form>
+
+ajax无刷新上传
+//上传完成时触发onload事件
+xhr.onload = function(){
+	//上传成功后后台返回的数据
+	alert(this.responseText);
+};
+
+var oUpload = xhr.upload;
+oUpload.onprogress = function(ev){
+	ev.total //需要发送的总量
+	ev.loaded //已经上传的量
+};
+
+xhr.open("POST", "post_file.php", true);
+xhr.setRequestHeader("X-Request-With", "XMLHttpRequest");
+
+var oFormData = new FormData(); //通过FormData对象来构建表单提交数据
+oFormData.append("file", oMyFile.files[0]); //oMyFile就是file类型input的DOM对象
+
+xhr.send(oFormData);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
