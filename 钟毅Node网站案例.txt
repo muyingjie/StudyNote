@@ -1,0 +1,222 @@
+钟毅Node网站案例
+第三方模块&中间件
+bodyParser 解析post请求数据
+cookies 读写cookie
+swig 模板解析引擎
+mongoose 操作mongodb数据
+markdown 语法解析生成模块
+
+npm init生成package.json文件
+
+npm install --save express //安装express并且将其存储到package.json中
+
+-|
+ |-db 数据库存储目录
+ |-models 数据库模型文件目录
+ |-node_modules
+ |-public 静态资源
+ |-routers 路由文件目录
+ |-schemas 数据库结构文件
+ |-views 模板试图文件目录
+ |-app.js 应用入口文件
+ |-package.json
+
+app.get()或app.post()等方法可以把一个url路径和一个或N个函数进行绑定
+app.get("/", function(req, res, next){
+	//next：用于执行下一个和路径匹配的函数
+	
+	//通过res.send(string);发送内容至客户端
+});
+
+app.js
+================================
+var express = require("express");
+var swig = require("swig"); //加载模板
+var app = express(); //创建app应用
+
+//定义当前应用所使用的模板引擎
+//第一个参数：模板引擎的名称，同时也是模板文件的后缀
+//第二个参数：用于解析处理模板内容的方法
+app.engine("html", swig.renderFile);
+//设置模板文件存放的目录
+//第一个参数：必须是views
+//第二个参数：是目录
+app.set("views", "./views");
+//注册所使用的模板引擎
+//第一个参数：必须是view engine
+//第二个参数：和app.engine所定义的模板引擎的名称是一致的
+app.set("view engine", "html");
+//开发过程中需要取消模板缓存，当修改views目录下的模板时刷新页面并不会改变，这是因为应用启动的时候将模板加载到了内存中，因此每次访问该模板都是从内存中访问，在开发阶段可以将该值设置为false
+swig.setDefaults({cache: false});
+
+//app相当于Node中的createServer()
+app.get("/", function(req, res, next){
+	//读取views目录下的指定文件，解析并返回给客户端
+	//param1：标示模板文件，相对于views目录
+	//param2：传递给模板使用的数据
+	res.render("index");
+});
+//这样处理css将会很复杂，因此我们需要express设置静态文件托管
+//app.get("main.css", function(req, res, next){
+//	res.setHeader("content-type":"text/css");
+//});
+//设置静态文件托管
+//当用户访问的URL以/public开始，那么直接返回对应__dirname	+ "/public"下的文件
+//至此，link路径应该写成<link href="/public/main.css">的形式
+app.use("/public", express.static(__dirname + "/public"));
+
+app.listen(8081);
+================================
+把所有的逻辑全都写在app.js中的话，app.js就会变得非常庞大，因此需要分模块
+根据功能划分
+	前台模块
+	后台管理模块
+	API模块
+	
+使用app.use()进行模块划分
+	app.use("/admin", require("./router/admin"));
+	app.use("/api", require("./router/api"));
+	app.use("/", require("./router/main"));
+代码如下：
+var express = require("express");
+var swig = require("swig"); //加载模板
+var app = express(); //创建app应用
+var bodyParser = require("body-parser");
+
+app.engine("html", swig.renderFile);
+app.set("views", "./views");
+app.set("view engine", "html");
+swig.setDefaults({cache: false});
+//下面这行代码执行完成后，就会在后面的http请求的get/post方法中为其回调的req参数增加body属性，属性值为提交过来的数据
+app.use(bodyParser.urlencoded({encode: true}));
+
+app.use("/admin", require("./router/admin"));
+app.use("/api", require("./router/api"));
+app.use("/", require("./router/main"));
+
+mongoose.connect("mongodb://localhost:27018/blog", function(err){
+	if(err){
+		console.log("数据库连接失败");
+	}else{
+		console.log("数据库连接失败");
+		app.listen(8081);
+	}
+});
+
+
+========================
+router/admin.js
+var express = require("express");
+var router = express.Router();
+//注意：这里不必写成/admin/user了，因为在app.js中已经写过/admin了
+router.get("/user", function(req, res, next){
+	res.send("User");
+});
+module.exports = router;
+==========================
+router/api.js
+var express = require("express");
+var router = express.Router();
+var User = require("../models/User");
+//统一返回格式
+var responseData;
+
+router.use(function(){
+	responseData = {
+		code: 0, //0代表没有错误
+		message: ""
+	};
+});
+
+//前端ajax中的js在请求该方法时路径不必写/api
+router.post("/user/register", function(req, res, next){
+	var username = req.body.username;
+	var password = req.body.password;
+	var repassword = req.body.repassword;
+	
+	if(username == ""){
+		responseData.code = 1;
+		responseData.message = "用户名不能为空";
+		res.json(responseData);
+		return;
+	}
+	if(password == ""){
+		responseData.code = 2;
+		responseData.message = "密码不能为空";
+		res.json(responseData);
+		return;
+	}
+	if(password !== repassword){
+		responseData.code = 3;
+		responseData.message = "两次密码输入不一致";
+		res.json(responseData);
+		return;
+	}
+	//验证用户名是否已经被注册
+	User.findOne({
+		username: username
+	}).then(function(userInfo){
+		if(userInfo){
+			responseData.code = 4;
+			responseData.message = "用户名已经被注册";
+			res.json(responseData);
+			return;
+		}else{
+			var user = new User({
+				username: username,
+				password: password
+			});
+			return user.save();			
+		}
+	}).then(function(newUserInfo){
+		responseData.message = "注册成功";
+		res.json(responseData);
+	});
+});
+module.exports = router;
+================
+router/main.js
+var express = require("express");
+var router = express.Router();
+
+router.get("/", function(req, res, next){
+	res.render("main/index.html");
+});
+module.exports = router;
+================================
+schemas/users.js
+var mongoose = require("mongoose");
+module.exports = new mongoose.Schema({
+	username: String,
+	password: String
+});
+===========================
+models/User.js
+var mongoose = require("mongoose");
+var userSchema = require("../schemas/users");
+module.exports = mongoose.model("User", userSchema);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

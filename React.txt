@@ -1,0 +1,91 @@
+React
+
+优势：
+1、组件化
+2、虚拟DOM 性能高
+3、跨平台 移动端
+
+缺点：
+1、学习曲线特别陡
+2、设计思想有点特别
+
+React全家桶（技术栈）
+1、React主体
+2、webpack 类似grunt gulp
+3、Flex 布局用的
+4、React-Route：路由
+5、Redux：View层 拆分复杂页面 对于极度复杂的情况才会用到
+6、Mocha：测试
+7、Istanbul：覆盖率
+
+JSX：
+1、增强型JS语法——HTML代码可以直接放在js里面
+2、需要编译，通过babel可以编译JSX
+
+babel注意事项：
+1、babel里面每个xml节点有且只能有一个顶级元素
+2、模板字符串 var oDiv = <div>{aaa}</div>; //将aaa变量输出到div中
+3、babel本身是转换ECMAScript6代码的，后期才扩展了JSX
+
+最强：
+1、组件化
+2、状态
+
+
+组件：
+1、定义组件
+class Comp extends React.Component{
+	//必须要有render方法
+	render(){
+		return <span></span>
+	}
+}
+2、使用组件
+ReactDOM.render(
+	<Comp />
+	oDiv
+);
+
+
+//错误写法：<input type="text" onChange="{this.fnChange.bind(this)}"/>
+//正确写法：<input type="text" onChange={this.fnChange.bind(this)}/>
+
+
+组件的Constructor中必须调用super
+
+
+//style比较特殊，不可以写单花括号，因为style里面的值是成对出现的，而且style的值也不可以是字符串，否则报错
+//错误写法：<div className="box" style="{display:this.state.display}"></div>
+//错误写法：<div className="box" style="{{display:this.state.display}}"></div>
+//正确写法：<div className="box" style={{display:this.state.display}}></div>
+
+
+组件生存周期:
+componentWillMount: 即将挂载 创建之前
+componentDidMount: 创建之后
+
+componentWillUpdate: 即将更新 更新之前
+componentDidUpdate: 更新之后
+
+componentWillUnmount: 即将卸载
+没有componentDidUnmount 组件已经被销毁
+
+componentWillReceiveProps: 组件参数更新时
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
