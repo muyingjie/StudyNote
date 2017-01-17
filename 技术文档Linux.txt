@@ -1,0 +1,3 @@
+Linux分区和挂载			http://heavengate.blog.163.com/blog/static/2023810532014124103312/
+						http://www.cnblogs.com/apprentice89/archive/2012/12/17/2821332.html
+容器技术入门			http://www.yl1001.com/group_article/8051471533152711.htm
