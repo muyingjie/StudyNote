@@ -74,6 +74,59 @@ date.timezone = Asia/Shanghai
 PHP flag开关类型配置选项 on|off|1|0
 PHP value字符串类型的配置选项
 
+PHP预先定义好的变量。
+$_GET		接收GET方式传递过来的数据
+$_POST		接收表单以POST传递过来的数据
+$_REQUEST	=$_GET + $_POST
+$_SERVER	保存服务器、浏览器相关的数据
+$_ENV		保存环境变量相关的数据
+$_COOKIE	保存COOKIE数据
+$_SESSION	保存SESSION数据
+$_FILES		接收上传文件的数据
+$GLOBALS	可以引用全局范围内可见的变量
+$argc $argv	保存命令行程序接收的参数数量和数据
+
+$_SERVER["HTTP_REFERER"]: http://shop.100.com/a.php
+$_SERVER["USER_AGENT"]: 浏览器的UA内容
+$_SERVER["SERVER_ADDR"]: 127.0.0.1
+$_SERVER["REMOTE_ADDR"]: 127.0.0.1
+$_SERVER["SCRIPT_FILENAME"]: F:/php0421/shop/b.php
+
+变量的作用域
+作用域分为：全局、局部、超全局
+全局：在脚本运行过程中可见的变量，不包括在局部作用域中
+局部：在函数中的变量
+超全局：在所有的范围内可见的变量
+
+$_GET, $_POST….都是超全局的
+
+魔术常量
+值在运行时才确定的PHP定义的常量。
+__FILE__
+__DIR__
+__LINE__
+常量的作用域也是超全局的。
+
+数据类型
+PHP支持8种数据类型。
+4种标量类型或叫简单类型：布尔型、整型、浮点型、字符串型
+2种复合类型：数组、对象
+2种特殊类型：资源类型、NULL类型
+
+使用[]定义数组
+每次定义一个数组元素
+通过这种方式不能够定义出空数组，因为它本身就是在定义数组的某个元素
+$arr[] = "";
+$arr中就会有一项，该项的key为0，值为空字符串
+
+//定义键值数组
+$obj["name"] = "zhang";
+$obj["gender"] = "male";
+
+资源类型的数据不要使用unset()去删除！
+需要使用PHP提供的专用的函数去释放。
+
+
 php_flag session.auto_start on
 php_value include_path "f:/php0421/shop"
 
