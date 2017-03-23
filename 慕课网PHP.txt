@@ -5,3 +5,79 @@
 		echo "链接失败";
 	}
 ?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+TP
+
+// 入口文件index.php
+define("APP_NAME", "Admin"); //给当前项目起一个名字，初始化时动态创建的文件都会放到Admin目录下
+define("APP_PATH", "./Admin/"); //最后的斜杠一定要记得加上
+require("./ThinkPHP/ThinkPHP.php");
+
+ThinkPHP目录
+Common 公共函数
+Conf 配置文件
+Lang 语言包
+Lib 控制器和模型
+Runtime 运行时文件
+Tpl 模板文件
+
+
+
+
+// 执行流程
+// 1、加载thinkphp.php
+// require("./ThinkPHP/ThinkPHP.php");
+// 2、加载核心文件./ThinkPHP/Lib/Core
+// 3、加载项目核心文件 分析URL 调用相关控制器
+// m module 模块 控制器
+// a action 方法 action=页面
+$model = isset($_GET['m']) ? $_GET['m'] : "Index";
+$action = isset($_GET['a']) ? $_GET['a'] : "Index";
+
+$mooc = new $module();
+$mooc->action();
+class index{
+	function __construct(){
+		echo "调用了index控制器";
+	}
+	function index(){
+		echo "index控制器的index方法"
+	}
+	function test(){
+		echo "index-test"
+	}
+}
+
+define("APP_DEBUG", true);
+define("APP_NAME", "Admin");
+define("APP_PATH", "./Admin/");
+require("./ThinkPHP/ThinkPHP.php");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

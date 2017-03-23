@@ -123,7 +123,24 @@ push pop操作改的只是SP，因此，栈顶的变化范围最大为0-FFFFH
 
 第四章
 
-
+第五章
+loop指令的格式是：loop 标号
+CPU执行loop指令时，分两步：
+1、(cx) = (cx) - 1
+2、判断cx中的值，不为0则转移至标号处执行程序，如果为0则向下执行
+从上面的描述中可以看出，cx中的值影响着loop指令的执行结果。通常我们用loop指令来实现循环功能，cx中存放循环次数
+计算2^12
+assume cs:code
+code segment
+	mov ax,2
+	mov cx,11
+	
+s:	add ax,ax ;s是一个标号，它实际上标识了一个地址，这个地址处有一条指令add ax,ax
+	loop s ;CPU执行loop s的时候首先(cx) = (cx) - 1 再判断cx中的值，如果(cx)不为0则转至符号s所标识的地址处执行(这里的指令是add ax,ax)，如果为0则执行下一条指令
+	mov ax 4c00h
+	int 21h
+code ends
+end
 
 
 

@@ -889,14 +889,68 @@ C/S
 
 B/S的优缺点和C/S是相对的
 
+IP地址：在网络环境中唯一标识一台主机
+端口号：在主机中唯一标识一个进程
+IP+端口号：在网络环境中唯一标识一个进程(socket)
+socket必须包含IP和端口号
+
+socket是Linux文件的一种类型，socket实际上就是Linux中的一个文件 而且是伪文件
 
 
+server实现
 
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <stdlib.h>
+#include <arpa/inet.h>
+#include <ctype.h> //toupper
 
+#define SERV_IP "192.168.1.234"
+#define SERV_PORT 6666
 
+int main(){
+	int lfd;
+	int cfd;
+	struct socketaddr_in serv_addr;
+	struct socketaddr_in clie_addr;
+	socklen_t clie_addr_len;
+	char buf[BUFSIZ];
+	int n;
+	int i;
+	
+	lfd = socket(AF_INET, SOCK_STREAM, 0);
+	
+	//定义协议族
+	serv_addr.sin_family = AF_INET;
+	//定义端口号
+	serv_addr.sin_port = htons(SERV_PORT);
+	//定义IP
+	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	
+	//绑定IP和端口号
+	bind(lfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+	
+	//指定建立连接上限数 注意不是保持连接的上限
+	listen(lfd, 32);
+	
+	clie_addr_len = sizeof(clie_addr);
+	//等待客户端连接
+	cfd = accept(lfd, (struct sockaddr *)&clie_addr, &clie_addr_len);
+	
+	n = read(cfd, buf, sizeof(buf));
+	for(i = 0; i < n; i++){
+		buf[i] = toupper(buf[i]);
+	}
+	write(cfd, buf, n);
+	
+	close(lfd);
+	close(cfd);
+	
+	return 0;
+}
 
-
-
+client实现
 
 
 
