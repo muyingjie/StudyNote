@@ -562,5 +562,217 @@ session.use_trans_sid=1;是否自动传输sessionID
 如果按照session.use_trans_sid=1配置，php会将所有的html代码中的链接地址部分增加上PHPSESSIONID参数
 
 
+thinkPHP
+IS_POST 判断是否为POST请求
+REQUEST_TYPE 得到请求方式
+
+自己的应用里面的配置需要从ThinkPHP/Conf/convention.php里面复制到应用目录（假如是Application）下面的Conf/config.php中去
+
+ThinkPHP/Library 核心文件
+
+ThinkPHP/Library/Think/App.class.php 框架控制文件
+ThinkPHP/Library/Think/Controller.class.php 控制器超类
+ThinkPHP/Library/Think/Model.class.php 模型超类
+ThinkPHP/ThinkPHP.php 框架入口文件
+
+我们应该把应用目录和框架目录分开放置，这样浏览器就不能通过输入地址直接访问框架代码了，因此应用目录和框架目录在服务器根目录下应该是并列放置的
+应用目录下应该引用项目目录入口文件:
+require "../ThinkPHP/ThinkPHP.php";
+
+第一次访问在应用目录下会创建2个模块（Common和Home目录），还有一个Runtime目录（编译目录）
+
+由于应用目录下的Common和Home也可以通过url www.muyshop.cn/Common/Controller/这样访问到，因此，我们希望把各个模块代码也拿出来，只在应用目录下放一个index.php，这样就可以只访问index.php来访问整个应用了，因此index.php入口文件中需要定义一个常量，APP_PATH
+define("APP_PATH", "../muyshopApplication/"); // APP_PATH最后面的斜杠一定要有，否则就会在各个模块前加上muyshopApplication作为文件名生成一个文件夹而不会把所有模块都放到muyshopApplication中，这样服务器根目录下的目录结构就变为
+|-muyshop
+|-muyshopApplication
+|-ThinkPHP
+
+访问各个模块时会先把Common模块下的配置 控制器 模型加载进来
+Common模块不能直接访问，是受保护的
+
+入口文件中可以再通过一个BIND_MODULE，ThinkPHP会自动创建该常量指定的模块
+define("BIND_MODULE", "admin");
+创建完模块后需要把它注释掉
+
+define("APP_DEBUG", true); //开启调试模式
+
+"SHOW_PAGE_TRACE" => true; //开启页面trace功能，注：这个不是常量，是配置
+
+// 命名空间
+namespace Admin\Controller;
+// 这里直接写Controller的话就会从Admin\Controller\Controller下面去找这个类
+class UserController extends Controller{
+	public function index() {
+		echo "xxx";
+	}
+}
+
+
+namespace Admin\Controller;
+// 这里直接写成Think\Controller会将其看做一个相对路径，然后从Admin\Controller\Think\Controller下面去找这个类
+class UserController extends Think\Controller{
+	public function index() {
+		echo "xxx";
+	}
+}
+
+
+namespace Admin\Controller;
+// 这里直接写成\Think\Controller会将其看做一个绝对路径，直接从\Think\Controller下面去找这个类
+class UserController extends \Think\Controller{
+	public function index() {
+		echo "xxx";
+	}
+}
+
+
+namespace Admin\Controller;
+use Think\Controller; //因为Controller超类文件中定义的命名空间是Think，因此这里可以引用Think下的Controller类，即Think\Controller
+// 这里虽然只写了Controller，但会寻找最近的命名空间，实际找的是\Think\Controller
+class UserController extends Controller{
+	public function index() {
+		echo "xxx";
+	}
+}
+
+
+
+
+// 请求参数的输入
+I("get."); //接收get参数
+I("get.name", "defaultvalue"); //如果get请求参数name没有指定，默认为defaultvalue
+
+
+当请求为index.php?m=User&c=Index&a=delete&id=1&age=13
+
+访问controller中的delete方法时，默认已经定义好了id age两个形参
+public delete function($id, $age) {
+	
+}
+
+URL模式和U() 重点
+index.php?m=User&c=Index&a=delete&id=1&age=13这种URL写起来费劲，而且对搜索引擎不友好
+
+通常我们采用index.php/User/Index/delete也可以表示访问User模块下Index控制器的delete方法，这种方式是PATHINFO模式，这种模式对搜索引擎比较友好，但有的服务器不支持，于是有了兼容模式
+
+还有一种写法：index.php?s=/User/Index/delete 这叫做兼容模式
+
+还有一种不写index.php的写法：www.muyshop.cn/User/Index/delete 这叫做REWRITE模式，REWRITE模式也需要Apache服务器的支持
+
+Apache配置文件中需要打开REWRITE模式才可以，即打开对应的LoadModule
+还需要在分布式文件（htaccess）中加入对应的内容（具体内容可以看手册，直接复制，不必管具体内容是什么意思）
+最后在权限配置中开启对分布式文件的支持：
+<Directory>
+	// 允许所有访问
+	Allow from all
+	// 允许重写
+	AllowOverride all // 这一句开启分布式文件的支持
+	// 允许显示站点目录的文件结构
+	DirectoryIndex index.html index.php
+</Directory>
+
+U()方法可以生成具体的地址，调用返回当前URL的地址
+
+自动生成的文件夹中有一个空白的html文件，文件名叫index.html，这个文件称为目录安全文件，在Apache配置文件中有options+indexes，默认展示站点目录，如果在站点目录中不存在index开头的文件，则会展示目录结构
+
+D方实例化模型对象
+$obj = D(["模型名"]); //实例化我们自己建的模型（模块/Model目录中的模型），如果传递了模型名，则实例化指定的模型，如果没有指定或模型名不存在，则实例化父类模型
+M方法实例化
+$obj = M(["不带前缀的表名"]); //直接实例化父类模型（Think目录下的Model.class.php）如果指定了表名，则实例化父类模型的时候关联指定的表 如果没有指定表名（没有传递参数）则不关联表，一般用来执行原生的sql语句，M()->query(原生sql语句);
+
+
+增：
+$model = M("Dept"); //直接使用基本的增删改查，可以使用父类模型
+$data = array(
+	"name" => "人事部",
+	"pid" => "1",
+	"sort" => 0,
+	"remark" => "备注"
+);
+$res = $model -> add($data); //$res是新增记录的主键id
+
+//批量添加
+$data = array(
+	array(
+		"name" => "人事部",
+		"pid" => "1",
+		"sort" => 0,
+		"remark" => "备注"
+	),
+	array(
+		"name" => "财务部",
+		"pid" => "2",
+		"sort" => 0,
+		"remark" => "备注"
+	)
+);
+$model -> addAll($data);
+
+改：
+$data = array(
+	"id" => "2",
+	"sort" => "22"
+);
+// $data必须要有主键信息，如果没有主键信息，相当于批量修改，虽然sql语句合法，但是tp不允许这样做
+$result = $model -> save($data); //返回布尔值false，代表没有执行 如果返回数字类型，代表受影响的行数
+
+查：
+$model -> select(); //查询所有信息
+$model -> select(id);
+$model -> select("id1,id2,id3,id4"); //注意只有一个参数，把所有id拼在一个字符串里，表示查询指定id集合的信息，等价于mysql中的in语句
+
+$model -> find(); //表示查询当前表中的第一条记录，相当于limit 1
+$model -> find(id); //表示查询表中的指定id的记录
+
+select返回二维数组，即使查询一条记录，返回也是二维数组
+find返回一维数组
+
+删：
+// tp要求必须传参
+$model -> delete(id);
+$model -> delete("id1,id2,id3,id4");
+
+删除分逻辑删除和物理删除
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -5,7 +5,9 @@
 		A*算法
 
 var aLi=oUl.getElementsByTagName("li");
-var oBtn=document.getElementById("btn");
+var oInput=document.getElementById("input1");
+var oBeginLi = document.getElementsByClassName("sty1")[0];
+var oEndLi = document.getElementsByClassName("sty3")[0];
 var map=[
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -31,7 +33,7 @@ var map=[
 var cols=Math.sqrt(map.length);
 var sizeGrid=20;
 init();
-function(){
+function init(){
 	createMap();
 }
 function createMap(){
@@ -51,6 +53,189 @@ function createMap(){
 		}
 	}
 }
+
+// A*估价函数：f(n) = g(n) + h(n);
+// f(n) n节点的估价函数
+// g(n) 初始点到n节点的实际代价
+// h(n) n节点到目标点的实际代价
+// 实际代价是从一个点到另一个点的实际路径
+
+function f(nodeLi){
+	return g(nodeLi) + h(nodeLi);
+}
+function g(nodeLi){
+	var a = oBeginLi.offsetLeft - nodeLi.offsetLeft;
+	var b = oBeginLi.offsetTop - nodeLi.offsetTop;
+	return Math.sqrt(a*a, b*b);
+}
+function h(nodeLi){
+	var a = oEndLi.offsetLeft - nodeLi.offsetLeft;
+	var b = oEndLi.offsetTop - nodeLi.offsetTop;
+	return Math.sqrt(a*a, b*b);
+}
+
+A*算法程序实现：
+open队列：
+	排序估价函数
+	
+close队列：
+	排除干扰节点
+	
+查询相邻位置
+封装估价函数f() g() h()
+设置父节点指针
+
+var aLi=oUl.getElementsByTagName("li");
+var oInput=document.getElementById("input1");
+var oBeginLi = document.getElementsByClassName("sty1")[0];
+var oEndLi = document.getElementsByClassName("sty3")[0];
+var map=[
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,1,0,0,0,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+];
+var cols=Math.sqrt(map.length);
+var sizeGrid=20;
+var openArr = [];
+var closeArr = [];
+init();
+function init(){
+	createMap();
+	oInput.onclick = function() {
+		openFn();
+	};
+}
+function createMap(){
+	oUl.style.width=cols*(sizeGrid+1)+1+"px";
+	for(var i=0;i<map.length;i++){
+		var oLi=document.createElement("li");
+		oLi.style.width=sizeGrid+"px";
+		oLi.style.height=sizeGrid+"px";
+		oUl.appendChild(oLi);
+		
+		if(map[i]==1){
+			// 开始方块的类
+			oLi.className="sty1";
+			openArr.push(oLi);
+		}else if(map[i]==2){
+			// 结束方块的类
+			oLi.className="sty2";
+		}else if(map[i]==3){
+			// 中间障碍物的类
+			oLi.className="sty3";
+			closeArr.push(oLi);
+		}
+	}
+}
+function openFn(){
+	var nowLi = openArr.shift();
+	closeFn(nowLi);
+	
+	if(nowLi == endLi[0]) {
+		showLine();
+		return;
+	}
+	// 查找周围的
+	findLi(nowLi);
+	// 通过估价函数排序
+	// 离目的地最近的排在了第一个
+	openArr.sort(function(li1, li2) {
+		return li1.num - li2.num;
+	});
+	openFn();
+}
+function findLi(nowLi){
+	var result = [];
+	for(var i = 0; i < aLi.length; i++){
+		if(filter(aLi[i])){
+			result.push(aLi[i]);
+		}
+	}
+	// 过滤掉障碍物
+	function filter(li) {
+		for(var i = 0; i < closeArr.length; i++){
+			if(closeArr[i] == li){
+				return false;
+			}
+		}
+		// 把之前重复的过滤掉
+		for(var i = 0; i < openArr.length; i++){
+			if(openArr[i] == li) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	// 当前li周围的li
+	for(var i = 0; i < result.length; i++){
+		if(
+			Math.abs(nowLi.offsetLeft - result[i].offsetLeft) <= sizeGrid + 1 &&
+			Math.abs(nowLi.offsetTop - result[i].offsetTop) <= sizeGrid + 1
+		) {
+			result[i].num = f(result[i]); //当前节点的估价值
+			result[i].parent = nowLi;
+			openArr.push(result[i]);
+		}
+	}
+}
+function closeFn(){
+	closeArr.push(nowLi);
+}
+
+function showLine() {
+	var result = [];
+	var lastLi = closeArr.pop();
+	findParent(lastLi);
+	function findParent(li) {
+		result.unshift(li);
+		if(li.parent == oBeginLi){
+			return;
+		}
+		findParent(li.parent);
+	}
+	var timer = setInterval(function (){
+		result[iNow].style.background = "red";
+		iNow++;
+		if(iNow == result.length){
+			clearInterval(timer);
+		}
+	}, 500);
+}
+
+八皇后
+国际象棋：8x8棋盘，每行放一个皇后，八个皇后横纵斜都不相交的情况有多少种
+高斯提出了这个问题，答案是92种
+
+
+
+螺旋矩阵
+一种特殊顺序的结构，成螺旋形态
+var arr = [
+	 0,  1,  2,  3, 4,
+	15, 16, 17, 18, 5,
+	14, 23, 24, 19, 6,
+	13, 22, 21, 20, 7,
+	12, 11, 10,  9, 8,
+];
+
 
 
 排列

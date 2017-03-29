@@ -1,3 +1,11 @@
+sea.js
+jquery.js
+move.js
+jCanvasScript.js
+以上是底层库
+
+由于是单页面，因此只有一个页面index.html
+
 div{ display:none;}
 
 <ul>
@@ -14,6 +22,7 @@ $(function(){
 	{
 		aA[i].onclick=function(){
 			var hash=this.dataset.hash;
+			// 给URL添加一个hash
 			window.location.hash=hash;
 			for(var i=0;i<aDiv.length;i++)
 			{
