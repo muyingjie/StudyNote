@@ -137,15 +137,16 @@ void* memset(void* buffer,int c,size_t num);
 用法2：void修饰函数返回值和参数，仅表示无
 如果函数没有返回值，那么应该将其声明为void型
 如果函数没有参数，应该将其声明为void
-int function(void)
-{return 1;}
+int function(void){
+	return 1;
+}
 
 void指针的意义
 C语言规定只有相同类型的指针才可以相互赋值
 void*指针作为左值用于接收任意类型的指针
 void*指针作为右值赋值给其他指针时需要强制类型转换
 int* p1=NULL;
-char* p2=(char*)malloc(sizeof(char)*20);
+char* p2=(char*)malloc(sizeof(char)*20); //malloc返回的是一个void*类型的指针
 
 不存在void类型的变量
 C语言没有定义void究竟是多大内存的别名
@@ -164,7 +165,7 @@ C语言中，函数可以看作一种数据类型吗？
 变量本质分析
 变量概念：既可以读又可以写的内存对象称为变量，若一旦初始化后不能修改的对象则称常量
 变量本质：程序通过变量来申请和命名内存空间int a=0;
-通过变量名访问内存空间
+通过变量名可以访问一个或一段内存空间
 (一段连续)内存空间的别名(是一个门牌号)
 修改变量有几种方法？
 	直接改
@@ -192,7 +193,7 @@ int b;
 char* p;
 a=10;
 
-printf("%d",&a); 1245024
+printf("%d",&a); //1245024
 
 //直接操纵内存地址
 *((int*)1245024)=200; //让编译器以int*的方式处理1245024这块内存，外面的*意思是拿到这块内存，然后再将200放到这块内存中
@@ -499,6 +500,7 @@ void main(){
 主调函数可把堆区 栈区 全局数据内存地址传给被调函数
 被调函数只能返回堆区 全局数据区
 指针做函数参数，是有输入(在主调用函数中分配内存，给被调用函数使用)和输出(和输入相反)特性的
+企业开发中经常看到形参中这样的注释
 int getMem(char** myp1/*out*/, int* mylen1/*out*/, char** myp2/*out*/, int* mylen2/*out*/); //注释中的out就是为了标明myp1是输出的指针
 
 铁律4 应用指针必须和函数调用相结合(指针做函数参数)见图
@@ -614,13 +616,13 @@ void copy_str4(char* from, char* to){
 	while((*to++ = *from++) != '\0');
 }
 //再次优化
-void copy_str4(char* from, char* to){
+void copy_str5(char* from, char* to){
 	//0是假
 	while(*to++ = *from++);
 }
 
 //最好应该判断一下from和to指向的内存是否合法
-void copy_str4(char* from, char* to){
+void copy_str6(char* from, char* to){
 	if(to == NULL || from == NULL){
 		return -1;
 	}
@@ -1219,7 +1221,7 @@ char** getMem(int num){
 	for(i = 0; i < num; i++){
 		//相当于char buf[100];
 		p2[i] = (char*)malloc(sizeof(char) * 100);
-		sprintf(p[i], "%d%d%d", i + 1, i + 1, i + 1);
+		sprintf(p2[i], "%d%d%d", i + 1, i + 1, i + 1);
 	}
 	
 	return p2;
@@ -1315,95 +1317,1963 @@ void main(){
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+多级指针======================================
+int getMem52(char*** p3, int num){
+	int i = 0;
+	char** p2 = NULL;
+	
+	//注：是判断p3，而不是判断p3指向的内存空间的值，即不是判断*p3，*p3是可以为NULL的
+	if(p3 == NULL){
+		return -1;
+	}
+	
+	p2 = (char**)malloc(sizeof(char*) * num);
+	
+	if(p2 == NULL){
+		return NULL;
+	}
+	
+	for(i = 0; i < num; i++){
+		//相当于char buf[100];
+		p2[i] = (char*)malloc(sizeof(char) * 100);
+		sprintf(p2[i], "%d%d%d", i + 1, i + 1, i + 1);
+	}
+	
+	*p3 = p2;
+}
+void getMemFree03(char*** p3, int num){
+	char** tmp = NULL;
+	if(p3 == NULL){
+		return -1;
+	}
+	tmp = *p3;
+	for(i = 0; i < num; i++){
+		free(tmp[i]);
+	}
+	free(tmp);
+	*p3 = NULL;
+}
+void main(){
+	char** p2 = NULL;
+	getMem52(&p2, 3);
+	getMemFree(&p2, 3);
+}
+
+==============================
+有一个字符串符合以下特征："aaa,bbb,ccc,ddd" 要求写一个函数，输出以下结果：
+1、以逗号分割字符串，形成二维数组，并把结果输出
+2、把二维数组行数运算结果也输出
+
+void main(){
+	int i = 0;
+	char* str = "aaa,bbb,ccc,ddd,";
+	char tmp = ',';
+	char myArray[10][30];
+	int row;
+	int ret = 0;
+	
+	ret = split(str, tmp, myArray, &row);
+	if(ret != 0){
+		printf("func split err");
+	}
+	for(i = 0; i < row; i++){
+		printf("%s \n", myArray[i]);
+	}
+}
+// 参数c为分隔符
+int split(const char* buf1, char c, char buf2[10][30], int* count){
+	char* p = NULL;
+	char* pTmp = NULL;
+	int tmpCount = 0;
+	
+	p = buf1;
+	pTmp = buf1;
+	
+	do{
+		// 检索符合条件的位置 p后移
+		p = strchr(p, c);
+		if(p != NULL){
+			if(p - pTmp > 0){
+				strncpy(buf2[tmpCount], pTmp, p - pTmp);
+				buf2[tmpCount][p - pTmp] = '\0';
+				tmpCount++;
+				pTmp = p = p + 1;
+			}
+		}else{
+			break;
+		}
+	} while(*p!='\0');
+	
+	*count = tmpCount;
+	return 0;
+}
+
+用第三种内存模型求解该问题==================================
+// 改变二级指针的值，需要在函数中传入三级指针
+int split(const char* buf1, char c, char*** myp3, int* count){
+	char* p = NULL;
+	char* pTmp = NULL;
+	char** myp = NULL;
+	int tmpCount = 0;
+	int ret = 0;
+	
+	p = buf1;
+	pTmp = buf1;
+	
+	//第一趟扫描，将第一维的长度存储在tmpCount中
+	do{
+		// 检索符合条件的位置 p后移
+		p = strchr(p, c);
+		if(p != NULL){
+			if(p - pTmp > 0){
+				tmpCount++;
+				pTmp = p = p + 1;
+			}
+		}else{
+			break;
+		}
+	} while(*p!='\0');
+	
+	*count = tmpCount;
+	
+	myp = (char**)malloc(tmpCount * (char*));
+	
+	if(myp == NULL){
+		ret = -1;
+		printf("func split() err:%d (tmpCount * sizeof(char *))", ret);
+		goto END;
+		// return -1;
+	}
+	
+	//先把申请来的内存清零，便于判断
+	memset(myp, 0, tmpCount * sizeof(char*));
+	
+	tmpCount = 0;
+	p = buf1;
+	pTmp = buf1;
+	
+	do{
+		p = strchr(p, c);
+		if(p != NULL){
+			if(p - pTmp > 0){
+				// 加上1是为了给字符串最后的\0留下空间
+				int len = p - pTmp + 1;
+				myp[tmpCount] = (char*)malloc(len * sizeof(char));
+				if(myp[tmpCount] == NULL){
+					ret = -1;
+					printf("func split() err:%d (malloc(len * sizeof(char))", ret);
+					goto END;
+					// return -1;
+				}
+				strncpy(myp[tmpCount], pTmp, p - pTmp);
+				myp[tmpCount][p - pTmp] = '\0';
+				tmpCount++;
+				pTmp = p = p + 1;
+			}
+		}else{
+			break;
+		}
+	}while(*p!='\0');
+	
+	
+	// 这个函数是一个入口，多个出口（也就是有很多个地方（例如异常的时候）可以return出去），这样一来，有可能在申请下来的内存还没等到最后释放就出错了的时候，那这块申请的内存就永远释放不了了，从而导致了内存泄露，因此在所有的异常处理判断分支中都定位到END就可以统一处理异常，而且异常处理函数应该提出去
+	END:
+	if(ret != 0){
+		FreeMem2(myp, count);
+		myp = NULL;
+		
+		//还可以把myp的地址传进去
+		//FreeMem3(&myp, count);
+	}else{
+		// 成功
+		*myp3 = myp;
+	}	
+	return ret;
+}
+// 异常处理
+void FreeMem2(char** myp, int count){
+	int i = 0;
+	if(myp == NULL){
+		return ret;
+	}
+	for(i = 0; i < tmpCount; i++){
+		if(myp[i] != NULL){
+			free(myp[i]);
+		}
+	}
+	if(myp != NULL){
+		free(myp);
+	}
+}
+void FreeMem3(char*** p, int count){
+	int i = 0;
+	char** myp = NULL;
+	if(p == NULL){
+		return;
+	}
+	myp = *p;
+	if(myp == NULL){
+		return;
+	}
+	for(i = 0; i < count; i++){
+		if(myp[i] != NULL){
+			free(myp[i]);
+		}
+	}
+	if(myp != NULL){
+		free(myp);
+	}
+	*p = NULL;
+}
+void main(){
+	int ret = 0;
+	int i = 0;
+	char* p1 = "abcdef,accd";
+	char cTem = ',';
+	int nCount;
+	
+	ret = split(p1, cTem, &p, &nCount);
+	
+	if(ret != 0){
+		printf("error");
+	}
+}
+
+
+数组类型和多维数组本质
+扫盲：
+数组首元素地址和数组地址是两个不同的概念
+数组名代表数组首元素的地址，它是个常量
+	解释如下：变量本质是内存空间的别名，一定义数组就分配内存，内存也就固定了，所以数组在最开始起了名之后不可以修改
+数组首元素的地址和数组的地址值相等
+
+
+基础概念：
+void main(){
+	int a[] = {1, 2};
+	int b[100] = {1, 3};
+	int c[200] = {0}; //编译时就已经确定所有的值为0
+	// c是数组首元素的地址 c+1 往后走4个字节
+	// c语言规定：&c是整个数组的地址 &c+1 往后走200*4个字节
+	
+	memset(c, 0, sizeof(c)); //显式重置内存块
+}
+
+数据类型分为基础、非基础，思考角度应该发生变化
+C语言中的数组有自己特定的类型
+	数组的类型由元素类型和数组大小共同决定，比如：int array[5]的类型是int[5]
+
+类型的本质是固定大小内存块的别名
+void main(){
+	typedef int (MyArrayType)[5]; //定义了一个数组数据类型
+	
+	int i = 0;
+	MyArrayType myArray; // 相当于int myArray[5];
+	
+	for(i = 0; i < 5; i++){
+		myArray[i] = i + 1;
+	}
+	
+	// myArray代表数组首元素的地址
+	printf("%d %d", myArray, myArray + 1); //1244992 1244996
+	// &myArray代表整个数组的地址
+	printf("%d %d", &myArray, &myArray + 1); //1244992 1245012
+}
+
+数组指针类型
+定义数组指针类型方法1：
+void main(){
+	//回顾指针数组：
+	char* myArray[] = {"aaa", "bbb"}; //这是指针数组
+	
+	// 数组指针时用一个指针来指向一个数组
+	typedef int (MyArrayType)[5]; //定义了一个数组数据类型
+	
+	int i = 0;
+	MyArrayType myArray; // 相当于int myArray[5]; 用类型定义变量
+	MyArrayType* pArray; // 定义一个指针变量，这个指针变量指向一个数组
+	
+	int myArray2[5]; //myArray2相当于一级指针
+	pArray = &myArray2; //相当于二级指针
+	for(i = 0; i < 5; i++){
+		(*pArray)[i] = i + 1; //相当于 myArray2[i] = i + 1;
+	}
+	for(i = 0; i < 5; i++){
+		printf((*pArray)[i]);
+	}
+}
+
+
+定义数组指针类型方法2：
+void main(){
+	//定义声明一个数组指针类型
+	typedef int (*PArrayType)[5];
+	PArrayType pArray; //告诉编译器给我分配一个指针变量
+	int i;
+	
+	int c[5];
+	
+	pArray = &c;
+	
+	for(i = 0; i < 5; i++){
+		(*pArray)[i] = i + 1;
+	}
+	
+	for(i = 0; i < 5; i++){
+		printf((*pArray)[i]);
+	}
+}
+
+
+定义数组指针类型方法3：
+//前两种方法都是通过类型来定义变量 比较麻烦
+void main(){
+	int (*pArray)[5]; //直接定义一个指向数组的数组指针变量
+	int c[5];
+	pArray = &c;
+}
+
+多维数组名本质剖析
+void main(){
+	int a[3][5];
+	int i = 0;
+	int j = 0;
+	int tmp = 1;
+	
+	for(i = 0; i < 3; i++){
+		for(j = 0; j < 5; j++){
+			a[i][j] = tmp++;
+		}
+	}
+	
+	for(i = 0; i < 3; i++){
+		for(j = 0; j < 5; j++){
+			printf(a[i][j]);
+		}
+	}
+	
+	//多维数组名代表什么意思？
+	//a + 1往后走了5 * 4 = 20个字节
+	printf(a, a+1); // 1244964 1244984
+	//&a + 1往后走了5 * 3 * 4 = 60个字节
+	printf(&a, &a+1); // 1244964 1245024
+	
+	
+	{
+		//定义一个指向数组的指针变量
+		int (*pArray)[5]; //告诉编译器给我分配4个字节的内存（32bit平台下）
+		pArray = a;
+		for(i = 0; i < 3; i++){
+			for(j = 0; j < 5; j++){
+				printf(pArray[i][j]); //多维数组名的本质是数组指针
+			}
+		}
+	}
+	
+	// 对于二维数组a
+	// (a + i) 第i行首地址
+	// *(a + i) 是一级指针，代表第i行首元素的地址
+	// *(a + i) + j 代表第i行第j列的元素的地址，相当于&a[i][j]
+}
+
+a[i][j] ==> a[0 + i][j] ==> *(a + i)[j] ==> *(a + i)[0 + j] ==> *(*(a + i) + j)
+
+多维数组做函数参数退化原因
+void printArray(int a[3][5]);
+void printArray(int a[][5]);
+void printArray(int (*a)[5]);
+
+指针数组应用场景
+
+main函数的参数
+//char* argv[]其实就是二维数组，即二级指针，也就是char** argv，写成char* argv[]是为了更直观
+//main函数由操作系统调用，main函数是操作系统和应用程序沟通的一个桥梁
+//之所以写成main，是因为我们和操作系统商量好了，我用main定义入口，操作系统通过读取main进入应用程序
+//env是操作系统传给我们的系统配置的所有环境变量的信息
+
+//argv是我们自己往应用程序中传的参数，如果生成了一个a.exe的可执行文件，我们在命令行中执行该程序时，可以带一些参数：a.exe aaa bbb ccc ddd，main函数在调用的时候就会将aaa bbb ccc ddd这四个参数给argv
+//argc是我们传入的参数的个数，例如a.exe aaa bbb ccc ddd执行的时候argc就是4
+int main(int argc, char* argv[], char**env){}
+
+//指针数组自我结束能力：最后一项给一个0
+char* c_keyword1[] = {
+	"while",
+	"do",
+	"for",
+	"static",
+	'\0'
+};
+char* c_keyword2[] = {
+	"while",
+	"do",
+	"for",
+	"static",
+	0
+};
+char* c_keyword3[] = {
+	"while",
+	"do",
+	"for",
+	"static",
+	NULL
+};
+
+结构体==================================
+struct Teacher{
+	char name[64];
+	int age;
+	int id;
+}
+void main(){
+	struct Teacher t1;
+}
+
+//类型重定义
+typedef struct Teacher{
+	char name[64];
+	int age;
+	int id;
+}Teacher
+void main(){
+	Teacher t1; //用typedef重定义之后struct才可以省略
+}
+
+struct Student{
+	char name[64];
+	int age;
+}s1, s2; //定义类型的同时定义变量
+
+struct {
+	char name[64];
+	int age;
+}s3, s4; //匿名类型定义变量
+
+初始化结构体类型的变量=======================
+void main(){
+	Teacher t1 = {"aaa", 12, 12};
+}
+
+定义结构体时初始化
+struct Student{
+	char name[64];
+	int age;
+}s1 = {"name", 21};
+
+struct {
+	char name[64];
+	int age;
+}s1 = {"name", 21};
+
+成员引用======================
+void main(){
+	Teacher t1;
+	//点操作符是寻址操作，是age相对于t1的偏移量，在CPU中进行，并没有操作内存
+	t1.age = 31;
+	strcpy(t1.name, "aaa");
+	
+	//通过指针操作内存空间
+	Teacher* p = NULL;
+	p = &t1;
+	// ->运算操作也是寻址操作，相对于t1的偏移量，在CPU中进行，并没有操作内存
+	printf(p->age);
+}
+
+结构体做函数参数=========================
+结构体等号操作
+void main(){
+	Teacher t1 = {"aaaa", 32, 11};
+	Teacher t2;
+	Teacher t3;
+	memset(&t3, 0, sizeof(t3));
+	
+	t2 = t1;
+	
+	//编译器给我们提供简单的=赋值操作，我们要顺从
+	printf("%s", t2.name); //"aaa"
+	printf("%d", t2.age); //32
+	
+	copyTeacher(t3, t1);
+	
+	printf("%s", t2.name); //乱码
+	printf("%d", t2.age); //乱码
+	//拷贝不成功的原因是to的内存空间在copyTeacher函数执行完之后释放，并没有改变t3的值
+	
+	copyTeacher02(&t3, &t1);
+	
+	printf("%s", t2.name); //"aaa"
+	printf("%d", t2.age); //32
+}
+
+void copyTeacher(Teacher to, Teacher from){
+	to = from;
+}
+void copyTeacher02(Teacher* to, Teacher* from){
+	*to = *from;
+}
+
+
+结构体数组===================================
+typedef struct Teacher{
+	char name[64];
+	int age;
+	int id;
+}Teacher;
+void printTeacher(Teacher* array, int num){
+	int i = 0;
+	
+	for(i = 0; i < num; i++){
+		printf("age", array[i].age);
+	}
+}
+Teacher* createTeacher(int num){
+	Teacher* tmp = NULL;
+	tmp = (Teacher*)malloc(sizeof(Teacher) * num);
+	if(tmp == NULL){
+		return NULL;
+	}
+}
+void sortTeacher(Teacher* array, int num){
+	int i;
+	int j;
+	Teacher tmp;
+	
+	for(i = 0; i < num; i++){
+		for(j = i + 1; j < num; j++){
+			if(array[i].age > array[j].age){
+				tmp = array[i];
+				array[i] = array[j];
+				array[j] = tmp;
+			}
+		}
+	}
+}
+void main(){
+	Teacher Array[3];
+	int i;
+	
+	for(i = 0; i < 3; i++){
+		scanf("%d", &(Array[i].age));
+	}
+	
+	for(i = 0; i < 3; i++){
+		printf("%d", Array[i].age);
+	}
+	
+	printTeacher(Array, 3);
+	
+	sortTeacher(Array, 3);
+}
+=====================================
+Teacher* createTeacher(int num){
+	Teacher* tmp = NULL;
+	tmp = (Teacher*)malloc(sizeof(Teacher) * num);
+	if(tmp == NULL){
+		return NULL;
+	}
+	return tmp;
+}
+void freeTeacher(Teacher* p){
+	if(p != NULL){
+		free(p);
+	}
+}
+void main(){
+	Teacher* pArray = NULL;
+	pArray = createTeacher(3);
+	
+	for(i = 0; i < 3; i++){
+		scanf("%d", &(pArray[i].age));
+	}
+	
+	sortTeacher(pArray, 3);
+	
+	printTeacher(pArray, 3);
+}
+====================================
+int createTeacher(Teaher** pT, int num){
+	Teacher* tmp = NULL;
+	tmp = (Teacher*)malloc(sizeof(Teacher) * num);
+	if(tmp == NULL){
+		return -1;
+	}
+	*pT = tmp;
+	return 0;
+}
+void freeTeacher(Teacher* p){
+	if(p != NULL){
+		free(p);
+	}
+}
+void main(){
+	int ret = 0;
+	Teacher* pArray = NULL;
+	ret = createTeacher(&pArray, 3);
+	
+	if(ret != 0){
+		printf("error");
+		return ret;
+	}
+	
+	for(i = 0; i < 3; i++){
+		scanf("%d", &(pArray[i].age));
+	}
+	
+	sortTeacher(pArray, 3);
+	
+	printTeacher(pArray, 3);
+}
+结构体套一级指针=====================
+typedef struct Teacher{
+	char name[64];
+	char* aliasname;
+	int age;
+	int id;
+}Teacher;
+int createTeacher(Teaher** pT, int num){
+	int i = 0;
+	Teacher* tmp = NULL;
+	tmp = (Teacher*)malloc(sizeof(Teacher) * num);
+	if(tmp == NULL){
+		return -1;
+	}
+	memset(tmp, 0, sizeof(Teacher) * num);
+	
+	for(i = 0; i < num; i++){
+		tmp[i].aliasname = (char*)malloc(60);
+	}
+	*pT = tmp;
+	return 0;
+}
+void freeTeacher(Teacher* p, int num){
+	if(p == NULL){
+		return;
+	}
+	for(i = 0; i < num; i++){
+		if(p[i].aliasname != NULL){
+			free(p[i].aliasname);
+		}
+	}
+	free(p);
+}
+void main(){
+	int ret = 0;
+	Teacher* pArray = NULL;
+	ret = createTeacher(&pArray, 3);
+	
+	
+	
+	for(i = 0; i < 3; i++){
+		scanf("%d", &(pArray[i].age));
+		scanf("%d", pArray[i].name); // 向指针所指向的内存空间拷贝数据，char name[64]这种写法就使得结构体在初始化时(Teacher* pArray = NULL;)就已经分配了对应的内存
+		scanf("%d", pArray[i].aliasname); // 向指针所指向的内存空间拷贝数据，但前提是这个指针所指向的内存空间得有才可以，char* aliasname只是一个指针，分配了4个字节的空间，并没有分配这个指针指向的内存空间
+	}
+	
+	freeTeacher(pArray, 3);
+}
+结构体套二级指针=====================
+typedef struct Teacher{
+	char name[64];
+	char* aliasname;
+	char** stuame;
+	int age;
+	int id;
+}Teacher;
+int createTeacher(Teaher** pT, int num){
+	int i = 0;
+	int j = 0;
+	Teacher* tmp = NULL;
+	tmp = (Teacher*)malloc(sizeof(Teacher) * num);
+	if(tmp == NULL){
+		return -1;
+	}
+	memset(tmp, 0, sizeof(Teacher) * num);
+	
+	for(i = 0; i < num; i++){
+		char** p;
+		tmp[i].aliasname = (char*)malloc(60);
+		p = (char**)malloc(3 * sizeof(char*));
+		for(j = 0; j < 3; j++){
+			p[j] = (char*)malloc(120);
+		}
+		tmp[i].stuname = p;
+	}
+	*pT = tmp;
+	return 0;
+}
+void freeTeacher(Teacher* p, int num){
+	int i = 0;
+	int j = 0;
+	if(p == NULL){
+		return;
+	}
+	for(i = 0; i < num; i++){
+		if(p[i].aliasname != NULL){
+			free(p[i].aliasname);
+		}
+		
+		if(p[i].stuname != NULL){
+			char** myp = p[i].stuname;
+			for(j = 0; j < 3; j++){
+				if(myp[j] != NULL){
+					free(myp[j]);
+				}
+			}
+			free(myp);
+			p[i].stuname = NULL;
+		}
+	}
+	free(p);
+}
+void main(){
+	int i;
+	int j;
+	int ret = 0;
+	Teacher* pArray = NULL;
+	ret = createTeacher(&pArray, 3);
+	
+	for(i = 0; i < 3; i++){
+		scanf("%d", &(pArray[i].age));
+		scanf("%d", pArray[i].name);
+		scanf("%d", pArray[i].aliasname);
+		for(j = 0; j < 3; j++){
+			scanf("%s", pArray[i].stuname[j]);
+		}
+	}
+	
+	freeTeacher(pArray, 3);
+}
+
+综合案例========================================
+// 把第一种内存模型第二种内存模型结果copy到第三种内存模型中，并排序，打印
+int sort(char** myp1, int num1, char (*myp2)[30], int num2, char*** myp3, int* num3){
+	char** p3 = NULL;
+	int i = 0;
+	int j = 0;
+	int k = 0;
+	int tmplen = 0;
+	char* tmpP = NULL;
+	
+	p3 = (char**)malloc((num1 + num2) * sizeof(char*));
+	if(p3 == NULL){
+		return -1;
+	}
+	
+	for(i = 0; i < num1; i++){
+		tmplen = strlen(myp1[i]) + 1;
+		p3[i] = (char*)malloc(tmplen * sizeof(char));
+		if(p3[i] == NULL){
+			return -2;
+		}
+		strcpy(p3[i], myp1[i]);
+	}
+	
+	for(j = 0; j < num2; j++, i++){
+		tmplen = strlen(myp2[j]) + 1;
+		p3[i] = (char*)malloc(tmplen * sizeof(char));
+		if(p3[i] == NULL){
+			return -3;
+		}
+		strcpy(p3[i], myp2[j]);
+	}
+	
+	tmplen = *num3 = num1 + num2;
+	//排序
+	for(i = 0; i < tmplen; i++){
+		for(j = i; j < tmplen; j++){
+			if(strcmp(p3[i], p3[j]) > 0){
+				tmpP = p3[i];
+				p3[i] = p3[j];
+				p3[j] = tmpP;
+			}
+		}
+	}
+	
+	*myp3 = p3;
+	
+	return ret;
+}
+int sortFree(char*** myp, int len){
+	int i = 0;
+	char** p = NULL;
+	
+	if(myp == NULL){
+		return;
+	}
+	
+	p = *myp;
+	if(p == NULL){
+		return;
+	}
+	
+	for(i = 0; i < len; i++){
+		free(p[i]);
+	}
+	free(p);
+	// 只有传入三级指针才可以将二级指针所指向的内存空间清空，从而防止野指针的出现
+	*myp = NULL;
+}
+int main(){
+	char* p1[] = {"aaa","aaa","aaa","aaa"};
+	char buf2[10][30] = {"111","111","111","111"};
+	char** p3 = NULL;
+	int len1;	
+	int len2;	
+	int len3;
+	int ret = 0;
+
+	len1 = sizeof(p1)/sizeof(*p1);
+	len2 = 3;
+	
+	ret = sort(p1, len1, buf2, len2, &p3, &len3);
+	if(ret != 0){
+		printf("error");
+		return ret;
+	}
+	
+	for(i = 0; i < len3; i++){
+		printf("%s", p3[i]);
+	}
+}
+
+结构体的深拷贝和浅拷贝=================================
+typedef struct Teacher{
+	char name[64];
+	int age;
+	char* pname2;
+}Teacher;
+void copyTeacher(Teacher* to, Teacher* from){
+	//*to = *from;相当于memcpy(to, from, sizeof(Teacher));但是这两种操作都是浅拷贝，不会把指针变量指向的内存空间拷贝过去
+	memcpy(to, from, sizeof(Teacher));
+}
+//深拷贝
+void deepCopyTeacher(Teacher* to, Teacher* from){
+	*to = *from;
+	to->pname2 = (char*)malloc(100);
+	strcpy(to->pname2, from->pname2);
+}
+void main(){
+	Teacher t1;
+	Teacher t2;
+	
+	strcpy(t1.name, "name1");
+	t1.pname2 = (char*)malloc(100);
+	strcpy(t1.pname2, "ssss");
+	
+	//t1赋给t2
+	copyTeacher(&t2, &t1);
+	
+	if(t1.pname2 != NULL){
+		free(t1.pname2);
+		t1.pname2 = NULL;
+	}
+	// 如果是浅拷贝的话，t1和t2这两个变量中存储的地址是一样的，而此时该地址指向的内存空间已经在上面的free(t1.pname2)中释放了，再去free(t2.pname2);就会出问题
+	if(t2.pname2 != NULL){
+		free(t2.pname2);
+		t2.pname2 = NULL;
+	}
+}
+
+偏移量====================
+//一旦结构体定义下来，则结构体中的成员，内存布局就定下来了
+//age地址减去64就是结构体的内存地址
+typedef struct AdvTeacher{
+	char name[64];
+	int age;
+	int p;
+	char* pname2;
+}AdvTeacher;
+void main(){
+	AdvTeacher t1;
+	AdvTeacher* p = NULL;
+	//还没给p分配内存，直接往p里面拷贝，会down掉
+	//strcpy(p1, "dddd");
+	p - 1; //p - 1这个操作是在CPU中运算的，并没有操作任何内存 *(p - 1)这个操作才会去取p - 1处指向的内存
+	{
+		int offsize = (int)&(p->age); //offsize为64，64这个值就是偏移量，偏移了name成员的长度——64字节
+	}
+	{
+		int offsize = (int)&(((AdvTeacher*)0)->age); //64
+	}
+}
+
+
+文件操作===============================
+按字符读写文件
+fputc================
+void main(){
+	FILE* fp = NULL;
+	char* filename = "c:\\1.txt";
+	char* filename2 = "c:/1.txt";
+	char a[27] = "abcdefg";
+	//两种都可以，但是第一种在Linux下不兼容，因此我们通常用第二种
+	
+	fp = fopen(filename2, "r+");
+	if(fp == NULL){
+		printf("open fail");
+		return;
+	}
+	printf("open succ");
+	for(i = 0; i < strlen(a); i++){
+		fputc(a[i], fp);
+	}
+	fclose(fp);
+}
+
+fgetc========================
+void main(){
+	FILE* fp = NULL;
+	char* filename = "c:\\1.txt";
+	char* filename2 = "c:/1.txt";
+	char a[27] = "abcdefg";
+	
+	fp = fopen(filename2, "r+");
+	if(fp == NULL){
+		printf("open fail");
+		return;
+	}
+	printf("open succ");
+	
+	while(!feof(fp)){
+		char tmpc = fgetc(fp);
+		printf("%c", tmpc);
+	}
+	
+	if(fp != NULL){
+		fclose(fp);
+	}	
+}
+
+按照行读取文件==================
+fputs==================
+void main(){
+	FILE* fp = NULL;
+	char* filename = "c:\\1.txt";
+	char* filename2 = "c:/1.txt";
+	char a[27] = "abcdefg";
+	
+	fp = fopen(filename2, "r+");
+	if(fp == NULL){
+		printf("open fail");
+		return;
+	}
+	printf("open succ");
+	fputs(a, fp);
+	fclose(fp);
+}
+
+fgets========================
+void main(){
+	FILE* fp = NULL;
+	char* filename = "c:\\1.txt";
+	char* filename2 = "c:/1.txt";
+	char buf[1024];
+	
+	fp = fopen(filename2, "r+");
+	if(fp == NULL){
+		printf("open fail");
+		return;
+	}
+	printf("open succ");
+	
+	while(!feof(fp)){
+		// 会把\n也拷贝到buf中
+		// 内存打包技术：内存首地址+内存长度
+		char* p = fgets(buf, 1024, fp); //C函数库会一行一行的拷贝数据到buf指针所指的内存空间中，并且变成C风格的字符串
+		if(p == NULL){
+			goto End;
+		}
+		printf("%s", buf);
+	}
+End:	
+	if(fp != NULL){
+		fclose(fp);
+	}	
+}
+
+按照块的方式操作文件==================
+//直接把内存数据写入到文件中
+typedef struct Teacher{
+	char name[64];
+	int age;
+}Teacher;
+void main(){
+	//fwrite======================
+	int i = 0;
+	FILE* fp = NULL;
+	char* fileName = "c:/1.txt";
+	Teacher tArray[3];
+	int myN = 0;
+	
+	for(i = 0; i < 3; i++){
+		sprintf(tArray[i].name, "%d%d%d", i + 1, i + 1, i + 1);
+		tArray[i].age = i + 31;
+	}
+	
+	fp = fopen(fileName, "rb");
+	if(fp == NULL){
+		printf("error");
+	}
+	
+	for(i = 0; i < 3; i++){
+		// 第一个参数是从哪个内存块开始
+		// 第二个参数是写多长
+		// 第三个参数是写了多少次
+		// 第四个参数是将要写入的文件指针
+		// 返回值有没有写满磁盘
+		myN = fwrite(&tArray[i], sizeof(Teacher), 1, fp);
+	}
+	
+	if(fp != NULL){
+		fclose(fp);
+	}
+	
+	
+	//fread=======================
+	int i = 0;
+	FILE* fp = NULL;
+	char* fileName = "c:/1.txt";
+	Teacher tArray[3];
+	int myN = 0;
+	
+	for(i = 0; i < 3; i++){
+		sprintf(tArray[i].name, "%d%d%d", i + 1, i + 1, i + 1);
+		tArray[i].age = i + 31;
+	}
+	
+	fp = fopen(fileName, "wb");
+	if(fp == NULL){
+		printf("error");
+	}
+	
+	for(i = 0; i < 3; i++){
+		myN = fread(&tArray[i], sizeof(Teacher), 1, fp);
+		//myN = fwrite(&tArray[i], sizeof(Teacher), 1, fp);
+	}
+	
+	for(i = 0; i < 3; i++){
+		printf("%s %s", tArray[i].name, tArray[i].age);
+	}
+	
+	if(fp != NULL){
+		fclose(fp);
+	}	
+}
+
+实例：配置文件读写=================================
+程序启动时提示
+输入1：写配置文件
+输入2：读配置文件
+输入0：退出
+
+模块划分:
+界面（集成测试环境）
+接口：读配置文件 写配置文件
+
+
+
+项目结构==================================================
+cfg_op.h文件==========
+#ifndef __CFG_OP_H__
+#define __CFG_OP_H__
+
+#ifdef __cplusplus
+extern "C" {
+
+//读配置文件
+int GetCfgItem(char* pFileName, char* pKey, char* pValue, int* pValueLen);
+//写配置文件
+int WriteCfgItem(char* pFileName, char* pItemName, char* pItemValue, int itemValueLen);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
+
+cfg_op.c文件===========
+#define MaxLine 2048
+int GetCfgItem(char* pFileName, char* pKey, char* pValue, int* pValueLen){
+	FILE* fp = NULL;
+	int ret = 0;
+	char* pTmp = NULL;
+	char* pBegin = NULL;
+	char* pEnd = NULL;
+	char lineBuf[MaxLine]; //假设一行数据不会超过2048
+	fp = fopen(pFileName, "r");
+	if(fp == NULL){
+		ret = -1;
+		return ret;
+	}
+	while(!feof(fp)){
+		memset(lineBuf, 0, sizeof(lineBuf));
+		//一行一行读
+		fgets(lineBuf, MaxLine, fp);
+		//测试一下：
+		//printf("%s", lineBuf);
+		
+		pTmp = strschr(lineBuf, '=');
+		if(pTmp == NULL){
+			continue;
+		}
+		
+		//当前循环到的行是否有key
+		pTmp = strstr(lineBuf, pKey);
+		if(pTmp == NULL){
+			continue;
+		}
+		
+		pTmp = pTmp + strlen(pKey);
+		//将pTmp指向=前的一个字符
+		pTmp = strchr(pTmp, '=');
+		if(pTmp == NULL){
+			continue;
+		}
+		//将pTmp指到=的后面
+		pTmp = pTmp + 1;
+		//测试一下 printf("%s", pTmp);
+		
+		//拿到value的起点
+		while(1){
+			if(*pTmp == ' '){
+				pTmp++;
+			}else{
+				pBegin = pTmp;
+				if(*pBegin == '\n'){
+					//如果是回车，证明这个key没有对应的值
+					printf("%s没有对应的值", pKey);
+				}
+				break;
+			}
+		}
+		
+		//拿到value的终点
+		while(1){
+			if(*pTmp == ' ' || *pTmp == '\n'){
+				break;
+			}else{
+				pTmp = pTmp + 1;
+			}
+		}
+		pEnd = pTmp;
+		
+		*pValueLen = pEnd - pBegin;
+		memcpy(pValue, pBegin, pEnd - pBegin);
+		break;
+	}
+End:
+	if(fp != NULL){
+		fclose(fp);
+	}
+	return 0;
+}
+
+int WriteCfgItem(char* pFileName, char* pKey, char* pValue, int itemValueLen){
+	int rv = 0;
+	int iTag = 0;
+	int length = 0;
+	FILE* fp = NULL;
+	char lineBuf[MaxLine];
+	char* pTmp = NULL;
+	char* pBegin = NULL;
+	char* pEnd = NULL;
+	char fileBuf[1024 * 8] = {0};
+	
+	if(pFileName == NULL || pKey == NULL || pValue == NULL){
+		rv = -1;
+		printf("error");
+		goto End;
+	}
+	
+	// 以读写的方式打开文件
+	fp = fopen(pFileName, "r+");
+	// 如果打开失败了，仅提示一下，后面继续以w+t（如果文件没有就新建一个）的方式再次打开
+	if(fp == NULL){
+		rv = -2;
+		printf("error");
+	}
+	
+	// 如果文件不存在就新建
+	if(fp == NULL){
+		fp = fopen(pFileName, "w+t");
+		if(fp == NULL){
+			rv = -3;
+			printf("error");
+			goto End;
+		}
+	}
+	
+	//把文件指针从0位置开始，移动到文件末尾，便于后面通过ftell获取长度
+	fseek(fp, 0L, SEEK_END);
+	
+	//获取文件长度
+	length = ftell(fp);
+	
+	//再将指针指向文件头部
+	fseek(fp, 0L, SEEK_SET);
+	
+	if(length > 1024 * 8){
+		rv = -3;
+		printf("文件长度太长");
+		goto End;
+	}
+	
+	while(!feof(fp)){
+		//读每一行
+		memset(lineBuf, 0, sizeof(lineBuf));
+		pTmp = fgets(lineBuf, MaxLine, fp);
+		if(pTmp == NULL){
+			break;
+		}
+		
+		//如果当前行有传进来的key，将文件指针移到key处
+		pTmp = strstr(lineBuf, pKey);
+		if(pTmp == NULL){
+			//如果当前行没有传进来的key，copy到filebuf中
+			strcat(fileBuf, lineBuf);
+		}else{
+			//传进来的key在当前行，则替换旧的行，再copy到fileBuf中
+			sprintf(lineBuf, "%s=%s\n", pKey, pValue);
+			strcat(fileBuf, lineBuf);
+			iTag = 1;
+		}
+	}
+	
+	if(iTag == 0){
+		//如果key不在任何一行中，追加
+		fprintf(fp, "%s = %s\n", pKey, pValue);
+	}else{
+		//如果有key，重新创建文件
+		if(fp != NULL){
+			fclose(fp);
+			fp = NULL; //避免野指针
+		}
+		fp = fopen(pFileName,"w+t");
+		if(fp == NULL){
+			rv = -4;
+			printf("error");
+			goto End;
+		}
+		fputs(fileBuf, fp);
+	}
+	
+End:
+	if(fp != NULL){
+		fclose(fp);
+	}
+	
+	return rv;
+}
+
+入口文件==================
+#include "cfg_op.h"
+
+#define CFGNAME "c:/mycfg.ini";
+int TGetCfg(){
+	char name[1024] = {0};
+	char value[1024] = {0};
+	int ret = 0;
+	int len = 0;
+	
+	//从键盘中获取key
+	scanf("%s", name);
+
+	ret = GetCfgItem(CFGNAME, name, value, &len);
+	if(ret != 0){
+		printf("err");
+		return ret;
+	}
+	return 0;
+}
+
+int TWriteCfg(){
+	char name[1024] = {0};
+	char value[1024] = {0};
+	int ret = 0;
+	
+	//从键盘中获取key
+	scanf("%s", name);
+	scanf("%s", value);
+
+	ret = WriteCfgItem(CFGNAME, name, value, strlen(value));
+	if(ret != 0){
+		printf("err");
+		return ret;
+	}
+	return 0;
+}
+void main(){
+	int choice;
+	for(;;){
+		printf("菜单内容。。。略");
+		scanf("%d", &choice);
+		switch(choice){
+			case 1:
+				TWriteCfg();
+				break;
+			case 2:
+				TGetCfg();
+				break;
+			case 0:
+				exit(0); //return也可以
+				break;
+			default:
+				exit(0);
+		}
+	}
+}
+
+
+大文件加密======================================
+文件比较大时不可能把整个文件都加载到内存中整体加密
+des.h========
+#ifndef _OPENDESS_H_
+#define _OPENDESS_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int DescEnc(
+	unsigned char* pInData,
+	int nInDataLen,
+	unsigned char* pOutData,
+	int* pOutDataLen
+);
+
+int DesDec(
+	unsigned char* pInData,
+	int nInDataLen,
+	unsigned char* pOutData,
+	int* pOutDataLen
+);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
+
+
+加密解密测试============
+#include "des.h" //引入加密解密库
+void main(){
+	int ret = 0;
+	char* plain = "123456";
+	int plainlen = strlen(plain);
+	
+	char plain2[4096];
+	int plainlen2 = strlen(plain2);
+	
+	unsigned char cryptbuf[4096];
+	int cryptlen = 0;
+	
+	ret = DescEnc(
+		plain,
+		plainlen,
+		cryptbuf,
+		&cryptlen
+	);
+	if(ret != 0){
+		printf("error");
+	}
+
+	ret = DesDec(
+		cryptbuf,
+		cryptlen,
+		plain2,
+		&plainlen2
+	);
+	if(ret != 0){
+		printf("error");
+	}
+}
+
+入口文件====================
+#include "des.h"
+
+int FileSymEnc(const char* pfile1, const char* pfile2){
+	FILE* fp1 = NULL;
+	FILE* fp2 = NULL;
+	unsigned char plainbuf[4096];
+	int plainlen = 0;
+	int plainlen2 = 0;
+	int ret = 0;
+	unsigned char cryptbuf[4096];
+	int cryptlen = 0;
+	
+	fp1 = fopen(pfile1, "rb");
+	if(fp1 == NULL){
+		goto End;
+	}
+	
+	fp1 = fopen(pfile1, "wb");
+	if(fp1 == NULL){
+		goto End;
+	}
+	
+	while(!feof(fp1)){
+		//返回取到的长度
+		plainlen = fread(plainbuf, 1, 4096, fp1);
+		
+		ret = DescEnc(
+			plainbuf,
+			plainlen,
+			cryptbuf,
+			&cryptlen
+		);
+		if(ret != 0){
+			printf("error");
+			return ret;
+		}
+		
+		//将读到的数据写入fp2所指向的文件中
+		plainlen2 = fwrite(cryptbuf, 1, cryptlen, fp2);
+		//这里假设明文段和加密段的长度一样
+		if(plainlen2 != plainlen){
+			ret = -3;
+			printf("error: 磁盘已满");
+			goto End;
+		}
+	}
+End:
+	if(fp1 != NULL){
+		fclose(fp1);
+	}
+	if(fp2 != NULL){
+		fclose(fp2);
+	}
+	
+	return 0;
+}
+void main(){
+	const char* file1 = "c:/22.txt";
+	const char* file2 = "c:/22enc.txt";
+	int ret = 0;
+	
+	ret = FileSymEnc(file1, file2);
+	
+	if(ret != 0){
+		printf("error");
+	}
+}
+
+=========================================
+socketclient.lib //资源描述文件 描述socketclient.dll
+socketclient.dll //动态库 （函数二进制码集合、里面有函数的函数体） 动态库是有规范的 各个操作系统下这个规范是不一样的
+
+动态库测试环境搭建======================
+#include "socketclientdll.h"
+int main(){
+	int ret = 0;
+	void* handle = NULL;
+	
+	unsigned char buf[128];
+	int buflen = 3;
+	
+	unsigned char outbuf[128];
+	int outbuflen = 3;
+	
+	strcpy(buf, "12345");
+	
+	//客户端初始化，获取handle上下文，cltSocketInit就是调用的动态库里面的方法
+	ret = cltSocketInit(&handle);
+	if(ret != 0){
+		printf("error");
+		return ret;
+	}
+	
+	//客户端发报文
+	ret = cltSocketSend(handle, buf, buflen);
+	if(ret != 0){
+		printf("error");
+		return ret;
+	}
+	
+	//客户端收报文
+	ret = cltSocketRev(handle, outbuf, &outbuflen);
+	if(ret != 0){
+		printf("error");
+		return ret;
+	}
+	
+	//释放客户端资源
+	cltSocketDestroy(handle);
+}
+
+socketclient动态库====================
+typedef struct _SCK_HANDLE{
+	char version[64];
+	char ip[128];
+	int port;
+	char *p;
+	int plen;
+}_SCK_HANDLE; //动态库内部的数据类型，不像让测试程序（上层应用）知道
+
+//通过增加_declspec(dllexport)注解，表明下面的这个方法是该动态库对外开放出去的方法
+_declspec(dllexport)
+int cltSocketInit(void** handle){
+	_SCK_HANDLE *hdl = NULL;
+	int ret = 0;
+	
+	printf("func cltSocketInit() begin");
+	hdl = (_SCK_HANDLE*)malloc(sizeof(_SCK_HANDLE));
+	if(hdl == NULL){
+		ret = -1;
+		printf("error");
+		return ret;
+	}
+	memset(hdl, 0, sizeof(_SCK_HANDLE));
+	strcpy(hdl->ip, "192.168.1.2");
+	hdl->port = 8081;
+	*handle = hdl;
+	
+	printf("func cltSocketInit() end");
+	return 0;
+}
+
+_declspec(dllexport)
+// 客户端发报文
+int cltSocketSend(void* handle, unsigned char* buf, int buflen){
+	_SCK_HANDLE *hdl = NULL;
+	int ret = 0;
+	
+	hdl = (_SCK_HANDLE*)handle;
+	
+	hdl->p = (unsigned char*)malloc(buflen* sizeof(unsigned char));
+	if(hdl->p){
+		ret = -1;
+		printf("error");
+		return ret;
+	}
+	memcpy(hdl->p, buf, buflen);
+	hdl->plen = buflen;
+
+	return 0;
+}
+
+_declspec(dllexport)
+int cltSocketRev(void* handle, unsigned char* buf, int buflen){
+	_SCK_HANDLE *hdl = NULL;
+	int ret = 0;
+	
+	hdl = (_SCK_HANDLE*)handle;
+	
+	memcpy(buf, hdl->p, hdl->plen);
+	*buflen = hdl->plen;
+	
+	return 0;
+}
+
+_declspec(dllexport)
+int cltSocketDestroy(void* handle){
+	_SCK_HANDLE *hdl = NULL;
+	int ret = 0;
+	
+	hdl = (_SCK_HANDLE*)handle;
+	
+	if(hdl->p){
+		free(hdl->p);
+	}
+	free(hdl);
+}
+
+==================================
+检查内存泄露的工具memwatch.h memwatch.c
+
+win32环境下动态链接库（DLL）编程原理--非重点，有兴趣可以研究下
+需要在visual studio中 动态库测试搭建中的链接器里面加入导入的动态库的lib文件，这样程序在链接的时候就可以使用这里面的方法了
+
+visual studio中创建动态库的话需要在开始创建项目时选择dll动态库选项，动态库会生成一个dll和lib文件
+
+===================================
+typedef struct Student{
+	char name[64];
+	int id;
+}
+typedef struct Teacher{
+	char name[64];
+	int id;
+	char* p;
+	char** p2;
+	Student s1; //结构体套结构体
+	Student* p3; //结构体套指针
+	//Teacher t1; //结构体套自身类型的结构体元素，非法，因为结构体的本质就是定义一种数据类型，定义数据类型就需要分配内存空间，而编译器还没给结构体分配完内存空间时又遇到了一个自身类型的结构体，这个成员的大小肯定无法确定，因此非法，但是结构体中可以有自身类型的指针成员
+	struct Teacher* pt1; //结构体中可以有自身类型的指针成员
+}Teacher;
+void main(){
+	
+}
+
+链表=========================================
+typedef struct Teacher{
+	int data;
+	struct Teacher* next;
+}Teacher;
+void main(){
+	//静态链表：固定节点数，如果放在独立的方法中创建节点的话方法执行完毕节点内存也就释放了
+	//动态链表：
+	Teacher t1;
+	Teacher t2;
+	Teacher t3;
+	
+	t1.data = 1;
+	t2.data = 2;
+	t3.data = 3;
+	
+	t1.next = &t2;
+	t2.next = &t3;
+	t3.next = NULL;
+}
+
+============================================
+typedef struct Node{
+	int data;
+	struct Node* next;
+}SList;
+
+// 创建链表
+SList* SList_Create();
+
+// 遍历链表
+int SList_Print(SList* pHead);
+
+// 插入节点
+int SList_NodeInsert(SList* pHead, int x, int y);
+
+// 删除节点
+int SList_NodeDel(SList* pHead, int y);
+
+// 链表销毁
+int SList_Destroy(SList* pHead);
+
+// 创建链表
+SList* SList_Create(){
+	SList* pHead = NULL;
+	SList* pM = NULL;
+	SList* pCur = NULL;	
+	int data;
+
+	pHead = (SList*)malloc(sizeof(SList));
+	if(pHead == NULL){
+		return -1;
+	}
+	pHead->data = 0;
+	pHead->next = NULL;
+	
+	scanf("%d", &data);
+	
+	pCur = pHead;
+	
+	while(data != -1){
+		pM = (SList*)malloc(sizeof(SList));
+		if(pM == NULL){
+			return -1;
+		}
+		pM->data = data;
+		pM->next = NULL;
+		
+		pCur->next = pM;
+		pCur = pM;
+		
+		scanf("%d", &data);
+	}
+	
+	return pHead;
+}
+
+// 遍历链表
+int SList_Print(SList* pHead){
+	SList* pTmp;
+	if(pHead == NULL){
+		return -1;
+	}
+	
+	pTmp = pHead->next;
+	while(pTmp != NULL){
+		printf("%d", pTmp->data);
+		pTmp = pTmp->next;
+	}
+	return NULL;
+}
+
+// 插入节点
+int SList_NodeInsert(SList* pHead, int x, int y){
+	SList* pPre = NULL;
+	SList* pNext = NULL;
+	SList* pCur = NULL;
+	SList* pM = NULL; // 即将插入的新节点
+
+	pM = (SList*)malloc(sizeof(SList));
+	if(pM == NULL){
+		return -1;
+	}
+	
+	pM->next = NULL;
+	pM->data = y;
+	
+	pPre = pHead;
+	pCur = pHead->next;
+	while(pCur){
+		if(pCur->data == x){
+			break;
+		}
+		pPre = pCur;
+		pCur = pCur->next;
+	}
+	
+	// 让新节点连接后续链表
+	pM->next = pPre->next;
+	// 让前驱节点连接新节点
+	pPre->next = pM;
+	
+	return 0;
+}
+
+// 删除节点
+int SList_NodeDel(SList* pHead, int y){
+	SList* pM;
+	SList* pCur;
+	SList* pPre;
+	int data;
+	
+	pPre = pHead;
+	pCur = pHead->next;
+	
+	while(pCur){
+		if(pCur->data == y){
+			break;
+		}
+		pPre = pCur;
+		pCur = pCur->next;
+	}
+	
+	if(pCur == NULL){
+		printf("没有找到要删除的节点");
+		return -1;
+	}else{
+		pNext->next = pCur->next;
+		if(pCur != NULL){
+			free(pCur);
+		}
+	}
+	
+	return 0;
+}
+
+// 链表销毁
+int SList_Destroy(SList* pHead){
+	SList* tmp = NULL;
+	if(pHead == NULL){
+		return -1;
+	}
+	
+	tmp = pHead;
+	while(pHead != NULL){
+		// 注意不可以缓存pHead
+		tmp = pHead->next;
+		free(pHead);
+		pHead = tmp;
+	}
+	return NULL;
+}
+
+// 链表逆置
+int SList_Reverse(SList* pHead){
+	SList* p; // 前驱指针
+	SList* q; // 当前指针
+	SList* t; // 当前指针下一个节点
+	
+	// 排除头结点为空 只有头节点 只有头结点和第二个节点的情况
+	if(pHead == NULL || pHead->next == NULL || pHead->next->next == NULL){
+		return 0;
+	}
+	
+	// 初始化
+	p = pHead->next;
+	q = pHead->next->next;
+	
+	// 从左到右逆置节点
+	while(q){
+		t = q->next;
+		q->next = p;
+		p = q;
+		q = t;
+	}
+	
+	// 头结点变成尾节点
+	pHead->next->next = NULL;
+	pHead->next = p;
+	
+	return 0;
+}
+
+void main(){
+	int ret = 0;
+	SList* pHead = NULL;
+	
+	// 创建链表
+	pHead = SList_Create();
+	ret = SList_Print(pHead);
+	
+	// 向链表中插入节点
+	ret = SList_NodeInsert(pHead, 20, 19);
+	ret = SList_Print(pHead);
+	
+	// 删除节点
+	ret = SList_NodeDel(pHead, 19);
+	ret = SList_Print(pHead);
+}
+
+C++============================================================================================================
+#include "iostream" // 包含C++的头文件
+
+using namespace std; // 使用命名空间 std 标准的命名空间（在这个命名空间中定义了很多标准定义）
+
+void main(){
+	// cout是一个对象 标准输出 相当于黑窗口
+	// 左移操作符<<在C++中不仅仅承担了左移的功能，在此作用相当于把"hello..."输出到cout中，这就是C++操作符的重载
+	// endl是回车换行
+	// 这条语句整体意思是将"hello..."打印到屏幕并且回车换行
+	cout << "hello..." << endl;
+}
+
+分别用面向过程和面向对象 用C++求圆周长与面积
+#include "iostream"
+using namespace std;
+
+// 求圆面积
+void main(){
+	double r = 0;
+	double s = 0;
+	
+	cout << "请输入圆半径:";
+	// cin相当于键盘 标准输入
+	// 从键盘中输入的数据流入到r变量中
+	cin >> r;
+	
+	s = 3.14 * r * r;
+	cout << "圆面积是" << s << endl;
+}
+
+
+面向对象===============
+// 定义一个自定义数据类型
+struct Circle{
+	double m_s; //圆面积
+	double m_r; //圆半径
+}
+// 类似于上面结构体的定义
+class MyCircle{
+	public:
+		double m_s; //圆面积
+		double m_r; //圆半径
+	public:
+		// 成员函数
+		void setR(double r){
+			m_r = r;
+		}
+		double getR(){
+			return m_r;
+		}
+		double getS(){
+			m_s = 3.14 * m_r * m_r;
+			return m_s;
+		}
+	// protected:
+	// private:
+}
+void main(){
+	MyCircle c1, c2, c3; // 用类定义变量
+	double r;
+	cout << "请输入C1圆的半径:";
+	cin >> r;
+	// 给c1圆的属性赋值
+	c1.setR(r);
+	cout << "c1面积" << c1.getS() <<endl;
+}
+
+C++对C的加强：
+namespace命名空间加强
+iostream中没有引入标准的std 需要我们手工加上using namespace std;否则输出内容需要写成
+std::cout << "xxx" << std::endl;
+
+C++标准为了和C区分开，也为了正确使用命名空间，规定头文件不使用后缀.h
+
+实用性增强：变量不必在最开头定义
+register关键字加强，C语言中无法取得register变量地址，但C++可以，C++编译器有自己的优化方式，即使不用register关键字也会做优化
+
+变量检测增强：
+int a = 1;
+int a;
+上面的定义C语言是允许的，但是C++不可以
+
+struct类型加强
+C语言中定义一个struct结构体，如果在定义时没加typedef，使用该结构体定义变量时必须加上struct关键字，但是C++里面不需要加上struct关键字，struct class这两个关键字完成的功能是一样的，但是二者也有一定区别，在C++的结构体中也可以加上public private等：
+struct Teacher{
+	public:
+}
+这样做的功能我们以后再讲
+
+C++中所有变量和函数必须有类型：c语言中不定义函数的参数或返回值类型也是可以的，c++中不可以
+
+新增bool类型关键字，占1个字节bool b1 = 10; C++编译器会将其转为1
+
+三目运算符功能增强
+int a = 10;
+int b = 20;
+(a < b ? a : b) = 30; //在C语言中这行语句编译报错，报表达式不能做左值，也就是说C语言中表达式的返回结果是一个数值，在在C++中表达式返回的是一个变量的本身，因此就可以给它赋值了
+要想当做左值，就要让表达式返回一个内存空间，即内存首地址，即指针，可以猜测编译器内部的做法是
+*(a < b ? &a : &b) = 30; //这种写法在C语言编译器中也是可以通过的
+
+const=======================================================
+const int a;和int const a;是一样的
+
+const int *c; //const修饰指向的内存空间，代表c指向的内存空间不可以修改
+int* const d; //const修饰指针，代表d是一个常量指针
+const int * const e; //不论是指针本身，还是指针指向的内存空间都不可以修改
+
+int operatorTeacher(const Teacher* pT){
+	pT->age = 10; //报错 pT指向的内存空间不可以改
+}
+
+int operatorTeacher(Teacher* const pT){
+	pT->age = 10; //不报错 pT指向的内存空间可以改
+	pT = NULL; //报错 pT本身不可以改
+}
+
+int operatorTeacher(const Teacher* const pT){
+	pT->age = 10; //报错 pT指向的内存空间不可以改
+	pT = NULL; //报错 pT本身不可以改
+}
+
+C语言中const是冒牌货
+const int a = 10;
+int *p;
+//a = 1; //报错
+p = &a;
+*p = 2; //编译可以通过，但是c++中虽然不报错，但是值改不了
+
+C++中const的原理：
+编译器碰见常量时，在符号表中放入常量，编译过程中如果发现使用常量，则直接以符号表中的值替换，编译过程中如果发现对const使用了extern或&操作符，则给对应的常量分配存储空间，但不会使用其存储空间中的值：p = (int*)&a;
+
+const分配内存的时机：编译器编译期间
+
+c++中const用来替换#define
+int a = 1;
+int b = 2;
+int array[a + b]; //C、C++编译器都不通过，但在Linux内核里面是成立的，原因是Linux内核的gcc编译器是支持这种写法的
+
+const int a = 1;
+const int b = 2;
+int array[a + b]; //C++编译中可以通过，而C编译不能通过
+
+C++中的const是由编译器处理的，而C中的#define是由预处理器处理的，仅仅是文本替换
+const定义的变量由编译器处理，提供类型检查和作用域检查
+void fun1(){
+	#define a 10 //这个#define不仅仅对fun1这个函数起作用，会对整个源文件起作用，如果仅仅想将其限制在本函数内使用，需要在函数结束时加上#undef a，#undef不加参数代表把所有的宏定义都卸载掉
+	const int b = 20;
+	#undef a;
+}
 
 
 
