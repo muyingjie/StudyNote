@@ -54,4 +54,52 @@ and是关键字
 (min-width:400px)是媒体特性
 	orientation:portrait 竖屏
 	orientation:landscape 横屏
+	
+=================================================================================	
+移动端开发深度解密
+<meta name="viewport" content="">
+viewport即视口，视口又叫可视区窗口，在移动端如果不设置viewport默认为980px
+	在content中可以设置以下东西：
+	width: 可视区宽度，通常可以设置为数字类型或者device-width device-width即设备宽度，但是某些Android手机对数字的支持不好，因此我们通常设置为device-width
+	user-scalable是否允许用户进行双指操作来进行缩放，通常设为no，但对于iOS10该项设置无效（需要通过js解决）
+	initial-scale初始缩放比，通常写1.0
+	minimum-scale=1.0,允许最小缩放比例
+	maximum-scale=1.0,允许最大缩放比例
+	iOS10对于maximum-scale不支持
+
+像素比：像素比如果是n，就意味着把一个像素放大至n个像素去显示，对于iPhone5的页面，像素比是2，iPhone5的实际像素是1136x640，假如在css中设置一个div为100px 100px的尺寸，由于像素比是2，所以100px会被放大到200px显示，因此1136x640的实际像素只可以显示568x320的大小
+每款手机都有像素比，而且各不相同
+
+之所以有像素比这个概念，是因为手机屏非常小，但是分辨率（像素值）却非常大，按照pc的尺寸去显示的话就会非常小，假如我们有一张实际像素320x320的图片，不做任何设置放到手机中后会变虚，因为手机会按照像素比放大到原来的2倍，即放大成了640x640
+
+做的时候至少要按照750px+的图来做
+
+对于x5内核的浏览器，禁止横屏
+<meta name="x5-orientation" content="portrait" />
+对于x5内核的浏览器，禁止切换到全屏
+<meta name="x5-fullscreen" content="true" />
+对于UC浏览器，禁止横屏
+<meta name="screen-orientation" content="portrait" />
+对于UC浏览器，禁止切换到全屏
+<meta name="full-screen" content="yes" />
+但除了这两个浏览器都不能禁止全屏 禁止横屏
+
+禁止识别电话号码和邮箱
+<meta name="format-detection" content="telephone=no,email=no" />
+
+对于需要识别的情况，可以：
+<a href="tel:13511111111">拨打电话13511111111</a>
+<a href="mailto:xxx@xxx.com">xxx@xxx.com</a>
+
+
+
+
+
+
+
+
+
+
+
+
 
