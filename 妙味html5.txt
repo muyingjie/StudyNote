@@ -88,7 +88,7 @@ var newWindow = window.open("1.txt", "_blank");
 通过newWindow.document就可以拿到打开的窗口的window对象
 
 
-iframe的情况下contentWindow下的document不可以访问
+iframe如果引入不是自己的域的页面的情况下contentWindow下的document不可以访问，这时如果主页面和iframe引入的页面依然想要通信时就要用到postMessage
 
 
 不同域下的iframe之间数据交互：postMessage(window对象下的一个方法)
@@ -100,8 +100,8 @@ oMyIframe.contentWindow.postMessage("123", "http://www.b.com");
 子页面中通过message事件拿到父页面发过来的数据
 window.addEventListener("message", function(ev){
 	//ev事件对象保存了发送过来的内容
-	ev.data
-	//ev.origin可以获得发送消息的域
+	//ev.data发过来的数据
+	//ev.origin可以获得发送消息的域，可以用来过滤发来的请求，只对部分域作出响应
 });
 
 XHR Level2已经支持跨域了，新版本浏览器已支持XMLHttpRequest Level2：
@@ -144,40 +144,95 @@ oFormData.append("file", oMyFile.files[0]); //oMyFile就是file类型input的DOM
 
 xhr.send(oFormData);
 
+========================================
+http协议是短连接，响应完成连接就断开，对于一些实时性比较强的应用需要在服务器端数据发生变化时主动向客户端推送，这样一来服务器的压力就会变大，于是websocket就诞生了
+
+websocket是长连接的一种，是基于TCP的双向的（客户端、服务器端）、全双工的数据连接（数据的发送和接收同步进行）
+
+建立socket应用的要求：
+1、服务器端必须支持websocket
 
 
+服务器端
+需要安装socket.io模块
+var httpServer = http.createServer(xxx).listen(8888);
+var io = require("socket");
+var socket = io.listen(httpServer);
+socket.sockets.on("connection", function(socket){
+	// 对于每个链接来的客户端，有各自的socket对象
+	socket.emit("hello", "欢迎");
+	
+	socket.on("hello2", function(data){
+		console.log(data);
+	});
+	
+	socket.broadcast.emit("a"); //广播
+});
 
 
+客户端
+<script src="client.socket.js"></script>
+<script>
+	var socket = null;
+	oBtn.onclick = function(){
+		socket = io.connect("http://localhost:8888");
+		
+		socket.on("hello", function(data){
+			alert(data);
+			
+			this.emit("hello2");
+		});
+	};
+</script>
 
+离线存储================================
+1、服务器设置请求头信息
+AddType text/cache-manifest.manifest // 这句话需要加在服务器的配置文件中，例如Apache就是httpd.conf，随便找个地方加上即可
 
+2、html标签加上 manifest=xxxx.manifest // 这个属性代表离线存储的清单列表
+<html manifest=cache1.manifest>
+	<body></body>
+</html>
 
+3、在服务器中的应用目录下建一个cache1.manifest文件，这样上面的页面和我们的cache1.manifest文件就关联起来了，在cache1.manifest文件中就可以存储离线存储的内容，离线存储比本地存储号的地方在于不仅仅可以存储字符串，还可以存储css js 图片等，例如在cache1.manifest里面写了2.png，那么当断网的时候页面中的2.png就会请求本地的2.png
+// 文件内容
+CACHE MANIFEST
 
+// 写在这里的，不论有没有网络都会走这里
+2.png
 
+FALLBACK
 
+// 写在这里的，如果有网就走1.css 没网就走2.css
+1.css 2.css
 
+NETWORK
+3.css // 不论有没有网都走网络
 
+客户端线程==========================================
+var w1 = new Workder("test.js");
+w1.postMessage("hi");
+w1.onmessage = function(ev){
+	alert(ev.data);
+};
+// 线程之间传递数据用postMessage方法和message事件 
+test.js
+self.onmessage = function(ev){
+	// 注意：线程文件中不认alert console等
+	// 线程文件中认识的对象及属性或方法有：
+	// navigator:appName appVersion userAgent platform
+	// location:所有属性都是只读
+	// self:指向全局worker对象
+	// 所有ECMA对象: Object Array Date等
+	// XMLHttpRequest构造器
+	// setTimeout和setInterval
+	// close()方法，立即停止worker运行
+	// importScripts方法 importScripts("2.js") 引入外面的2.js文件
+	// 总之，不能操作DOM
+	self.postMessage(ev.data + "回传");
+};
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+客户端线程对于性能优化很有帮助
 
 
 

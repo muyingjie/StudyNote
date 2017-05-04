@@ -223,7 +223,82 @@ function showLine() {
 八皇后
 国际象棋：8x8棋盘，每行放一个皇后，八个皇后横纵斜都不相交的情况有多少种
 高斯提出了这个问题，答案是92种
+<ul id="ul1"></ul>
 
+var sizeGrid = 50;
+var num = 4; //几皇后
+var iCount = 0; //一种复合条件的情况
+
+init();
+
+function init() {
+	createGrid();
+	//参数0代表第1个棋子
+	setQueen(0);
+}
+
+function createGrid() {
+	var len = num * num;
+	
+	oUl.style.width = num * (sizeGrid + 1) + "px";
+	
+	for(var i = 0; i < len; i++){
+		var oLi= document.createElement("li");
+		oLi.style.width = sizeGrid + "px";
+		oLi.style.height = sizeGrid + "px";
+		oLi.index = -1;
+		oUl.appendChild(oLi);
+	}
+	
+	for(var i = 0; i < num; i++){
+		for(var j = 0; j < num; j++){
+			aLi[i * num + j].x = j;
+			aLi[i * num + j].y = i;
+			// aLi[i * num + j].innerHTML = j + "," + i;
+		}
+	}
+}
+function setQueen(iQueen){
+	if(iQueen == num){
+		iCount++;
+		return;
+	}
+
+	for(var i = 0; i < num; i++){
+		if( aLi[iQueen * num + i].index == -1){
+			aLi[iQueen * num + i].index = iQueen;
+			aLi[iQueen * num + i].innerHTML = iQueen;
+		
+			var x = aLi[iQueen * num + i].x;
+			var y = aLi[iQueen * num + i].y;
+			
+			for(var j = 0; j < aLi.length; j++){
+				// 排除横竖斜行
+				if(
+					aLi[j].index == -1 &&
+					(
+						aLi[j].x == x || 
+						aLi[j].y == y || 
+						aLi[j].x - aLi[j].y == x - y ||
+						aLi[j].x + aLi[j].y == x + y
+					)
+				){
+						aLi[j].index = iQueen;
+						aLi[j].innerHTML = iQueen;
+				}
+			}
+			
+			setQueen(iQueen + 1);
+			
+			//回溯
+			for(var j = 0; j < aLi.length; j++){
+				if( aLi[j].index == iQueen){
+					aLi[j].index = -1;
+				}
+			}
+		}		
+	}
+}
 
 
 螺旋矩阵
@@ -266,6 +341,7 @@ function show(arr,num){
 console.log(show(arr,3));
 
 
+概率算法
 
 
 
