@@ -146,9 +146,65 @@ iOSÏÂbodyÀïÃæµÄÔªËØ¿í¶ÈÉèÖÃ³¬¹ı100%Ê±£¬¸øbodyÉèÖÃoverflow:hidden;²»¹ÜÓÃ£¬´ËÊ±Í¨³
 #box{ width: 100%; height: 200px; display: flex;}
 #box div{ width: 50px; height: 50px; margin: auto;}
 
+ÈÃÔªËØË®Æ½ÅÅÁĞµÄ·½Ê½ÓĞÁ½ÖÖ£ºdisplay: flex;ºÍdisplay: inline-box;»òdisplay: box;
+
 display: flex;ÊÇĞÂ°æµ¯ĞÔºĞÄ£ĞÍ£¬µ«ÊÇÔÚÄ³Ğ©ÊÖ»ú»úĞÍÉÏ²»¼æÈİ
 
-ÀÏ°æµÄµ¯ĞÔºĞÄ£ĞÍÔÚÊÖ»úÉÏ±íÏÖ±È½ÏºÃ£¬ÀÏ°æµ¯ĞÔºĞÄ£ĞÍ¼´±ØĞëÒª¸ø¸¸¼¶¼ÓÉÏdisplay: inline-box;»òdisplay: box;
+display: box;ÊÇÀÏ°æµÄµ¯ĞÔºĞÄ£ĞÍ£¬ÔÚÊÖ»úÉÏ±íÏÖ±È½ÏºÃ£¬ÀÏ°æµ¯ĞÔºĞÄ£ĞÍ¼´±ØĞëÒª¸ø¸¸¼¶¼ÓÉÏdisplay: inline-box;»òdisplay: box;
 
 ½ö¸ø#box¸¸¼¶Ôö¼Ódisplay: box;ÊÇÃ»ÓĞĞ§¹ûµÄ£¬±ØĞëÒª¼ÓÉÏä¯ÀÀÆ÷ÄÚºËÇ°×ºdisplay: -webkit-box;ÕâÑùĞŞÕıÖ®ºó±íÏÖ²Å»á¸údisplay: flex;Ğ§¹ûÒ»Ñù
+
+ĞÂ°æµ¯ĞÔºĞÄ£ĞÍÏÂ£¬
+Í¨¹ıflex-direction: row;¿ÉÒÔÉèÖÃËùÓĞdivË®Æ½·½ÏòÅÅÁĞ£¬
+Í¨¹ıflex-direction: column;¿ÉÒÔÉèÖÃËùÓĞdiv´¹Ö±·½ÏòÅÅÁĞ
+Í¨¹ıflex-direction: row-reverse;¿ÉÒÔÉèÖÃËùÓĞdivË®Æ½·½Ïòµ¹ĞòÅÅÁĞ£¬ÇÒËùÓĞdiv½ôÌù×ÅÈİÆ÷×îÓÒ·½
+Í¨¹ıflex-direction: column-reverse;¿ÉÒÔÉèÖÃËùÓĞdiv´¹Ö±·½Ïòµ¹ĞòÅÅÁĞ£¬ÇÒËùÓĞdiv½ôÌù×ÅÈİÆ÷×îÏÂ·½
+
+ÀÏ°æµ¯ĞÔºĞÄ£ĞÍÏÂ£¬
+Í¨¹ı-webkit-box-orient: horizontal;¿ÉÒÔÉèÖÃËùÓĞdivË®Æ½·½ÏòÅÅÁĞ£¬
+Í¨¹ı-webkit-box-orient: vertical;¿ÉÒÔÉèÖÃËùÓĞdiv´¹Ö±·½ÏòÅÅÁĞ
+Í¨¹ı-webkit-box-direction: reverse;²»Ó°ÏìdivÅÅÁĞ·½Ïò£¬µ«ÊÇË®Æ½·½ÏòÅÅÁĞÊ±ËùÓĞµÄdiv½ôÌù×ÅÈİÆ÷×î×ó·½£¬´¹Ö±·½ÏòÅÅÁĞÊ±ËùÓĞµÄdiv½ôÌù×ÅÈİÆ÷×îÉÏ·½
+
+ÅÅÁĞ·½ÏòÉÏ¸»Ô£¿Õ¼äµÄ¹ÜÀí
+ĞÂ°æµ¯ĞÔºĞÄ£ĞÍÏÂ£¬
+justify-content: flex-start; //Ä¬ÈÏÇé¿ö£¬¸»Ô£¿Õ¼äÅÅ²¼ÔÚÓÒ²à
+justify-content: flex-end; //¸»Ô£¿Õ¼äÅÅ²¼ÔÚ×ó²à
+justify-content: flex-center; //¸»Ô£¿Õ¼äÅÅ²¼ÔÚÁ½²à
+justify-content: space-between; //¸»Ô£¿Õ¼äÆ½¾ù·ÖÅäÔÚÃ¿Á½¸öÔªËØÖ®¼ä
+justify-content: space-around; //Ã¿¸öÔªËØÁ½²àµÄ¸»Ô£¿Õ¼äÊÇÒ»ÑùµÄ
+
+ÀÏ°æµ¯ĞÔºĞÄ£ĞÍÏÂ£¬
+-webkit-box-pack: start;
+-webkit-box-pack: end;
+-webkit-box-pack: center;
+-webkit-box-pack: justify; //ÀàËÆĞÂ°æÖĞspace-betweenµÄĞ§¹û
+
+ÓëÅÅÁĞ·½Ïò´¹Ö±·½ÏòÉÏ¸»Ô£¿Õ¼äµÄ¹ÜÀí
+ĞÂ°æµ¯ĞÔºĞÄ£ĞÍÏÂ£¬
+align-items: flex-start; //Ä¬ÈÏÇé¿ö£¬¸»Ô£¿Õ¼äÅÅ²¼ÔÚÓÒ²à
+align-items: flex-end; //¸»Ô£¿Õ¼äÅÅ²¼ÔÚ×ó²à
+align-items: center; //¸»Ô£¿Õ¼äÅÅ²¼ÔÚÁ½²à
+align-items: baseline; //¸ù¾İÓëÅÅÁĞ·½Ïò´¹Ö±·½ÏòÉÏÎÄ×ÖµÄ»ùÏß¶ÔÆë
+
+ÀÏ°æµ¯ĞÔºĞÄ£ĞÍÏÂ£¬
+-webkit-box-align: start;
+-webkit-box-align: end;
+-webkit-box-align: center;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
