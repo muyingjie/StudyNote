@@ -73,6 +73,236 @@ componentWillUnmount: 即将卸载
 componentWillReceiveProps: 组件参数更新时
 
 
+=============================================================
+妙味React
+虚拟DOM：通过DOM diff算法，只会更新有差异化的部分，不用渲染整个页面，DOM diff算法在内存中进行
+
+组件化：组件和组件之间耦合度要尽量低，不要有太多依赖
+
+单向数据流：数据是从顶层组件传递到子组件中、数据可控
+
+JSX：js中操作DOM比较传统的方式是创建节点，然后做拼接，拼接字符串时用加号，总之很复杂，因此JSX就提供了html和js混写的方式
+
+<div id="demo"></div>
+<script type="text/babel">
+	// 组件名FirstComponent首字母必须大写
+	var FirstComponent = React.createClass({
+		// 当引入mixins实现双向绑定插件时添加该项
+		mixins: [React.addons.LinkedStateMixin],
+		getInitialState: function(){
+			return {
+				mes: this.props.value
+			};
+		},
+		render: function(){
+			return (
+				// 注意，一个组件只能有一个顶层标签，所以必须在最外层用div包一下
+				<div>
+					<h1>{this.props.title}</h1>,
+					// 想要在类型为text的input中使用value，要配合onChange来使用，onChange中C必须大写
+					// 注意value的值没有引号
+					// 如果不想用onChange，可以将value改成defaultValue即可					
+					// <input type="text" defaultValue={this.props.txt} />
+					// 这样写是不对的，因为props中的值是不可以改变的，想要改变的话应该用state
+					// <input type="text" value={this.props.txt} onChange={this.changeHandle} />
+					// 使用state时，内部会通过dom diff算法查找不一样的地方去渲染
+					// <input type="text" value={this.state.mes} onChange={this.changeHandle} />
+					<input type="text" valueLink={this.linkState('mes')} />
+					<input type="button" value={this.props.sendName} />
+					<p>{this.state.mes}</p>
+					<ul>
+						{
+							// 这里的map最终会返回一个数组，因此这里实际上会变成
+							// [<li>1</li>,<li>2</li>,<li>3</li>]
+							this.props.listArr.map(function(item,index){
+								// 每个li需要加一个key，每一项的key值不能一样
+								return <li key={index}>{item}</li>;
+							})
+						}						
+					</ul>
+					// 可以单独将上面的ul提出来成为一个独立的组件
+					// <ListComponent listArr={this.props.listArr} />
+				</div>
+			);
+		},
+		changeHandle: function(ev){
+			console.log(ev.target.value);
+			this.setState({
+				mes: ev.target.value
+			});
+		}
+	});
+	
+	var ListComponent = React.createClass({
+		render: function(){
+			return (
+				<ul>
+					{
+						// 这里的map最终会返回一个数组，因此这里实际上会变成
+						// [<li>1</li>,<li>2</li>,<li>3</li>]
+						this.props.listArr.map(function(item,index){
+							// 每个li需要加一个key，每一项的key值不能一样
+							return <li key={index}>{item}</li>;
+							
+							// 这里的内容很复杂时也可以抽成一个组件，注意必须要有key值
+							// return <ItemComponent key={index} item={item} />
+						})
+					}						
+				</ul>
+			);
+		}
+	});
+	
+	// var title = "标题";
+	// var send = "提交";
+	var obj = {
+		title: "标题",
+		send: "提交",
+		txt: "请输入",
+		listArr: [1,2,3,4,5]
+	};
+	
+	ReactDOM.render(
+		// 用了全局变量obj
+		// ECMA6中可以这样写：<FirstComponent {...obj} />,
+		<FirstComponent title={obj.title} sendName={obj.send} />,
+		document.getElementById("demo"),
+		function(){
+			console.log("渲染完成");
+		}
+	);
+</script>
+
+props：组件初始要渲染的数据，不可改变
+state：组件状态发生改变，调用render重新渲染
+
+
+<div id="demo"></div>
+<script type="text/babel">
+	// 组件名FirstComponent首字母必须大写
+	var FirstComponent = React.createClass({
+		// 当引入mixins实现双向绑定插件时添加该项
+		mixins: [React.addons.LinkedStateMixin],
+		getInitialState: function(){
+			return {
+				mes: this.props.value,
+				listArr:this.props.listArr
+			};
+		},
+		render: function(){
+			return (
+				// 注意，一个组件只能有一个顶层标签，所以必须在最外层用div包一下
+				<div>
+					<h1>{this.props.title}</h1>,
+					// 想要在类型为text的input中使用value，要配合onChange来使用，onChange中C必须大写
+					// 注意value的值没有引号
+					// 如果不想用onChange，可以将value改成defaultValue即可					
+					// <input type="text" defaultValue={this.props.txt} />
+					// 这样写是不对的，因为props中的值是不可以改变的，想要改变的话应该用state
+					// <input type="text" value={this.props.txt} onChange={this.changeHandle} />
+					// 使用state时，内部会通过dom diff算法查找不一样的地方去渲染
+					// ref属性相当于一个唯一标识
+					// <input type="text" ref="text_input" value={this.state.mes} onChange={this.changeHandle} />
+					<input type="text" valueLink={this.linkState('mes')} />
+					<input type="button" onClick={this.addItemHandle} value={this.props.sendName} />
+					<p>{this.state.mes}</p>
+					// 可以单独将上面的ul提出来成为一个独立的组件
+					<ListComponent listArr={this.state.listArr} />
+				</div>
+			);
+		},
+		changeHandle: function(ev){
+			console.log(ev.target.value);
+			this.setState({
+				mes: ev.target.value
+			});
+		},
+		addItemHandle: function(){
+			var value = this.refs.text_input.value;
+			var newArr = this.state.listArr.push(value);
+			this.setState({listArr:newArr});
+		}
+	});
+	
+	var ListComponent = React.createClass({
+		render: function(){
+			return (
+				<ul>
+					{
+						// 这里的map最终会返回一个数组，因此这里实际上会变成
+						// [<li>1</li>,<li>2</li>,<li>3</li>]
+						this.props.listArr.map(function(item,index){
+							// 每个li需要加一个key，每一项的key值不能一样
+							return <li key={index}>{item}</li>;
+							
+							// 这里的内容很复杂时也可以抽成一个组件，注意必须要有key值
+							// return <ItemComponent key={index} item={item} />
+						})
+					}						
+				</ul>
+			);
+		}
+	});
+	
+	// var title = "标题";
+	// var send = "提交";
+	var obj = {
+		title: "标题",
+		send: "提交",
+		txt: "请输入",
+		listArr: [1,2,3,4,5]
+	};
+	
+	ReactDOM.render(
+		// 用了全局变量obj
+		// ECMA6中可以这样写：<FirstComponent {...obj} />,
+		<FirstComponent title={obj.title} sendName={obj.send} />,
+		document.getElementById("demo"),
+		function(){
+			console.log("渲染完成");
+		}
+	);
+</script>
+
+==============================================================
+npm init是创建package.json的向导
+
+npm install --save Lodash //只写--save会添加到dependences里面，dependences是生产依赖
+
+npm install --save-dev gulp //--save-dev会添加到devDependences里面，devDependencies是开发依赖
+
+npm install --save //卸载的同时会删除在package.json中的依赖
+
+babel
+babel-core 核心-（如果和操作系统作类比相当于一个空白的操作系统）
+plugins 插件 例如es2015-arrow-function用来编译箭头函数 es2015-spread用来编译spread语法，如果一个一个插件装太麻烦，所以出现了presets预设的概念，相当于很多插件的集合
+
+.babelrc 一个配置文件，需要在该文件中指明需要用到什么presets或plugins，此外还有ignore选项
+
+npm i -D webpack // 是npm install --save-dev webpack的缩写
+
+webpack.config.js
+const path = require("path");
+module.exports = {
+	entry: "./src/app.js", //相对于webpack.config.js本身
+	output: {
+		filename: "main.js",
+		path: path.resolve(__dirname, "dist/assets"),
+		publicPath: "/assets/"
+	}
+};
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

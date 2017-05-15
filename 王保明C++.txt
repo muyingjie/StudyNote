@@ -3276,14 +3276,46 @@ void fun1(){
 }
 
 
+引用：C++中引用可以看做已定义变量的别名，类似于js中对象类型变量的引用
+int a = 10;
+int &b = a; //b就是a的引用
+b = 100; //相当于把a修改成了100，a、b都变成了100
+a = 200; //a、b都变成了200
 
+引用需要依附于某个变量，定义时必须初始化，否则会报错
+// 引用的应用
+void myswap(int &a, int &b){
+	int c = 0;
+	c = a;
+	a = b;
+	b = c;
+}
 
-
-
-
-
-
-
+复杂数据类型引用做函数参数
+struct Teacher{
+	char name[64];
+	int age;
+}
+void printT(Teacher* pT){
+	cout<<pT->age<<endl;
+}
+// pT是t1的别名，相当于修改了t1
+void printT2(Teacher &pT){
+	cout<<pT.age<<endl;
+}
+pT和t1是两个不同的变量
+void printT2(Teacher pT){
+	cout<<pT.age<<endl;
+	pT.age = 45; //不会修改t1.age的值
+}
+void main(){
+	Teacher t1;
+	t1.age = 35;
+	
+	printfT(&t1);
+	printfT(t1); //形参pT是t1的别名
+	printfT(t1); //t1将其结构体实体拷贝了一份给pT
+}
 
 
 
