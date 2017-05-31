@@ -191,13 +191,19 @@ align-items: baseline; //根据与排列方向垂直方向上文字的基线对齐
 -webkit-box-align: end;
 -webkit-box-align: center;
 
+定义盒子弹性空间：
+新版弹性盒模型下：
+#box{ display: flex;}
+#box div{ flex-grow: 1;} //加了flex-grow之后width将不管用
+子元素的尺寸 = 盒子的尺寸 * 子元素的box-flex属性值 / 所有子元素的box-flex属性值的和
 
+老版弹性盒模型下，
+#box{ display: -webkit-box;}
+#box div{ -webkit-box-flex: 1;}
 
-
-
-
-
-
+子级顺序的控制
+新版的可以通过给#box div设置order样式来对其顺序进行控制
+老版的：-webkit-box-ordinal-group 最小值如果写的比1还要小，则会处理为1
 
 
 
