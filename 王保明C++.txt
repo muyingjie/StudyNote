@@ -4338,26 +4338,274 @@ void main(){
 }
 
 
+左移操作符重载
+class Complex{
+	public:
+		friend void operator<<(ostream &out, Complex &c1);
+}
+void operator<<(ostream &out, Complex &c1){
+	out << c1.a << " " << c1.b << endl;
+}
+void main(){
+	int a = 10;
+	Complex c1(1, 2), c2(3, 4);
+	cout << a << endl;
+	
+	// 方法1：通过友元函数实现
+	cout << c1;
+	
+	// 方法2：通过成员函数实现
+	// 需要在ostream类中添加成员函数 operator<< 但是ostream类的源码是拿不到的，因此只能使用友元函数的方法来实现运算符重载
+	// cout.operator << (c1);
+	
+	// 如果是目前这种处理方式这里会报错，因为cout << c1的返回值是void，再进行void << "aaa"就会出错
+	cout << c1 << "aaa";
+}
 
+为了避免cout << c1 << "aaa";执行过程中cout << c1得到void，需要把operator<<的返回值类型改为ostream类
+注意友元函数也要跟着变
+class Complex{
+	public:
+		friend ostream& operator<<(ostream &out, Complex &c1);
+}
+ostream& operator<<(ostream &out, Complex &c1){
+	out << c1.a << " " << c1.b << endl;
+	return out;
+}
+void main(){
+	int a = 10;
+	Complex c1(1, 2), c2(3, 4);
+	
+	cout << c1 << "aaa";
+}
 
+C++规定不能用友元函数重载以下运算符：
+= () [] ->
 
+重载等号操作符====================================
+回忆之前浅拷贝的问题
+// 浅拷贝问题
+class Name{
+	public:
+		Name(const char& myp){
+			len = strlen(myp);
+			// 因为有\0所以要加1
+			my = (char*)malloc(len + 1);
+			strcpy(p, myp);
+		}
+		Name& operator=(Name& obj1){
+			// 先把旧的内存释放掉
+			if (this -> p != NULL) {
+				delete [] p;
+				len= 0;
+			}
+			
+			// 根据obj1分配内存大小
+			this -> len = obj1.len;
+			this -> p = new char [m_len + 1];
+			
+			strcpy(p, obj1.p);
+			// 注意这里的返回值是Name*，也就是Name对象的别名，this不是Name对象，而是指向Name对象的指针
+			return *this;
+		}
+		~Name(){
+			if(p != NULL){
+				free(p);
+				p = NULL;
+				len = 0;
+			}
+		}
+	protected:
+	private:
+		char* p;
+		int len;
+}
+void main(){
+	Name obj1("aaaa");
+	// 执行到这里时，obj1给obj2赋值，需要用到赋值构造函数，但是Name类中没有赋值构造函数，因此调用编译器默认提供的赋值构造函数，而默认的赋值构造函数是浅拷贝，只是拷贝了一个引用（也就是说仅仅是把p指向的值和len在栈中拷贝了一份，至于p在堆中指向的内存空间并没有被拷贝），在析构obj2时，p指向的内存空间已经被析构了，接下来再析构obj1时，p所指向的内存空间已经被释放，已经成为了一个野指针，就会析构一块已经被释放的内存，因此在main函数执行完毕obj1和obj2在析构的时候就报错了
+	Name obj2 = obj1;
+	Name obj3("bbb");
+	
+	obj3 = obj1; // 相应的，这里的赋值也是浅拷贝，析构的时候也会出问题
+	
+	// 分析：operator=(Name& obj)
+}
 
+结论：等号运算符重载的步骤
+1、先释放旧的内存
+2、根据大小分配内存
+3、为内存赋值
+4、返回引用
 
+重载数组下标[]操作符======================================
+在原来封装的数组类的基础上实现
+MyArray.h文件
+#pragma once
+#include <iostream>
+using namespace std;
 
+class Array{
+	public:
+		Array(int len);
+		Array(const Array& obj);
+		~Array();
+	public:
+		void setData(int index, int value);
+		int& getData(int index);
+		// 只需要返回数组中元素的类型即可
+		int operator[](int i);
+		Array& operator=(int i);
+		Array& operator=(Array& arr);
+		bool operator==(Array& arr);
+		bool operator!=(Array& arr);
+		int length();
+	private:
+		int m_length;
+		int* m_space;
+}
 
+------------------
+MyArray.cpp文件
+#include "MyArray.h"
 
+Array::Array(int len){
+	if (len < 0){
+		//m_length = 0;
+		//m_space = new int[m_length];
+		len = 0;
+	}
+	
+	m_length = len;
+	m_space = new int[m_length];
+};
+Array::Array(const Array& obj){
+	this -> m_length = obj.m_length;
+	this -> m_space = new int[m_length];
+	// 数组中各项复制
+	for(int i = 0; i < obj.length(); i++){
+		this -> m_space[i] = obj.m_space[i];
+	}
+};
+Array::~Array(){
+	if (m_space != NULL) {
+		delete [] m_space;
+		m_length = 0;
+	}
+};
 
+int& Array::operator[](int i){
+	// return this -> getData(i);
+	return m_space[i];
+}
+Array& Array::operator=(int i){
+	
+}
+Array& Array::operator=(Array& arr){
+	if (this -> m_space != NULL) {
+		delete m_space;
+		m_length = 0;
+	}
+	m_space = new int[arr.m_length];
+	m_length = arr.m_length;
 
+	for(int i = 0; i < arr.m_length; i++){
+		// 这里的arr[i]直接利用了上面实现的[]的重载
+		m_space[i] = arr[i];
+	}
+	
+	return *this;
+}
+bool Array::operator==(Array& arr){
+	if (this -> m_length != arr -> m_length) {
+		return false;
+	}
+	bool isEqual = 1;
+	for(int i = 0; i < arr.m_length; i++){
+		// 注意这里要写成this->m_space[i]而不是this[i]
+		if(this->m_space[i] != arr[i]){
+			isEqual = 0;
+			break;
+		}
+	}
+	return isEqual;
+}
+bool Array::operator!=(Array& arr){
+	// bool isEqual = 1;
+	// for(int i = 0; i < arr.m_length; i++){
+	// 	if(this[i] != arr[i]){
+	// 		isEqual = 0;
+	// 		break;
+	// 	}
+	// }
+	// return !isEqual;
+	// 等号操作符上面已经重载了，所以可以直接用
+	return !(*this == a1);
+}
+void Array::setData(int index, int value){
+	m_space[index] = value;
+}
+int Array::getData(int index){
+	return m_space[index];
+}
+int Array::length(){
+	return m_length;
+}
 
+------------------
+TestArray2.cpp文件
+#include <iostream>
+#include "Array.h"
+using namespace std;
+void main(){
+	Array a1(10);
+	
+	for(int i = 0; i < a1.length(); i++){
+		a1.setData(i, i);
+	}
+	
+	for(int i = 0; i < a1.length(); i++){
+		a1.getData(i);
+	}
+	
+	Array a2 = a1;
+	
+	for(int i = 0; i < a2.length(); i++){
+		a2.setData(i, i);
+	}
+	
+	for(int i = 0; i < a2.length(); i++){
+		a2.getData(i);
+	}
+	
+	// 对于a1.setData这种写法不像数组赋值
+	// 数组赋值应该写成a[i] = i;
+	// 这涉及到[]取值运算符和=运算符的重载
+	
+	// 先看[]运算符的重载
+	// 分析：int& operator[](int i) 返回int& 是因为arr[i] = i; 避免arr[i]变成void类型
+	// 分析：Array& operator=(int i)
+	
+	// 数组赋值a1 = a2 = a3也应实现重载
+	// 分析：Array& operator=(Array& arr)
+	
+	// 数组比较a1 == a2、a1 != a2也应实现重载
+}
 
+重载括号运算符=================================
+F f;
+f.getA();
+f(5.2, 2.5); // f是一个对象，不是一个函数
 
-
-
-
-
-
-
-
+class F{
+	public:
+		int operator()(int a, int b){
+			return a * a + b * b;
+		}
+}
+void main(){
+	F f;
+	f(2, 3); // 在某些开源库如STL中会有这种语法
+}
 
 
 
