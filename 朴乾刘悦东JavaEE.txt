@@ -267,6 +267,15 @@ public class FirstServlet extends GenericServlet{
 	</servlet-mapping>
 </web-app>
 
+// 编译
+直接执行javac FirstServlet.java会报javax.servlet找不到
+
+因为编译需要JavaEE的环境，所以需要在classpath环境变量中加入servlet包
+设置classpath环境变量：set classpath=%classpath%;D:\tomcat6\lib\servlet-api.jar;
+
+带包的类的编译
+javac -d . FirstServlet.java // .代表目标目录，将类编译到当前目录中
+
 在浏览器中 访问http://localhost/new/servlet/FirstServlet即可访问到
 
 Servlet请求具体过程

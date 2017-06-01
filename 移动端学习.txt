@@ -55,7 +55,7 @@ and是关键字
 	orientation:portrait 竖屏
 	orientation:landscape 横屏
 	
-=================================================================================	
+========================================妙味移动端最新视频=========================================
 移动端开发深度解密
 <meta name="viewport" content="">
 viewport即视口，视口又叫可视区窗口，在移动端如果不设置viewport默认为980px
@@ -74,7 +74,7 @@ viewport即视口，视口又叫可视区窗口，在移动端如果不设置viewport默认为980px
 
 做的时候至少要按照750px+的图来做
 
-对于x5内核的浏览器，禁止横屏
+对于x5内核的浏览器，禁止横屏 QQ 微信等腾讯系列的浏览器都是x5内核的浏览器 landscape是横屏选项
 <meta name="x5-orientation" content="portrait" />
 对于x5内核的浏览器，禁止切换到全屏
 <meta name="x5-fullscreen" content="true" />
@@ -82,7 +82,7 @@ viewport即视口，视口又叫可视区窗口，在移动端如果不设置viewport默认为980px
 <meta name="screen-orientation" content="portrait" />
 对于UC浏览器，禁止切换到全屏
 <meta name="full-screen" content="yes" />
-但除了这两个浏览器都不能禁止全屏 禁止横屏
+但除了这两个浏览器（比如像苹果内置的Safari 安卓内置的浏览器）都不能禁止全屏 禁止横屏，如需禁止只能通过后期我们讲到的陀螺仪来解决
 
 禁止识别电话号码和邮箱
 <meta name="format-detection" content="telephone=no,email=no" />
@@ -91,8 +91,119 @@ viewport即视口，视口又叫可视区窗口，在移动端如果不设置viewport默认为980px
 <a href="tel:13511111111">拨打电话13511111111</a>
 <a href="mailto:xxx@xxx.com">xxx@xxx.com</a>
 
+点击高亮样式的设置
+a,input,button{ -webkit-tap-highlight-color: rgba(255, 0, 0, .5);}
+
+清除iOS中input button默认的圆角，不过加了下面这条样式之后还是略微会有圆角
+input,button{ -webkit-appearance: none;}
+配合border-radius: 0;就可以彻底清除圆角
+input,button{ -webkit-appearance: none; border-radius: 0;}
+注意：仅使用border-radius: 0是不可以的
+
+移动端每一台设备的默认字体都不太一样，通常会设置成Helvetica;
+body{font-family: Helvetica;}
+
+禁止文字缩放：body *{-webkit-text-size-adjust: 100%} 加了该样式之后禁止用户在浏览器中设置大号、中号、小号字体显示，也禁止了用户在横竖屏切换时字体有可能发生的变化
+
+禁止移动端长摁文字选中：body *{-webkit-user-select: none;} 这种方式在iOS下还可以，在Android中效果不好，在事件章节我们会讨论
+
+Font-boosting：在一段文字我们没有给它设置高度的时候再webkit内核下文字被浏览器放大了，解决时可以给文字设置height或max-height
+
+iOS某些版本和Android很多都不兼容fixed固定定位，会出现非常卡顿的现象，这个问题需要在后期事件讲解中解决
+
+iOS下body里面的元素宽度设置超过100%时，给body设置overflow:hidden;不管用，此时通常会在最外面包一层，设置overflow:auto;
+
+(function(){
+	var w = window.screen.width;
+	var targetW = 320; //希望在点击审查元素的时候宽度为320
+	var scale = w/targetW;
+	var meta = document.createElement("meta");
+	meta.name = "viewport";
+	meta.content = "user-scalable=no,initial-scale=" + scale + "minimum-scale=" + scale + ",maximum-scale=" + scale;
+	document.appendChild(meta);
+})();
 
 
+
+(function(){
+	var html = document.documentElement;
+	var hWidth = html.getBoundingClient().width;
+	// 除以16代表16rem的宽度就是整个屏幕的宽度
+	// 假如设计图是640px宽的，则1rem就相当于640/16 = 40px;
+	// 即量到40px时其实应该是1rem，量到60px时其实应该是1.5rem
+	// 这样一来每次量出的像素值都要除以40，计算起来比较麻烦
+	// 可以引入less，顶部定义@r:40rem;后面可以写成width: 60/@r;然后再用编译器编译即可
+	html.style.fontSize = hWidth / 16 + "px";
+})();
+
+// 弹性盒模型
+<div id="box">
+	<div></div>
+	<div></div>
+	<div></div>
+</div>
+// 加上display: flex; margin: auto;这两条样式之后#box里面的div会水平平均排布
+#box{ width: 100%; height: 200px; display: flex;}
+#box div{ width: 50px; height: 50px; margin: auto;}
+
+让元素水平排列的方式有两种：display: flex;和display: inline-box;或display: box;
+
+display: flex;是新版弹性盒模型，但是在某些手机机型上不兼容
+
+display: box;是老版的弹性盒模型，在手机上表现比较好，老版弹性盒模型即必须要给父级加上display: inline-box;或display: box;
+
+仅给#box父级增加display: box;是没有效果的，必须要加上浏览器内核前缀display: -webkit-box;这样修正之后表现才会跟display: flex;效果一样
+
+新版弹性盒模型下，
+通过flex-direction: row;可以设置所有div水平方向排列，
+通过flex-direction: column;可以设置所有div垂直方向排列
+通过flex-direction: row-reverse;可以设置所有div水平方向倒序排列，且所有div紧贴着容器最右方
+通过flex-direction: column-reverse;可以设置所有div垂直方向倒序排列，且所有div紧贴着容器最下方
+
+老版弹性盒模型下，
+通过-webkit-box-orient: horizontal;可以设置所有div水平方向排列，
+通过-webkit-box-orient: vertical;可以设置所有div垂直方向排列
+通过-webkit-box-direction: reverse;不影响div排列方向，但是水平方向排列时所有的div紧贴着容器最左方，垂直方向排列时所有的div紧贴着容器最上方
+
+排列方向上富裕空间的管理
+新版弹性盒模型下，
+justify-content: flex-start; //默认情况，富裕空间排布在右侧
+justify-content: flex-end; //富裕空间排布在左侧
+justify-content: flex-center; //富裕空间排布在两侧
+justify-content: space-between; //富裕空间平均分配在每两个元素之间
+justify-content: space-around; //每个元素两侧的富裕空间是一样的
+
+老版弹性盒模型下，
+-webkit-box-pack: start;
+-webkit-box-pack: end;
+-webkit-box-pack: center;
+-webkit-box-pack: justify; //类似新版中space-between的效果
+
+与排列方向垂直方向上富裕空间的管理
+新版弹性盒模型下，
+align-items: flex-start; //默认情况，富裕空间排布在右侧
+align-items: flex-end; //富裕空间排布在左侧
+align-items: center; //富裕空间排布在两侧
+align-items: baseline; //根据与排列方向垂直方向上文字的基线对齐
+
+老版弹性盒模型下，
+-webkit-box-align: start;
+-webkit-box-align: end;
+-webkit-box-align: center;
+
+定义盒子弹性空间：
+新版弹性盒模型下：
+#box{ display: flex;}
+#box div{ flex-grow: 1;} //加了flex-grow之后width将不管用
+子元素的尺寸 = 盒子的尺寸 * 子元素的box-flex属性值 / 所有子元素的box-flex属性值的和
+
+老版弹性盒模型下，
+#box{ display: -webkit-box;}
+#box div{ -webkit-box-flex: 1;}
+
+子级顺序的控制
+新版的可以通过给#box div设置order样式来对其顺序进行控制
+老版的：-webkit-box-ordinal-group 最小值如果写的比1还要小，则会处理为1
 
 
 

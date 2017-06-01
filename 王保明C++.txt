@@ -3192,6 +3192,11 @@ void main(){
 	cout << "c1面积" << c1.getS() <<endl;
 }
 
+
+//struct和class的区别：
+struct定义的类里面的属性默认是public的，class定义的类里面的属性默认是private的
+
+
 C++对C的加强：
 namespace命名空间加强
 iostream中没有引入标准的std 需要我们手工加上using namespace std;否则输出内容需要写成
@@ -3274,6 +3279,1076 @@ void fun1(){
 	const int b = 20;
 	#undef a;
 }
+
+
+引用：C++中引用可以看做已定义变量的别名，类似于js中对象类型变量的引用
+int a = 10;
+int &b = a; //b就是a的引用
+b = 100; //相当于把a修改成了100，a、b都变成了100
+a = 200; //a、b都变成了200
+
+引用需要依附于某个变量，定义时必须初始化，否则会报错
+// 引用的应用
+void myswap(int &a, int &b){
+	int c = 0;
+	c = a;
+	a = b;
+	b = c;
+}
+
+复杂数据类型引用做函数参数
+struct Teacher{
+	char name[64];
+	int age;
+}
+void printT(Teacher* pT){
+	cout<<pT->age<<endl;
+}
+// pT是t1的别名，相当于修改了t1
+void printT2(Teacher &pT){
+	cout<<pT.age<<endl;
+}
+pT和t1是两个不同的变量
+void printT2(Teacher pT){
+	cout<<pT.age<<endl;
+	pT.age = 45; //不会修改t1.age的值
+}
+void main(){
+	Teacher t1;
+	t1.age = 35;
+	
+	printfT(&t1);
+	printfT(t1); //形参pT是t1的别名
+	printfT(t1); //t1将其结构体实体拷贝了一份给pT
+}
+
+引用的本质
+C++编译器背后做了什么工作？
+int main(){
+	int a = 10;
+	int &b = a;
+	// b是a的别名，请问C++编译器背后做了什么？
+	// 引用在定义的时候必须赋值，因此和常量相似
+	
+	printf("%d", &a);
+	printf("%d", &b); //打印出来的两个值是一样的，证明aheb就是同一块内存空间的门牌号
+}
+================================================
+struct Teacher{
+	char name[64]; //占64字节
+	int age; //4
+	int &a;  //4
+	int &b;  //4 引用也占内存空间，很像指针
+}
+void main(){
+	printf("%d", sizeof(Teacher)); //76
+}
+
+================================================
+引用的本质：常量指针Type& name = Type* const name;
+//c++中下面的函数
+void func1(int &a){
+	a = 5;
+}
+//会被翻译成
+void func2(int* const a){
+	*a = 5;
+}
+void main(){
+	int a = 10;
+	func2(a);
+	printf("%d", a); // 5
+	
+	func1(&a); //如果是指针，需要程序员手工取实参的地址
+}
+
+回忆间接赋值是指针存在的最大意义部分，我们提到了指针使用的三种场合：
+//条件1 定义了两个变量
+int a=10;
+int *p=NULL;
+//条件2 建立了关联
+p=&a;
+//条件3 *p
+*p=40;
+
+//第一种 1 2 3这3个条件写在一个函数中
+//第二种 12 写在一个函数里面 3单独写在另外一个函数里面 =>函数调用
+//第三种 1单独写 23写在一块儿 =>抛砖 在C++里面会有，以后会讲
+现在的引用就是第三种使用场合，第二步建立关联部分在C++编译器内部帮我们做了
+
+难点：函数返回值是引用
+int getAA1(){
+	int a;
+	a = 10;
+	return a;
+}
+//返回引用本质上是返回了&a，即返回了a的地址
+int& getAA2(){
+	int a;
+	a = 10;
+	return a; //如果是返回栈上的引用，不能成为其它引用的初始值，不能作为左值使用，因此下面用a3来接出错了
+}
+int* getAA3(){
+	int a;
+	a = 10;
+	return &a;
+}
+void main(){
+	int a1 = 0;
+	int a2 = 0;
+	int &a3 = 0;
+	
+	a1 = getAA1();
+	// 当用int型变量接收时，就是把值接过来
+	a2 = getAA2();
+	// 当用引用型变量接收时，相当于是引用的传递，C++编译器会取*a3的值
+	a3 = getAA2();
+	
+	// debug模式下编译
+	printf("%d %d %d",a1,a2,a3); //10 10 乱码
+	// release模式下编译
+	printf("%d %d %d",a1,a2,a3); //10 10 10
+}
+
+==========================================
+int j1(){
+	static int a = 10;
+	a++;
+	return a;
+}
+int& j2(){
+	static int a = 10;
+	a++;
+	return a; //返回静态变量或全局变量时，可以成为其它引用的初始值，既可以作为左值，又可以作为右值
+}
+void main(){
+	int a1;
+	int a2;
+	
+	a1 = j1();
+	a2 = j2();
+	int& a3 = j2();
+	
+	printf("%d %d %d",a1,a2,a3); //11 11 12
+}
+
+=========================================
+//函数当左值
+int g1(){
+	static int a = 10;
+	a++;
+	return a;
+}
+int& g2(){
+	static int a = 10;
+	a++;
+	printf("%d", a);
+	return a;
+}
+void main(){
+	g1() = 100; //g1()的返回值是一个具体的值，该值不能作为左值
+	g2() = 100; //g2()的返回值是一个变量本身，该值可以作为左值 打印出11
+	g2(); //打印出101，第二次执行g2()，前方的static int a = 10;可以忽略
+}
+
+指针的引用==========================
+#include "iostream"
+using namespace std;
+
+struct Teacher{
+	char name[64];
+	int age;
+}
+// 在被调用函数中获取资源
+int getTeacher(Teacher **p){
+	Teacher* tmp = NULL;
+	if(p == NULL){
+		return -1;
+	}
+	tmp = (Teacher*)malloc(sizeof(Teacher));
+	if(tmp == NULL){
+		return -2;
+	}
+	p->age = 33;
+	// p是实参的地址
+	*p = tmp;
+}
+
+int getTeacher2(Teacher* &myp){
+	// 给myp赋值相当于给main函数里面的pT1赋值
+	myp = (Teacher*)malloc(sizeof(Teacher));
+	if(myp == NULL){
+		return -1;
+	}
+	myp->age = 36;
+}
+
+void FreeTeacher(Teacher* pT1){
+	if(pT1 == NULL){
+		return;
+	}
+	free(pT1);
+}
+
+void main(){
+	Teacher *pT1;
+	// 通过二级指针赋值
+	getTeacher(&pT1);
+	// 通过引用赋值
+	getTeacher2(pT1);
+	FreeTeacher(pT1);
+	cout<<pt1->age<<endl;
+}
+
+常量引用=======================
+引用分为普通引用和常量引用
+void main(){
+	int x = 20;
+	//常引用，常引用的作用是让变量拥有只读属性，不能通过y修改x
+	const int& y = x;
+	
+	//常引用初始化分为两种情况
+	//1、用变量初始化常引用
+	{
+		int x1 = 30;
+		const int& y1 = x1; //用x1变量去初始化常引用
+	}
+	
+	//2、用字面量初始化常引用
+	{
+		const int a = 40; //c++编译器把a放在符号表中
+		int& m = 41; //普通引用引用了一个字面量 字面量是没有内存地址的 因此这句话会报错
+		// 引用就是给内存取多个门牌号（多个别名）的，41是个常量，直接存在寄存器中，没有地址
+		// 如果希望字面量初始化常引用编译通过，需要加上const
+		const int& m = 42; //c++编译器会分配内存空间给m
+		
+	}
+}
+
+int& e相当于int* const e; 即常量指针
+const int& e相当于const int* const e; 即指针以及指针指向的值都不可以改变
+
+C++对函数的扩展：内联函数
+const常量可以替代宏常数定义，如：
+const int A = 3; 可以替代 #define A 3
+
+对于宏代码片段，在C++中可以用内联函数来替换，例如：
+#define MYFUNC(a, b) ((a) < (b) ? (a) : (b))
+可以被替换成
+inline int myfunc(int a, int b){
+	return a < b ? a : b;
+}
+
+C++推荐使用内联函数代替宏代码片段
+C++用inline关键字声明内联函数
+注：
+1、内联函数必须和函数体的实现写在一块
+2、C++编译器可以将一个函数进行内联编译，内联函数在最终生成的代码中是没有定义的
+	C++编译器直接将函数体插入函数调用的地方（效果类似宏替换）
+	内联函数调用时没有普通函数调用时的额外开销（压栈 跳转 返回）
+3、C++编译器不一定准许函数的内联请求
+4、内联函数是一种特殊的函数，具有普通函数的特征（参数检查 返回类型等）
+	内联函数是对编译器的一种请求，因此编译器可能拒绝这种请求
+	内联函数由编译器处理，直接将编译后的函数体插入调用的地方
+	宏代码片段由预处理器处理，进行简单的文本替换，没有任何编译过程
+5、现代C++编译器能够进行编译优化，因此一些函数即使没有inline声明，也可能被编译器内敛编译
+	另外，一些现代C++编译器提供了扩展语法，能够对函数进行强制内联
+	如：g++中的__attribute__((always_inline))属性
+6、C++中内联编译的限制：
+	不能存在任何形式的循环语句
+	不能存在过多的条件判断语句
+	函数体不能过于庞大
+	不能对函数进行取址操作
+	函数内联声明必须在调用语句之前
+	编译器对于内联函数的限制并不是绝对的，内联函数相对于普通函数的优势只是省去了函数调用时的压栈、跳转、返回的开销
+	因此，当函数体的执行开销远大于压栈、跳转、返回所用的开销时，那么内联函数将无意义
+	
+C++支持默认参数，如果某函数既有默认参数，又有非默认参数，则默认参数必须放在最后
+
+//占位参数
+void func1(int a, int b, int){
+
+}
+
+func1调用时必须写够3个参数
+
+
+可以将默认参数和占位参数结合起来，这样做的目的是为以后的程序扩展留下线索，此外还可以兼容C语言程序中可能出现的不规范写法
+// 注意第三个参数没有名字，因此函数内部引用不到
+void func2(int a, int b, int = 0){
+	
+}
+// 以下两种方式的调用都可以编译通过
+func2(1, 2);
+func2(1, 2, 3);
+
+C++中的函数重载和别的语言的区别：函数返回值不同不能算作重载
+
+
+函数重载在本质上是相互独立的不同函数（静态链编）
+
+当由于默认参数而在调用时出现二义性时，编译会失败
+int func(int a, int b, int c = 0);
+int func(int a, int b);
+
+函数重载和函数指针相结合==============================================
+int func(int a){
+	return a;
+}
+int func(int a, int b){
+	return a + b;
+}
+int func(const char* s){
+	return strlen(s);
+}
+//函数指针的定义，本质上就是声明一种函数指针类型
+
+typedef int (*PFUNC)(int a);
+
+typedef int (myTypeFunc)(int a, int b); //myTypeFunc这种函数类型指向传入两个int参数，返回值也是int这种类型的函数
+
+//定义一个函数指针变量
+void (*myVarPFunc)(int a, int b);
+
+int main(){
+	int c = 0;
+	PFUNC p = func;
+	
+	myTypeFunc* myfuncp = NULL;
+	
+	c = p(1); //因为传入了1个参数，因此会调用第一个重载
+	
+	printf("%d", c);
+}
+
+
+C++中类的声明和类的实现是分开的
+假如我们定义了一个MyTeacher类
+类的声明会被放在头文件中：
+#pragma once //只包含一次
+
+class MyTeacher
+{
+	private:
+		int age;
+		char name[32];
+		
+	public:
+		void setAge(int age);
+		int getAge();
+		
+}
+
+// #pragma once相当于条件编译宏，上述代码相当于：
+#ifndef __MYTEACHER_H_
+#define __MYTEACHER_H_
+
+class MyTeacher
+{
+	xxx
+}
+
+#endif
+
+
+//类的实现放在另一个文件中：
+#include "MyTeacher.h"
+
+void MyTeacher::setAge(int out_age){
+	age = out_age;
+}
+int MyTeacher::getAge(){
+	return age;
+}
+
+//使用该类时：
+#include "MyTeacher.h"
+void main(){
+	MyTeacher t1;
+	t1.setAge(36);
+}
+
+
+C++中的构造函数一般来说是自动调用，也可以手动调用
+构造函数没有返回值
+class Test{
+	public:
+		Test(){} //无参构造函数
+		~Test(){} //析构函数
+}
+
+如果Test t1,t2;创建了两个对象，先创建的对象，后销毁，即t2先销毁
+===========================
+class Test2{
+	public:
+		Test2(){
+			// 此处访问m_a，实际上是访问该类在private中定义的的m_a m_b属性
+			m_a = 0;
+			m_b = 0;
+		}
+		Test2(int a){
+			m_a = a;
+			m_b = 0;
+		}
+		Test2(int a, int b){
+			m_a = a;
+			m_b = b;
+		}
+		Test2(const Test2& a){
+			// 赋值构造函数
+		}
+		int get_m_a(){
+			return m_a;
+		}
+		int get_m_b(){
+			return m_b;
+		}
+	private:
+		int m_a;
+		int m_b;
+}
+void f(Test2 ts){
+	cout<<ts.get_m_a()<<endl;
+}
+// g函数在执行Test2 ts(1, 2)时会先执行Test2(int, int)构造函数，紧接着再执行return语句时再执行一次赋值构造函数，赋值构造函数会返回一个匿名对象，g在调用完毕之后变量ts被销毁，g函数调用完毕返回的实际上是这个匿名对象，当调用函数有变量接收该匿名对象时该匿名对象还会存在，否则匿名对象也将被析构
+Test2 g(){
+	Test2 ts(1, 2);
+	return ts;
+}
+void main(){
+	// 构造函数的调用
+	// 无参构造函数的调用不需要任何额外的写法：
+	Test2 ts1;
+	// 调用有参构造函数
+	Test2 ts2(1, 2);
+	// 这种写法会将(3, 4)当做逗号表达式，最后得到结果是4，调的是有一个参数的构造函数
+	// 此处的=将不再是赋值的意义，这里用到了运算符的重载
+	Test2 ts3 = (3, 4);
+	// 显式调用构造函数完成初始化
+	Test2 ts4 = Test2(1, 2); //直接调用构造函数会产生一个匿名对象，匿名对象的去和留（生存周期）是难点
+	// 对象初始化和对象赋值是两个不同的概念，这里的对象赋值的等号和上面对象初始化的等号的含义是不一样的
+	ts1 = ts4;
+	// ===================================
+	// 关键看一下赋值构造函数如何调用，总共有4种调用时机
+	// 赋值构造函数主要完成用一个对象初始化另外一个对象的功能	
+	Test2 ts5(1, 2);
+	Test2 ts6(1, 2);
+	// 用ts5给ts6赋值 赋值和下面初始化操作是不一样的
+	ts6 = ts5;
+	// 第一种调用时机：用ts6来初始化ts7，将调用ts7的拷贝构造函数，上面的赋值操作是不会调用构造函数的
+	Test2 ts7 = ts6;
+	// 第二种调用时机：用ts5初始化ts8对象
+	Test2 ts8(ts5);
+	// 第三种调用时机：用ts9初始化f的形参，完成形参ts的初始化，再调用其方法
+	Test2 ts9(1, 2);
+	f(ts9);
+	// 第四种调用时机：
+	// 若返回匿名对象，赋值给另一个同类型的对象，那么匿名对象会被析构
+	Test2 ts10;
+	ts10 = g();
+	// 若将返回的匿名对象去初始化另外一个同类型的对象，那么匿名对象会直接转成新的对象，这里明显是把ts11转成了g()返回的匿名对象，从匿名转成有名
+	Test2 ts11 = g();
+	Test2 ts12(1, 2);
+	// 匿名对象赋值给ts12（和g()同类型的对象），匿名对象被析构
+	ts12 = g();
+}
+
+================================================
+// 浅拷贝问题
+class Name{
+	public:
+		Name(const char* myp){
+			len = strlen(myp);
+			// 因为有\0所以要加1
+			my = (char*)malloc(len + 1);
+			strcpy(p, myp);
+		}
+		~Name(){
+			if(p != NULL){
+				free(p);
+				p = NULL;
+				len = 0;
+			}
+		}
+	protected:
+	private:
+		char* p;
+		int len;
+}
+void main(){
+	Name obj1("aaaa");
+	// 执行到这里时，obj1给obj2赋值，需要用到赋值构造函数，但是Name类中没有赋值构造函数，因此调用编译器默认提供的赋值构造函数，而默认的赋值构造函数是浅拷贝，只是拷贝了一个引用（也就是说仅仅是把p指向的值和len在栈中拷贝了一份，至于p在堆中指向的内存空间并没有被拷贝），在析构obj2时，p指向的内存空间已经被析构了，接下来再析构obj1时，p所指向的内存空间已经被释放，已经成为了一个野指针，就会析构一块已经被释放的内存，因此在main函数执行完毕obj1和obj2在析构的时候就报错了
+	Name obj2 = obj1;
+}
+
+此时需要手动编写赋值构造函数
+class Name{
+	public:
+		Name(const char* myp){
+			len = strlen(myp);
+			// 因为有\0所以要加1
+			my = (char*)malloc(len + 1);
+			strcpy(p, myp);
+		}
+		Name(const char& obj){
+			len = obj.len;
+			p = (char*)malloc(len + 1);
+			strcpy(p, obj.p);
+		}
+		~Name(){
+			if(p != NULL){
+				free(p);
+				p = NULL;
+				len = 0;
+			}
+		}
+	protected:
+	private:
+		char* p;
+		int len;
+}
+void main(){
+	Name obj1("aaaa");
+	Name obj2 = obj1;
+	
+	Name obj3("bbbb");
+	//obj3 = obj1;// 等号操作也是浅拷贝，同样会出现上述问题，这时我们需要显式的重载等号操作符，操作符重载后期会讲到，此外，由于obj3内部malloc的内存没有被free，因此这块内存永远没有被释放，就被泄露了
+}
+
+构造函数的初始化列表
+class A{
+	public:
+		A(int _a){
+			a = _a;
+		}
+	private:
+		int a;
+}
+
+class B{
+	public:
+	private:
+		int b1;
+		int b2;
+		A a1; //这样写的话找不到对应的初始化构造函数，因此编译不通过
+		A a2;
+}
+
+void main(){
+	A a1(10);
+	B objB;
+}
+
+通过构造函数列表来解决该问题
+class A{
+	public:
+		A(int _a){
+			a = _a;
+		}
+	private:
+		int a;
+}
+
+class B{
+	public:
+		// 构造函数列表
+		B(int _b1, int _b2) : a1(1), a2(2){
+			
+		}
+		
+		// 构造函数还可以这样写：
+		// 即将参数m n传给a1 a2
+		B(int _b1, int _b2, int m, int n) : a1(m), a2(n){
+			
+		}
+	private:
+		int b1;
+		int b2;
+		A a1;
+		A a2;
+}
+
+void main(){
+	A a1(10);
+	// objB对象在创建的时候，会先执行a1 a2的初始化构造函数，执行顺序遵从构造函数列表里面定义的顺序
+	// 析构和构造时的顺序相反
+	B objB(1, 2);
+	B objB2(1, 2, 3, 4);
+}
+
+class MyTest{
+	public:
+		MyTest(int a, int b, int c){
+			this->a = a;
+			this->b = b;
+			this->c = c;
+		}
+		MyTest(int a, int b){
+			this->a = a;
+			this->b = b;
+			MyTest(a, b, 100); // 此处调用构造函数时会产生一个匿名对象
+		}
+		~MyTest{
+			printf("%d %d %d", a, b, c); // 1 2 100 匿名对象的c属性确实被改成了100，但匿名对象和t1对象没有任何关系，因此c依然是乱码
+		}
+	private:
+		int a;
+		int b;
+		int c;
+	public:
+		int getC() const{return c;}
+		void setC(int val) {c = val;}
+}
+void main(){
+	MyTest t1(1, 2);
+	printf("%d", t1.getC()); //乱码
+}
+
+======================对象的动态创建和销毁（new和delete）====================
+new后面跟的类型可以是基础类型 数组类型 自定义的类
+class Test{
+	public:
+		Test int(_a){
+			a = _a;
+		}
+		~Test int(_a){
+			
+		}
+		
+	private:
+		int a;
+}
+void main(){
+	// c语言中给基础类型分配内存
+	int* p = (int*)malloc(sizeof(int));
+	*p = 10;
+	free(p);
+	
+	// c++中给基础类型分配内存
+	int* p2 = new int;
+	*p2 = 20;
+	free(p2);
+	
+	int* p3 = new int(30);
+	printf("%d", *p3);
+	delete p3;
+	
+	// c语言中分配数组类型内存
+	int *pArray = (int*)malloc(sizeof(int) * 10);
+	pArray[0] = 1;
+	free(p);
+	
+	// c++中分配数组类型内存
+	int *pArray1 = new int[10];
+	pArray1[1] = 2;
+	delete [] pArray1; // 释放数组内存时不要忘记加[]
+	
+	// c语言中分配自定义类型内存
+	Test* pT1 = (Test*)malloc(sizeof(Test));
+	free(pT1);	
+	
+	// c++中分配自定义类型内存
+	Test* pT2 = new Test(10);
+	delete pT2;
+	
+	// new和delete可以自动调用类里面的构造和析构函数，而malloc和free不可以
+	// new和delete是C++的操作符，而malloc和free是C语言中的函数
+	// 对于基础类型，malloc出来的内存可以通过delete释放，new出来的内存可以通过free释放
+	// 对于数组类型，malloc出来的内存可以通过delete释放，new出来的内存可以通过free释放，该结论仅限数组中盛放基础类型值的情况
+	// 对于自定义类型，malloc出来的内存可以通过delete释放，new出来的内存可以通过free释放，但是delete释放malloc时会执行析构函数，free释放new时不会执行析构函数
+}
+
+====================静态成员==================
+class BB{
+	public:
+		void printC(){
+			cout<<c<<endl;
+		}
+		void addC(){
+			c++;
+		}
+		static void getC(){
+			cout<<c<<endl;
+			// 静态方法中不可以调用非静态成员，因为非静态成员是属于某个对象的，在静态方法里使用无法确定它是属于哪个对象的
+			// cout<<a<<endl;
+		}
+	private:
+		int a;
+		int b;
+		static int c;
+}
+//必须对BB类的静态成员初始化
+int BB::c = 10;
+void main(){
+	BB b1, b2, b3;
+	b1.printC(); //10
+	b2.addC();
+	b1.printC(); //11
+	
+	// 两种方式调用静态成员
+	b3.getC();
+	BB::getC();
+}
+
+==================================================
+C++面向对象模型
+class C2{
+	public:
+		int i;
+		int j;
+		int k;
+		static int m;
+	public:
+		int getK() const {return k;}
+}
+void main(){
+	printf("%d", sizeof(C2)); //12 静态成员 成员函数不被计算在对象容量中
+}
+
+C++编译器对普通成员函数的内部处理：
+class Test{
+	private:
+		int mI;
+	public:
+		Test(int i){
+			mI = i;
+		}
+		int getI(){
+			return mI;
+		}
+		static void Print(){
+			printf("This is class Test.\n");
+		}
+}
+Test a(10);
+a.getI();
+Test::Print();
+
+上面的代码将被解析为：
+struct Test{
+	int mI;
+}
+void Test_initialize(Test* pThis, int i){
+	pThis -> mI = i;
+}
+int Test_getI(Test* pThis){
+	return pThis -> mI;
+}
+void Test_Print(){
+	printf("This is class Test.\n");
+}
+Test a;
+Test_initialize(&a, 10);
+Test_getI(&a);
+Test_Print();
+
+C++函数中成员变量和成员函数是分开存储的
+对于成员变量：
+	普通成员变量存储于对象中，与struct变量有相同的内存布局和字节对齐方式
+	静态成员变量存储于全局数据区中
+对于成员函数：
+	存储于代码段中
+	
+由以上结论可以看出：很多对象会共用一块代码，那代码如何区分具体对象呢？
+通过上面翻译成的c语言代码来看，发现类中每个方法对应的c语言代码中每个方法里面都有一个pThis指针参数，该参数就代表当前正在调用该方法的对象
+
+// 如果在类中定义一个带有const的方法，以下三种写法都一样
+void const OpVar(int a, int b){}
+void OpVar(int a, int b) const{}
+const void OpVar(int a, int b){}
+
+由于成员方法会被翻译成void OpVar(Test* pThis, int a, int b)，const修饰该函数中的pThis指针，因此实际上被翻译成了void OpVar(const Test* const pThis, int a, int b);
+
+// 返回引用就相当于返回自身
+// 当执行t1.TestAdd2(t2)时，this就是&t1，因此返回值实际上是*(&t1)，就是它本身
+Test& TestAdd2(Test& t2){
+	return *this; // *操作让this回到元素状态
+}
+
+========================面向对象实现数组类============================
+MyArray.h文件
+#pragma once
+#include <iostream>
+using namespace std;
+
+class Array{
+	public:
+		Array(int len);
+		Array(const Array& obj);
+		~Array();
+	public:
+		void setData(int index, int value);
+		int getData(int index);
+		int length();
+	private:
+		int m_length;
+		int* m_space;
+}
+
+------------------
+MyArray.cpp文件
+#include "MyArray.h"
+
+Array::Array(int len){
+	if (len < 0){
+		//m_length = 0;
+		//m_space = new int[m_length];
+		len = 0;
+	}
+	
+	m_length = len;
+	m_space = new int[m_length];
+};
+Array::Array(const Array& obj){
+	this -> m_length = obj.m_length;
+	this -> m_space = new int[m_length];
+	// 数组中各项复制
+	for(int i = 0; i < obj.length(); i++){
+		this -> m_space[i] = obj.m_space[i];
+	}
+};
+Array::~Array(){
+	if (m_space != NULL) {
+		delete [] m_space;
+		m_length = 0;
+	}
+};
+
+void Array::setData(int index, int value){
+	m_space[index] = value;
+}
+int Array::getData(int index){
+	return m_space[index];
+}
+int Array::length(){
+	return m_length;
+}
+
+------------------
+TestArray2.cpp文件
+#include <iostream>
+#include "Array.h"
+using namespace std;
+void main(){
+	Array a1(10);
+	
+	for(int i = 0; i < a1.length(); i++){
+		a1.setData(i, i);
+	}
+	
+	for(int i = 0; i < a1.length(); i++){
+		a1.getData(i);
+	}
+	
+	Array a2 = a1;
+	
+	for(int i = 0; i < a2.length(); i++){
+		a2.setData(i, i);
+	}
+	
+	for(int i = 0; i < a2.length(); i++){
+		a2.getData(i);
+	}
+}
+
+
+=====================友元函数=====================
+在类的外部定义的可以修改类内部的成员
+友元函数声明在任何访问修饰符下都可以
+class A{
+	public:
+		friend void modifyA(A* pA);
+		A(int a, int b){
+			this -> a = a;
+			this -> b = b;
+		}
+	private:
+		int a;
+		int b;
+}
+void modifyA(A* pA){
+	pA -> a = 100;
+}
+void main(){
+	
+}
+// Java中将java源文件编译成class字节码文件之后可以通过反射机制分析字节码文件找到类对象，直接修改类的私有属性，于是反射就成了一种标准，c++中的友元函数也是这样的
+// 
+
+=====================友元类=====================
+class A{
+	friend class B; // B类是A类的友元类，即在B类中可以访问A类中的私有成员
+	public:
+		A(int a = 0, int b = 0){
+			this -> a = a;
+			this -> b = b;
+		}
+		int getA(){
+			return this -> a;
+		}
+	private:
+		int a;
+		int b;
+}
+class B{
+	public:
+		void set(int a){
+			Aobject.a = 100;
+		}
+		void printB(){
+			cout<<Aobject.a<<endl;
+		}
+	private:
+		A Aobject;
+}
+void main(){
+	B b1;
+	b1.set(300);
+	b1.printB();
+}
+若B类是A类的友元类，则B类的所有成员函数都是A类的友元函数
+友元类通常涉及为一种对数据操作或类之间传递消息的辅助类
+
+==================运算符重载（语法较复杂）===================
+运算符重载使得用户自定义的数据以一种更简洁的方式工作
+class Complex{
+	public:
+		int a;
+		int b;
+	public:
+		Complex(int a = 0, int b = 0){
+			this -> a = a;
+			this -> b = b;
+		}
+		void printCom(){
+			cout<<a<<endl;
+		}
+}
+// 定义了全局函数
+Complex myAdd(Complex &c1, Complex &c2){
+	Complex tmp(c1.a + c2.a, c1.b + c2.b);
+	return tmp;
+}
+// 对函数名进行改造
+// operator是c++中的关键字
+Complex operator+(Complex &c1, Complex &c2){
+	Complex tmp(c1.a + c2.a, c1.b + c2.b);
+	return tmp;
+}
+void main(){
+	int a = 0;
+	int b = 0;
+	int c;
+	
+	c = a + b; // 对于基础数据类型，编译器已经知道如何运算
+	
+	// c1和c2是两个复数对象
+	Complex c1(1, 2), c2(3, 4);
+	Complex c3;
+	// c3 = c1 + c2;
+	// Complex是用户自定义的数据类型，c++编译器是不知道如何进行运算的
+	// c++给程序员提供了运算符重载，让自定义数据类型有机会进行运算符操作
+	
+	// 以下三种写法都一样operator+(c1, c2)和c1 + c2都调到了operator+函数中
+	// Complex c4 = myAdd(c1, c2);
+	// Complex c4 = operator+(c1, c2);
+	// Complex c4 = c1 + c2;
+	c4.printCom();
+	
+	// 运算符重载的本质是函数调用
+}
+
+不能重载的运算符： . :: .* ?: sizeof
+
+运算符重载的两种方法：
+1、用成员或友元函数重载运算符
+成员函数具有this指针，友元函数没有this指针
+不管是成员函数还是友元函数重载，运算符的使用方法相同
+但传递参数的方式不同，实现代码不同，应用场合也不同
+
+2、通过全局函数重载运算符，上面已经见过了
+
+class Complex{
+	private:
+		int a;
+		int b;
+		friend Complex operator+(Complex &c1, Complex &c2);
+		friend Complex& operator++(Complex &c1);
+		friend Complex operator++(Complex &c1, int);
+	public:
+		Complex(int a = 0, int b = 0){
+			this -> a = a;
+			this -> b = b;
+		}
+		void printCom(){
+			cout<<a<<endl;
+		}
+	public:
+		Complex operator-(Complex &c2){
+			Complex tmp(this -> a - c2.a, this -> b - c2.b);
+			return tmp;
+		}
+		Complex operator--(int){
+			Complex tmp = *this;
+			this -> a--;
+			this -> b--;
+			return tmp;
+		}
+}
+Complex operator+(Complex &c1, Complex &c2){
+	// 当a和b是Complex类的私有成员时，像c1.a c1.b这样访问会报错，因此这时需要用到友元函数
+	Complex tmp(c1.a + c2.a, c1.b + c2.b);
+	return tmp;
+}
+Complex& operator++(Complex &c1){
+	c1.a++;
+	c1.b++;
+	return c1;
+}
+// 第二个参数int是一个占位符
+Complex operator++(Complex &c1, int){
+	// 注意后置++是先使用再++，因此返回的值应该是++之前的值，所以要先将没有++的c1缓存一份，返回的时候把缓存的这份返回出去，这样就能保证它还没++
+	Complex tmp = c1;
+	c1.a++;
+	c1.b++;
+	return tmp;
+}
+void main(){
+	Complex c1(1, 2), c2(3, 4);
+	Complex c3 = c1 + c2;
+	
+	// 全局函数实现重载：Complex operator+(Complex &c1, Complex &c2);
+	
+	// 成员函数实现重载：c1.operator+(c2); => Complex operator+(Complex &c2)
+	
+	Complex c4 = c1 - c2;
+	
+	// 注意不论是前置还是后置参数c1的属性都会变化，因此需要传入c1的引用
+	// 前置++操作符 用全局函数实现：++c1 => Complex& operator++(Complex &c1); 注意返回类型有&，因此返回的是本身
+	
+	// 后置++操作符 用全局函数实现：c1++ => Complex operator++(Complex &c1, int);
+	// 后置++是先使用，再++，因此返回的应该是一个值
+	// 注意我们多了一个参数int，该参数是占位参数，当编译器遇到该参数时会将其解析成后置++
+	
+	// 成员函数实现后置--
+	c1--;
+	c1.printCom();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
