@@ -3721,6 +3721,11 @@ void main(){
 	// 构造函数的调用
 	// 无参构造函数的调用不需要任何额外的写法：
 	Test2 ts1;
+	// 实际上Test2 ts1这种形式也可以调用有参构造函数，但是该有参构造函数必须有默认值，即类似下面这种形式：
+	// Test2(int a = 1, int b = 2){
+	// 	
+	// }
+	// 但是当类里面有两个以上带默认值的构造函数时，像Test2 ts1这样的方式会报错，因为存在二义性，两个构造函数都有默认值，Test2初始化时不知道该调用哪个构造函数了
 	// 调用有参构造函数
 	Test2 ts2(1, 2);
 	// 这种写法会将(3, 4)当做逗号表达式，最后得到结果是4，调的是有一个参数的构造函数
@@ -4607,14 +4612,776 @@ void main(){
 	f(2, 3); // 在某些开源库如STL中会有这种语法
 }
 
+逻辑运算符可以重载，但得不到短路的效果，因此逻辑运算符很少重载
+
+MyString类重载================================
+MyString.h
+class MyString{
+	public:
+		MyString(int len = 0);
+		MyString(const char* p);
+		MyString(const MyString& p);
+		~MyString();
+	// 运算符重载
+	public:
+		MyString& operator=(const char* p);
+		MyString& operator=(const MyString& s);
+		char& operator=(int i);
+		friend ostream& operator<<(ostream &out, MyString& s);
+		bool operator==(const char* p) const;
+		bool operator==(const MyString& s) const;
+		bool operator!=(const char* p) const;
+		bool operator!=(const MyString& s) const;
+		int operator<(const char* p);
+		int operator>(const char* p);
+		int operator<(MyString& s);
+		int operator>(MyString& s);
+		friend istream& operator>>(istream& in, MyString& s);
+		
+	// 把类的指针属性m_p暴露给外部
+	public:
+		char* c_str(){
+			return m_p;
+		}
+		const char* c_str2(){
+			return m_p;
+		}
+		
+	protected:
+	private:
+		int m_len;
+		char* m_p;
+}
+
+MyString.cpp
+MyString::MyString(int len){
+	if (len == 0) {
+		m_len = 0;
+		// 分配空间
+		m_p = new char[m_len + 1];
+		// 拷贝数据
+		strcpy(m_p, "");
+	} else {
+		m_len = len;
+		m_p = new char[m_len + 1];
+		memset(m_p, 0, len);
+	}	
+}
+MyString::MyString(const char* p){
+	if (p == NULL) {
+		m_len = 0;
+		// 分配空间
+		m_p = new char[m_len + 1];
+		// 拷贝数据
+		strcpy(m_p, "");
+	} else {
+		m_len = strlen(p);
+		m_p = new char[m_len];
+		strcpy(m_p, p);
+	}
+}
+MyString::MyString(const MyString& s){
+	m_len = s.m_len;
+	m_p = new char[m_len + 1];
+	strcpy(m_p, s.m_p);
+}
+MyString::~MyString(){
+	if (m_p != NULL) {
+		delete [] m_p;
+		m_p = NULL;
+		m_len = 0;
+	}
+}
+// =运算符重载
+MyString& MyString::operator=(const char* p){
+	// 先释放旧的内存
+	if (m_p != NULL) {
+		delete [] m_p;
+		m_len = 0;
+	}
+	// 根据新的字符串分配内存
+	if (p == NULL) {
+		m_len = 0;
+		m_p = new char[m_len + 1];
+		strcpy(m_p, "");
+	} else {
+		m_len = strlen(p);
+		m_p = new char[m_len + 1];
+		strcpy(m_p, p);
+	}
+	return *this;
+}
+MyString& MyString::operator=(const MyString& s){
+	// 先释放旧的内存
+	if (m_p != NULL) {
+		delete [] m_p;
+		m_len = 0;
+	}
+	// 根据新的字符串分配内存
+	m_len = 0;
+	m_p = new char[m_len + 1];
+	strcpy(m_p, s.m_p);
+	return *this;
+}
+char& MyString::operator[](int i){
+	return m_p[index];
+}
+ostream& MyString::operator<<(ostream& out, MyString& s){
+	out << s.m_p;
+	return out;
+}
+istream& operator>>(istream& in, MyString& s){
+	in >> s.m_p;
+	return in;
+};
+bool MyString::operator==(const char* p) const{
+	if (p == NULL) {
+		return m_len == 0;
+	} else {
+		if (m_len == strlen(p)){
+			// strcmp比较出来，结果是相等就返回0
+			return !strcmp(m_p, p);
+		} else {
+			return false;
+		}
+	}
+};
+bool MyString::operator==(const MyString& s) const{
+	if (m_len != s.m_len) {
+		return false;
+	}
+	return !strcmp(m_p, s.m_p));
+};
+bool MyString::operator!=(const char* p) const{
+	return !(*this == p);
+};
+bool MyString::operator!=(const MyString& s) const{
+	return !(*this == s);
+};
+int MyString::operator<(const char* p){
+	return strcmp(this -> m_p, p);
+};
+int MyString::operator>(const char* p){
+	return strcmp(p, this -> m_p);
+};
+int MyString::operator<(MyString& s){
+	return strcmp(this -> m_p, s.m_p);
+};
+int MyString::operator>(MyString& s){
+	return strcmp(s.m_p, this -> m_p);
+};
+
+
+MyStringTest.cpp
+int main(){
+	MyString s1;
+	MyString s2("abc");
+	MyString s3 = s2;
+	MyString s4 = "s44444";
+	
+	s4 = s2;
+	s4 = "s2222";
+	
+	s4[0];
+	
+	cout << s4 << endl;
+	
+	s4 == "abc"
+	s4 != "abc"
+	s4 == s2;
+	s4 != s2;
+	
+	s4 < "abc"
+	s4 > "abc"
+	s4 < s2;
+	s4 > s2;
+	
+	cin >> s4;
+	cout << s1;
+}
+
+继承=====================================
+C++继承可以有多重形式
+// 通过public方式，继承过来的Parent类里面的各成员访问权限不变
+class Child: public Parent{}
+// 通过protected方式，继承过来的Parent类里面public成员会成为protected权限
+class Child: protected Parent{}
+// 通过private方式，继承过来的Parent类里面所有成员会成为private权限
+class Child: private Parent{}
+总结：继承的方式（public private还是protected）会影响继承过来的成员的访问权限
+
+// 三看原则
+看成员在哪里调用（在子类的里面还是外面）
+看子类继承父类的方式（是public private还是protected）
+看父类成员访问控制权限
+
+类型兼容原则=======================
+class Parent{
+	public:
+		void printP(){
+			cout << "父类" << endl;
+		}
+		Parent(){
+			cout << "无参构造函数" << endl;
+		}
+		Parent(const Parent& obj){
+			cout << "赋值构造函数" << endl;
+		}
+	private:
+		int a;
+}
+class Child: public Parent{
+	public:
+		void printC(){
+			cout << "子类" << endl;
+		}
+	private:
+		int c;
+}
+void howToPrint(Parent* base){
+	base -> printP();
+}
+void howToPrint2(Parent& base){
+	base.printP();
+}
+int main(){
+	Parent p1;
+	Child c1;
+	
+	Parent* p = null;
+	// 子类指针或引用可以指向或赋给父类
+	p = &c1;
+	p -> printP(); // 实际上执行的是子类的方法
+	
+	// 指针做函数参数
+	howToPrint(&p1);
+	howToPrint(&c1);
+	
+	howToPrint(p1);
+	howToPrint(c1);
+	
+	// 可以用子类对象初始化父类对象
+	// 此处可以理解为子类就是一种特殊的父类
+	// 会调用赋值构造函数
+	Parent p3 = c1;
+}
+===============================
+子类对象构造时，需要调用父类构造函数对其继承来的成员进行初始化，且先调用父类构造函数，再调用子类构造函数
+子类对象析构时，需要调用父类析构函数对其继承来的成员进行清理，且先调用子类析构函数，再调用父类析构函数
+class Parent{
+	public:
+		void Parent(int a, int b){
+			this -> a = a;
+			this -> b = b;
+			cout << "父类构造函数"
+		}
+		void printP(){
+			cout << "Parnet" << endl;
+		}
+	private:
+		int a;
+		int b;
+}
+class Child: public Parent{
+	public:
+		// 下面这一行会报错：Parent没有合适的默认构造函数可用
+		// 报错的原因是，子类将来实例化的时候会调用父类构造函数，默认调用父类自带的构造函数，但是在这里我们在父类中已经手动写过构造函数了，因此自带的构造函数就会被覆盖，而这样写的话就没有机会调用父类中带两个int参数的构造函数了，这里我们需要改为构造函数初始化列表
+		// Child(int c){
+		Child(int a, int b, int c): Parent(a, b){
+			this -> c = c;
+		}
+		void printC(){
+			cout << "Child" << endl;
+		}
+	private:
+		int c;
+}
+void main(){
+	Parent p;
+}
+
+// 对于继承和组合混搭的场合，实例化子类对象会先调用Parent类构造函数，再调用Object类构造函数两次，最后再调用子类自己的构造函数
+class Child: public Parent{
+	public:
+		// 先对父类初始化 在对各个组合对象初始化
+		Child(): Parent(p), obj(1), obj(2){
+		
+		}
+	private:
+		Object obj1;
+		Object obj2;
+}
+
+继承中的同名成员可以通过域分辨符::进行同名成员区分（在派生类中使用基类的同名成员，显式地使用类名限定符），同名成员存储在内存中的不同位置
+如果不加域分辨符，默认访问的是子类的成员
+在外部调用时也可以明确声明：
+B b1;
+b1.B::b = 1; // 改子类B的b属性
+b1.A::b = 2; // 改父类A的b属性
+
+父类定义的静态成员，将被所有子类共享
+
+对于类中的静态成员必须显式的初始化：
+class B{
+	public:
+		static int i;
+}
+// 这个初始化的作用不仅仅是初始化这个成员，更重要的是告诉编译器要给这个成员分配内存
+// 言外之意是不初始化就不会被分配内存
+// 如果不分配内存，则无法完成继承
+// 如果不初始化虽然可以编译通过，但是一旦在运行过程中使用到了该成员，就会出问题
+int B::i = 0;
+
+// 像下面这样写没有加到任何访问修饰符里面，默认是私有的
+// 外部实例化对象的时候由于不能访问私有成员，因此肯定实例化不成功
+class A{
+	A(){}
+}
+
+多继承语法：
+class A: public B, public C
+
+多继承语法容易产生二义性，已经被其他语言所抛弃
+class B{
+	public:
+		int b;
+}
+class B1: public B{
+	public:
+		int b1;
+}
+class B2: public B{
+	public:
+		int b2;
+}
+class C:public B1,public B2{
+	public:
+		int c;
+}
+void main(){
+	C c1;
+	c1.b1 = 100; // ok
+	c1.b2 = 200; // ok
+	c1.c  = 300; // ok
+	c1.b  = 500; // 编译报错对b的访问不明确，因为C继承了B1，也继承了B2，因此从B1那里得到了b属性，也从B2那里得到了b属性，在这里使用的话到底使用的是哪个类的b属性无从得知，为了解决这个问题，C++中引入了虚继承
+}
+
+// 引入虚继承，虚继承引入后祖先类B类只执行一次，不加virtual关键字时祖先类B执行了两次
+class B{
+	public:
+		int b;
+}
+class B1: virtual public B{
+	public:
+		int b1;
+}
+class B2: virtual public B{
+	public:
+		int b2;
+}
+class C:public B1,public B2{
+	public:
+		int c;
+}
+void main(){
+	C c1;
+	c1.b1 = 100; // ok
+	c1.b2 = 200; // ok
+	c1.c  = 300; // ok
+	c1.b  = 500; // ok
+}
+
+虚继承不是重点，虚继承主要用于多态
+
+当子类继承的两个父类中有同名的属性时，子类对象直接访问属性还是无法确定到底是访问哪个类下的属性，这时只能用域分辨符来识别，不可以通过virtual解决
+
+继承父类的时候如果给继承的类加了virtual关键字和不加virtual关键字，占用的内存空间大小是不一样的，加了virtual关键字，C++编译器会给变量偷偷的增加属性，因此会比不加virtual所占的空间大
+
+==================多态
+多态是设计模式的基础，是框架设计的基础
+封装突破了C语言的概念
+继承减少了重复工作，增加了代码复用的功能
+多态不仅可以继承原来的代码，还可以复用将来的代码
+
+// 在没有实现多态之前，如下案例：
+void main(){
+	Parent* base = NULL;
+	Parent p1(20);
+	Child c1(30);
+	
+	base = &p1;
+	base -> print(); // 20
+	
+	base = &c1;
+	base -> print(); // 虽然我们期望输出30，但是实际输出的是20
+	
+	Parent& base2 = p1;
+	base2.print(); // 20
+	
+	Parent& base3 = c1;
+	base3.print(); // 虽然我们期望输出30，但是实际输出的是20
+}
+
+要想实现给父类赋哪个子类就执行哪个子类对应的和父类同名的方法，需要给父类的该方法加virtual关键字，然后子类加不加virtual关键字都可以
+
+实现多态的三个条件：
+继承
+虚函数重写
+父类指针（父类引用）指向子类对象
+
+一个方法如果没有virtual关键字时是静态链接，在编译器编译阶段就知道该怎么执行了，会根据传入的类型执行对应的方法
+一个方法如果拥有virtual关键字时是动态链接，在编译器编译阶段不知道该怎么执行，而是推迟到执行的时候确定执行哪个对象的方法
+
+虚析构函数==================
+class A{
+	public:
+		A(){
+			p = new char[20];
+			strcpy(p, "obja");
+		}
+		// 想通过父类指针把所有子类对象的析构函数都执行一遍，即想通过父类指针析构所有资源，需要用virtual访问~A()函数
+		virtual ~A(){
+			delete [] p;
+		}
+	private:
+		char* p;
+}
+class B: public A{
+	public:
+		B(){
+			p = new char[20];
+			strcpy(p, "obja");
+		}
+		~B(){
+			delete [] p;
+		}
+	private:
+		char* p;
+}
+class C: public B{
+	public:
+		C(){
+			p = new char[20];
+			strcpy(p, "obja");
+		}
+		~C(){
+			delete [] p;
+		}
+	private:
+		char* p;
+}
+// 在最后只执行了~A()析构函数，B和C的析构函数没有执行
+// 想通过父类指针把所有子类对象的析构函数都执行一遍，即想通过父类指针析构所有资源，需要用virtual访问~A()函数
+void howtodelete(A* base){
+	delete base; // 这句话不会表现成多态
+}
+void main(){
+	C *myc = new C;
+	
+	// 不用virtual关键字，在这里手动调用delete myc;也可以释放A B C内存
+	// delete myc;
+	
+	howtodelete(myc);
+}
+
+重载重写重定义====================
+重载是在编译期间根据参数类型和个数决定函数调用
+重写发生在父类和子类之间，并且父类与子类中的函数必须有完全相同的原型，使用virtual声明之后能够产生多态（如果不用virtual那叫重定义），多态是在运行期间根据具体对象的类型决定函数调用
+class Parent{
+	public:
+		virtual int func(){}
+		virtual int func(int i){}
+		virtual int func(int i, int j){}
+}
+class Child: public Parent{
+	public:
+		// 在父类中也有一个返回值为int，接收两个参数，两个参数类型也是int的方法（即函数模型一样），那么子类中的该方法将重写父类中的对应方法，对于虚方法的重写可以实现多态
+		virtual int func(int i, int j){}
+		virtual int func(int i, int j, int k){}
+}
+void main(){
+	Child c1;
+	// 重载是发生在一个类里面的，子类无法重载父类的函数，父类同名函数将被名称覆盖，子类中只要有一个名字和父类名字相同的方法，父类中的方法就被覆盖了
+	// 编译器看到func这个名字在子类中已经存在了，所以编译器不会去父类中找没有参数的func函数
+	// 编译器只会在子类中查找func函数，结果找到了两个func，但是这两个func都没有没有参数这种模型的
+	// 如果想调用父类的func函数，需要加上域分辨符
+	// c1.func(); // 报错 报没有重载函数接收0个参数
+	c1.Parent::func();
+}
+
+多态原理探究=================================
+class Parent{
+	public:
+		// 当类中声明虚函数时，编译器会在类中生成一个虚函数表
+		// 虚函数表是一个存储类成员函数指针的数据结构
+		// 虚函数是由编译器自动生成和维护的
+		// virtual成员函数会被编译器放入虚函数表中
+		// 存在虚函数时，每个对象中都有一个指向虚函数表的指针（vptr指针）
+		virtual public print(){}
+}
+void HowToPlay(Parent* base){
+	// c++编译器根本不区分传来的base是子类对象还是父类对象
+	// 父类对象和子类对象都有vptr指针，此处会通过vptr指针去寻找对象对应类的虚函数表，再根据虚函数表找函数的入口地址，这样就实现了迟绑定的效果（运行时的时候c++编译器采取判断）
+	// 编译器在此处会判断一下print是否为虚函数，如果print不是虚函数，编译器可以直接确定被调用的成员函数（即静态链编，根据Parent类型来确定），如果print是虚函数，编译器根据对象p的vptr指针所指的虚函数表中查找print函数并调用，注意这里的查找和调用是在运行时完成的（实现所谓的动态链编）
+	base -> print();
+}
+void main(){
+	Parent p1; // 用类定义对象的时候c++编译器会在对象中添加一个vptr指针属性
+	Child c1; // 继承了有虚函数的父类之后，子类中也有一个vptr指针
+	
+	HowToPlay(&p1);
+	HowToPlay(&c1);
+}
+
+注意：
+1、通过虚函数表指针vptr调用重写函数是在程序运行时进行的，因此需要通过寻址操作才能确定真正应该调用的函数，而普通成员函数是在编译时就确定了调用的函数，在效率上，虚函数的效率要低很多
+2、出于效率考虑，没有必要将所有成员函数都声明为虚函数
+
+子类的vptr指针时分步初始化的===========================
+class Parent{
+	public:
+		Parent(int a = 0){
+			this -> a = a;
+			// 在子类初始化场景下调用父类中print时，这次调用实际上调用的是父类的print
+			print();
+		}
+		virtual void print(){
+			cout << "parent" << endl;
+		}
+	private:
+		int a;
+}
+class Child: public Parent{
+	public:
+		Child(int a = 0, int b = 0): Parent(a){
+			this -> b = b;
+			// 在子类初始化时调用这里的print时实际上调用的是子类的print
+			print();
+		}
+		virtual void print(){
+			cout << "child" << endl;
+		}
+	private:
+		int b;
+}
+void HowToPlay(Parent* base){
+	base -> print();
+}
+void main(){
+	Child c1; // 定义一个子类对象，在这个过程中，在父类构造函数中调用虚函数print，能发生多态吗？答案：不能
+	HowToPlay(&c1);
+}
+执行Child c1时会初始化c1的vptr指针，初始化过程是分步骤的
+当执行父类的构造函数的时候，c1.vptr会指向父类的虚函数表
+当父类的构造函数运行完毕以后，会把c1的vptr指针指向子类的虚函数表
+
+=======================
+class Parent{
+	public:
+		Parent(int a = 0){
+			this -> a = a;
+		}
+		virtual void print(){
+			cout << "parent" << endl;
+		}
+	private:
+		int a;
+}
+class Child: public Parent{
+	public:
+		Child(int a = 0, int b = 0): Parent(a){
+			this -> b = b;
+		}
+		Child(int b = 0):Parent(0){
+			this -> b = b;
+		}
+		virtual void print(){
+			cout << "child" << endl;
+		}
+	private:
+		int b;
+}
+void HowToPlay(Parent* base){
+	base -> print();
+}
+void main(){
+	Child c1; // 定义一个子类对象，在这个过程中，在父类构造函数中调用虚函数print，能发生多态吗？答案：不能
+	Child* pC = NULL;
+	Parent* pP = NULL;
+	
+	Child array[] = {Child(1), Child(2), Child(3)};
+	pP = array;
+	pC = array;
+	
+	pP -> print();
+	pC -> print();
+	// 父类对象和子类对象占用的空间有可能不一样，所以父类指针pP往后指不一定正好指向下一个Child对象，所以很有可能报错
+	pP++;
+	pC++;
+}
+
+抽象类和纯虚函数======================
+纯虚函数为各派生类提供一个公共界面
+纯虚函数所在的类不能实例化，但是可以定义指针类型
+
+// 含有纯虚函数的类是抽象类，不可以被实例化
+class Figure{
+	public:
+		virtual void getArea() = 0; // 纯虚函数
+}
+class Circle: public Figure{
+	public:
+		Circle(int a, int b){
+			this -> a = a;
+			this -> b = b;
+		}
+		virtual void getArea(){
+			cout << 3.14 * a * a << endl;
+		}
+	private:
+		int a;
+		int b;
+}
+class Tri: public Figure{
+	public:
+		Tri(int a, int b){
+			this -> a = a;
+			this -> b = b;
+		}
+		virtual void getArea(){
+			cout << 1 / 2 * a * b << endl;
+		}
+	private:
+		int a;
+		int b;
+}
+class Square: public Figure{
+	public:
+		Square(int a, int b){
+			this -> a = a;
+			this -> b = b;
+		}
+		virtual void getArea(){
+			cout << a * b << endl;
+		}
+	private:
+		int a;
+		int b;
+}
+void objplay(Figure* base){
+	base -> getArea();
+}
+void main(){
+	Figure* base = NULL; // 可以定义指针类型
+	
+	Circle c1(10, 20);
+	Tri t1(10, 20);
+	Square s1(10, 20);
+	
+	objplay(&c1);
+	objplay(&t1);
+	objplay(&s1);
+}
+
+信息系统框架继承第三方产品案例==========================
+CSocketProtocal.h===================
+#pragma once
+class CSocketProtocal{
+	public:
+		virtual int cltSocketInit() = 0;
+		virtual int cltSocketSend(unsigned char* buf, int buflen) = 0;
+		virtual int cltSocketRev(unsigned char* buf, int* buflen) = 0;
+		virtual int cltSocketDestroy() = 0;
+}
+
+CSckFactoryImp1.h===================
+#pragma once
+#include "CSocketProtocal.h"
+class CSckFactoryImp1:public CSocketProtocal{
+	public:
+		virtual int cltSocketInit();
+		virtual int cltSocketSend(unsigned char* buf, int buflen);
+		virtual int cltSocketRev(unsigned char* buf, int* buflen);
+		virtual int cltSocketDestroy();
+	private:
+		unsigned char* p;
+		int len;
+}
 
 
 
+CSckFactoryImp1.cpp===================
+#include "CSckFactoryImp1.h"
+int CSckFactoryImp1::cltSocketInit(){
+	p = NULL;
+	len = 0;
+	return 0;
+}
+int CSckFactoryImp1::cltSocketSend(unsigned char* buf, int buflen){
+	p = (unsigned char*)malloc(sizeof(unsigned char) * buflen);
+	if (p == NULL){
+		return -1;
+	}
+	memcpy(p, buf, buflen);
+	return 0;
+}
+int CSckFactoryImp1::cltSocketRev(unsigned char* buf, int* buflen){
+	if (buf == NULL || buflen == NULL) {
+		return -1;
+	}
+	*buflen = this -> len;
+	memcpy(buf, this -> p, this -> len);
+	len = buflen;
+	return 0;
+}
+int CSckFactoryImp1::cltSocketDestroy(){
+	if (p != NULL) {
+		free(p);
+		p = NULL;
+		len = 0;
+	}
+	return 0;
+}
 
 
+mainclass.cpp===================
+#include "CSocketProtocal.h"
+#include "CSckFactoryImp1.h"
 
-
-
+int SckSendAndRec(CSocketProtocal* sp, unsigned char* in, int inlen, unsigned char* out, int* outlen){
+	int ret = 0;
+	ret = sp->cltSocketInit();
+	if (ret != 0) {
+		goto End;
+	}
+	ret = sp->cltSocketSend(in, inlen);
+	if (ret != 0) {
+		goto End;
+	}
+	ret = sp->cltSocketRev(out, outlen);
+	if (ret != 0) {
+		goto End;
+	}
+	
+End:
+	ret = sp->cltSocketDestroy();
+	return 0;
+}
+void main(){
+	CSocketProtocal* sp = NULL;
+	sp = new CSocketProtocal;
+	
+	unsigned char in[4096];
+	int inlen;
+	unsigned char out[4096];
+	int outlen = 0;
+	
+	ret = SckSendAndRec(sp, in, inlen, out, &outlen);
+	if (ret != 0) {
+		
+	}
+	delete sp; // 想通过父类指针释放所有的子类对象资源
+}
 
 
 
