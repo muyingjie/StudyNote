@@ -5284,7 +5284,7 @@ void main(){
 }
 
 信息系统框架继承第三方产品案例==========================
-CSocketProtocal.h===================
+CSocketProtocal.h===================协议层只需制定标准（通过抽象类+虚函数制定）
 #pragma once
 class CSocketProtocal{
 	public:
@@ -5294,7 +5294,7 @@ class CSocketProtocal{
 		virtual int cltSocketDestroy() = 0;
 }
 
-CSckFactoryImp1.h===================
+CSckFactoryImp1.h===================实现层实现协议层制定的标准
 #pragma once
 #include "CSocketProtocal.h"
 class CSckFactoryImp1:public CSocketProtocal{
