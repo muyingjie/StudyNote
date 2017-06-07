@@ -5294,6 +5294,24 @@ class CSocketProtocal{
 		virtual int cltSocketDestroy() = 0;
 }
 
+
+CEncDesProtocal.h====================数据加密解密
+#pragma once
+
+class CEncDesProtocal{
+	public:
+		CEncDesProtocal(){
+			
+		}
+		virtual ~CEncDesProtocal(){
+			
+		}
+		virtual int EncData(unsigned char* plain, int plainlen, unsigned char* cryptdata, int* cryptlen) = 0;
+		virtual int DecData(unsigned char* cryptdata, int cryptlen, unsigned char* plain, int* plainlen) = 0;
+}
+
+
+
 CSckFactoryImp1.h===================实现层实现协议层制定的标准
 #pragma once
 #include "CSocketProtocal.h"
@@ -5309,8 +5327,20 @@ class CSckFactoryImp1:public CSocketProtocal{
 }
 
 
+HwEncDec.h===================实现加密接口标准
+#pragma once
+#include <iostream>
+using namespace std;
 
-CSckFactoryImp1.cpp===================
+#include "CEncDesProtocal.h"
+class HwEncDec: public CEncDesProtocal{
+	public:
+		virtual int EncData(unsigned char* plain, int plainlen, unsigned char* cryptdata, int* cryptlen);
+		virtual int DecData(unsigned char* cryptdata, int cryptlen, unsigned char* plain, int* plainlen);
+}
+
+
+CSckFactoryImp1.cpp===================实现Socket标准
 #include "CSckFactoryImp1.h"
 int CSckFactoryImp1::cltSocketInit(){
 	p = NULL;
@@ -5344,44 +5374,398 @@ int CSckFactoryImp1::cltSocketDestroy(){
 }
 
 
+HwEncDec.cpp====================实现加密解密标准
+#include <iostream>
+using namespace std;
+#include "HwEncDec.h"
+#include "des.h" // 第三方加密库
+
+// int DesEnc(unsigned char* pInData, int nInDataLen, unsigned char* pOutData, int* pOutDataLen){}
+// int DesDec(unsigned char* pInData, int nInDataLen, unsigned char* pOutData, int* pOutDataLen){}
+int HwEncDec::EncData(unsigned char* plain, int plainlen, unsigned char* cryptdata, int* cryptlen){
+	DesEnc(plain, plainlen, cryptdata, &cryptlen);
+	return 0;
+}
+int HwEncDec::DecData(unsigned char* cryptdata, int cryptlen, unsigned char* plain, int* plainlen){
+	DesDec(cryptdata, cryptlen, plain, &plainlen){}
+	return 0;
+}
+
+
+
 mainclass.cpp===================
 #include "CSocketProtocal.h"
 #include "CSckFactoryImp1.h"
+#include "CEncDesProtocal.h"
+#include "HwEncDec.h"
 
-int SckSendAndRec(CSocketProtocal* sp, unsigned char* in, int inlen, unsigned char* out, int* outlen){
-	int ret = 0;
-	ret = sp->cltSocketInit();
-	if (ret != 0) {
-		goto End;
-	}
-	ret = sp->cltSocketSend(in, inlen);
-	if (ret != 0) {
-		goto End;
-	}
-	ret = sp->cltSocketRev(out, outlen);
-	if (ret != 0) {
-		goto End;
-	}
-	
-End:
-	ret = sp->cltSocketDestroy();
-	return 0;
+// 抽象类在多继承中的运用，在其他高级语言中这叫做接口
+// class MainOp: public CSocketProtocal, public CEncDesProtocal{
+// 	
+// }
+// 除了多继承之外还可以通过组合的方式来实现
+class MainOp{
+	public:
+		MainOp(){
+			this -> sp = NULL;
+			this -> ed = NULL;
+		}
+		MainOp(CSocketProtocal* sp, CEncDesProtocal* ed){
+			this -> sp = sp;
+			this -> ed = ed;
+		}
+		setCSocketProtocal(CSocketProtocal* sp){
+			this -> sp = sp;
+		}
+		setCEncDesProtocal(CEncDesProtocal* ed){
+			this -> ed = ed;
+		}
+	public:
+		int SckSendAndRec(unsigned char* in, int inlen, unsigned char* out, int* outlen){
+			int ret = 0;
+			// 初始化socket
+			ret = sp->cltSocketInit();
+			if (ret != 0) {
+				goto End;
+			}
+			// 将发送数据加密
+			unsigned char* encdata[4096];
+			int encdatalen = 0;
+			ret = ed->EncData(in, inlen, encdata, &encdatalen);
+			if (ret != 0) {
+				goto End;
+			}
+			// 发送
+			// ret = sp->cltSocketSend(in, inlen);
+			// 要发送密文
+			ret = sp->cltSocketSend(encdata, &encdatalen);
+			if (ret != 0) {
+				goto End;
+			}
+			// 接收响应
+			unsigned char* decdata[4096];
+			int decdatalen = 0;
+			ret = sp->cltSocketRev(decdata, &decdatalen);
+			if (ret != 0) {
+				goto End;
+			}
+			// outlen已经是指针类型，不必再取
+			ret = ed->DecData(decdata, decdatalen, out, outlen);
+			if (ret != 0) {
+				goto End;
+			}
+			
+		End:
+			ret = sp->cltSocketDestroy();
+			return 0;
+		}
+	private:
+		CSocketProtocal* sp;
+		CEncDesProtocal* ed;
 }
+
+
 void main(){
 	CSocketProtocal* sp = NULL;
 	sp = new CSocketProtocal;
 	
 	unsigned char in[4096];
-	int inlen;
+	int inlen = 9;
 	unsigned char out[4096];
 	int outlen = 0;
 	
-	ret = SckSendAndRec(sp, in, inlen, out, &outlen);
+	// 加密解密类
+	CEncDesProtocal* ed = NULL;
+	ed = new HwEncDec;
+	
+	ret = SckSendAndRec(sp, ed, in, inlen, out, &outlen);
 	if (ret != 0) {
-		
+		printf("err");
+		return ret;
 	}
 	delete sp; // 想通过父类指针释放所有的子类对象资源
+	
+	//=================使用MainOp类之后的调用方式===========================
+	MainOp* myMainOp = new MainOp;
+	CSocketProtocal* sp = NULL;
+	CEncDesProtocal* ed = NULL;
+	
+	myMainOp->setCSocketProtocal(sp);
+	myMainOp->setCEncDesProtocal(ed);
+	
+	ret = myMainOp->SckSendAndRec(in, inlen, out, &outlen);
+	if (ret != 0) {
+		printf("err");
+		return ret;
+	}
+	delete sp;
+	delete ed;
+	delete myMainOp;
 }
+
+============================
+void main(){
+	// 定义数组类型
+	int a[10]; // a代表数组首元素的地址 &a代表整个数组的首地址 因此a和&a的步长不一样
+	// a+1会前进4个字节，&a+1前进40字节 即a的步长是4字节，&a的步长是40字节
+	typedef int (myTypeArray)[10];
+	myTypeArray myArray;
+	myArray[0] = 10;
+	
+	// 定义指针数组类型
+	typedef int (*PTypeArray)[10];
+	PTypeArray myPArray;
+	myPArray = &a;
+	// myPArray是二级指针
+	(*myPArray)[0] = 20;
+	printf(a[0]); // 20
+	
+	// 定义指向数组类型的指针
+	int (*MyPointer)[10]; // 效果相当于typedef int (*PTypeArray)[10]; PTypeArray myPArray;
+	MyPointer = &a;
+	(*MyPointer)[0] = 40;
+}
+
+void main(){
+	// 定义函数类型
+	typedef int (MyFuncType)(int a, int b);
+	MyFuncType* myPointerFunc = NULL;
+	
+	// 加不加&都可以
+	myPointerFunc = &add;
+	myPointerFunc(3, 4);
+	
+	myPointerFunc = add;
+	myPointerFunc(3, 4);
+	
+	
+	// 定义函数指针类型
+	typedef int (*MyPointerFuncType)(int a, int b);
+	MyPointerFuncType myPointerFunc;
+	
+	myPointerFunc = add;
+	myPointerFunc(3, 4);
+	
+	
+	// 直接定义函数指针变量
+	int (*MyPointerFunc)(int a, int b);
+	MyPointerFunc = add;
+	MyPointerFunc(7, 9);
+}
+函数指针做参数===============================
+int add(int a, int b){
+	return a + b;
+}
+int add2(int a, int b){
+	return a + b;
+}
+
+typedef int (*MyTypeFuncAdd)(int a, int b);
+
+int MainOp(MyTypeFuncAdd myFuncAdd){
+	return myFuncAdd(5, 6);
+}
+
+int MainOp2(int (*MyPointerFuncAdd)(int a, int b)){
+	return MyPointerFuncAdd(5, 6);
+}
+void main(){
+	MyTypeFuncAdd myFuncAdd = NULL;
+	add(1, 2);
+	
+	myFuncAdd = add;
+	myFuncAdd(1, 2);
+	
+	MainOp2(add);
+	MainOp(add);
+	
+	// 可以调用同类函数
+	MainOp2(add2);
+	MainOp(add2);	
+}
+
+C动态库升级成框架案例======================================
+
+函数模板(泛型编程)=============================
+template <typename T>
+void myswap(T &a, T &b){
+	T c;
+	c = a;
+	a = b;
+	b = c;
+}
+void main(){
+	int x = 10;
+	int y = 20;
+	
+	// 显式类型调用
+	myswap<int>(x, y);
+	
+	// 自动类型推导 很少使用
+	myswap(x, y);
+	
+	char a = 'a';
+	char b = 'b';
+	myswap<char>(a, b);
+}
+
+函数模板做函数参数===================
+template <typename T, typename T2>
+int mySort(T *array, T2 size){
+	T2 i,j;
+	T tmp;
+	if(array == NULL){
+		return -1;
+	}
+	for(i = 0; i < size; i++){
+		for(j = i + 1; j < size; j++){
+			tmp = array[i];
+			array[i] = array[j];
+			array[j] = tmp;
+		}
+	}
+	return 0;
+}
+template <typename T, typename T2>
+int myPrint(T* aray, T2 size){
+	return 0;
+}
+void main(){
+	int array[] = {11, 22, 33, 44};
+	
+	int size = sizeof(array) / sizeof(*array);
+	mySort<int, int>(array, size);
+}
+=========================
+template <typename T>
+void myswap(T &a, T &b){}
+
+void myswap(int a, int b){}
+
+// 两个myswap之间的关系是重载关系
+
+void main(){
+	int a = 10;
+	char c = 'z';
+	
+	myswap(a, c);
+	myswap(c, a);
+	myswap(a, a);
+	
+	// 普通函数可以进行隐式类型转换	
+	// 调用函数模板（本质：类型参数化），将严格按照类型进行匹配，不会进行自动类型转换
+}
+
+函数模板可以像普通函数一样被重载
+C++编译器优先考虑普通函数
+如果函数模板可以产生一个更好的匹配，那么选择模板
+可以通过空模板实参列表的语法限定编译器只通过模板匹配
+
+int Max(int a, int b){}
+
+template<typename T>
+T Max(T a, T b){}
+
+template<typename T>
+T Max(T a, T b, T c){}
+
+void main(){
+	int a = 1;
+	int b = 2;
+	
+	cout << Max(a, b) << endl; // 当函数模板和普通函数都符合调用时，优先选择普通函数
+	cout << Max<>(a, b) << endl; // 若显式（强制）使用函数模板，则使用<>类型列表
+	cout << Max(3.0, 4.0) << endl; // 如果函数模板产生更好的匹配，使用函数模板，因为浮点数转为整型会失真，所以不转换成整数
+	cout << Max(3.0, 4.0, 5.0) << endl; // 重载
+	cout << Max('a', 100) << endl; // 函数模板对于类型要求很严格，因此这里调用普通函数 可以隐式类型转换
+}
+
+=========================模板机制探究
+gcc编译过程
+预处理
+编译
+汇编
+连接
+
+gcc *.c -o 1.exe // 总的编译步骤
+gcc -E l.c -o 1.i // 宏定义展开
+gcc -S 1.i -o 1.s // 生成汇编    也可以直接从cpp文件编译成汇编 gcc -S 1.cpp -o 1.s
+gcc -c 1.s -o 1.o // 生成目标文件
+gcc 1.o    -o 1.exe // 通过链接器连接成可执行程序
+
+通过把cpp文件编译成汇编之后，发现编译器会根据对模板函数的调用类型生成对应类型的函数
+例如：mySort<int, int>(1, 2)和mySort<char, char>('a', 'c')会生成两个mySort的函数定义
+
+编译器会对函数模板进行两次编译：在声明的地方对模板代码本身进行编译，在调用的地方对参数替换后的代码进行编译
+
+类模板（很难）==============================
+单个类模板基本语法
+template<typename T>
+class A{
+	public:
+		A(T a = 0){
+			this -> a = a;
+		}
+	public:
+		void printA(){
+			cout << "a:" << a << endl;
+		}
+	protected:
+		T a;
+}
+
+// 模板类派生普通类
+// 子模板类派生时，需要具体化模板类，c++编译器需要知道父类的数据类型具体是什么
+// 要知道父类所占多大内存，只有数据类型固定下来才知道如何分配内存
+class B:public A<int>{
+	public:
+		B(int a = 10, int b = 20):A<int>(a){
+			this -> b = b;
+		}
+		void printB(){
+			cout << a << " " << b << endl;
+		}
+	private:
+		int b;
+}
+
+
+// 模板类派生模板类
+template <typename T>
+class C:public A<T>{
+	public:
+		C(T c, T a):A<T>(a){
+			this -> c = c;
+		}
+		void printC(){
+			cout << c << endl;
+		}
+	protected:
+		T c;
+}
+
+void useA(A<int> &a){
+	a.printA();
+}
+void main(){
+	// 模板类是抽象的，需要进行类型具体化，类似Java语法
+	A<int> a1(100);
+	useA(a1);
+	a1.printA();
+	
+	
+	// 模板类派生普通类
+	B b1(1, 2);
+	
+	
+	// 模板类派生模板类
+	C<int> c1(1, 2);
+	c1.printC();
+}
+
+实际开发中，函数实现和函数定义通常不在一个文件中
+
+
 
 
 
