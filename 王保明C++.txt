@@ -5763,9 +5763,1162 @@ void main(){
 	c1.printC();
 }
 
-实际开发中，函数实现和函数定义通常不在一个文件中
+实际开发中，函数实现和函数定义通常不在一个文件中，对于类和其方法文件管理的问题，有以下三种方案：
+1、类的声明，以及所有方法的实现全部写在一个文件中
+2、类的声明写在一个文件中，所有方法的实现写在另一个文件中
+3、类的声明写在一个文件中，各个方法写在单独的文件中
+第一种方式：所有方法都写在类内部的情况=======================
+template<typename T>
+class Complex{
+	public:
+		Complex(T a, T b){
+			this -> a = a;
+			this -> b = b;
+		}
+		void printCom(){
+			cout << a << " " << b << endl;
+		}
+		// 运算符重载部分：
+		Complex operator+(Complex& c2){
+			Complex tmp(a + c2.a, b + c2.b);
+			return tmp;
+		}
+		// 使用模板后友元函数写在外面会报错，暂时先放到类内部
+		friend ostream& operator<<(ostream& out, Complex& c3)
+			out << c3.a << " " << c3.b << endl;
+			return out;
+		}
+		
+		// 滥用友元函数：
+		friend Complex MySub(Complex& c1, Complex& c2){
+			Complex tmp(c1.a - c2.a, c1.b - c2.b);
+			return tmp;
+		}
+	private:
+		T a;
+		T b;
+}
+// 使用模板后友元函数写在外面会报错，暂时先放到类内部
+// ostream& operator(ostream& out, Complex& c3){
+// 	out << c3.a << " " << c3.b << endl;
+// 	return out;
+// }
+void main(){
+	Complex<int> c1(1, 2);
+	Complex<int> c2(3, 4);
+	
+	Complex<int> c3 = c1 + c2;
+	
+	// 滥用友元函数：
+	Complex<int> c4 = MySub(c1, c2);
+	cout << c4 << endl;
+}
 
 
+
+第二种方式：所有方法写在类的外部==========================
+template<typename T>
+class Complex{
+	public:
+		Complex(T a, T b);
+		void printCom();
+		
+		// 运算符重载部分：
+		Complex operator+(Complex& c2);
+		
+		// 注意：将通过友元函数实现 友元函数运算符重载时在运算符后面可能需要加上泛型标识才可以编译通过
+		friend ostream& operator<< <T> (ostream& out, Complex& c3);
+		
+		// 滥用友元函数：如果本身不必使用友元函数，但是依然用了，即使按照上面的方法加上<T>也无济于事
+		friend Complex MySub(Complex& c1, Complex& c2);
+		// friend Complex MySub<T>(Complex& c1, Complex& c2); 加上<T>依然过不了编译
+	private:
+		T a;
+		T b;
+}
+
+
+template <typename T>
+// 注意域分辨符Complex<T>要加上泛型
+Complex<T>::Complex(T a, T b){
+	this -> a = a;
+	this -> b = b;
+}
+
+template <typename T>
+void Complex<T>::printCom(){
+	cout << a << " " << b << endl;
+}
+
+// 成员函数实现的运算符重载
+template <typename T>
+// 注意：函数的参数和返回值都要加上泛型符<T>
+Complex<T> Complex<T>::operator+(Complex<T>& c2){
+	// 在方法的内部，写不写泛型标识都可以
+	Complex tmp(a + c2.a, b + c2.b);
+	// Complex<T> tmp(a + c2.a, b + c2.b);也可以
+	return tmp;
+}
+
+// 友元函数实现的运算符重载
+// 模板是两次编译生成的，两次生成的函数头不一样时会编译报错
+// 我们通过在类声明中给友元函数实现的<<运算符重载函数声明处的运算符后面添加泛型标识来解决该报错
+// 注意这里不能加类的域分辨符，因为友元函数是全局函数，不属于某个类
+template <typename T>
+ostream& operator<<(ostream& out, Complex<T>& c3)
+	out << c3.a << " " << c3.b << endl;
+	return out;
+}
+
+// 滥用友元函数的后果：
+// 友元函数是全局函数，所以不可以加域分辨符
+template <typename T>
+Complex<T> MySub(Complex<T>& c1, Complex<T>& c2){
+	Complex tmp(c1.a - c2.a, c1.b - c2.b);
+	return tmp;
+}
+
+void main(){
+	Complex<int> c1(1, 2);
+	Complex<int> c2(3, 4);
+	
+	Complex<int> c3 = c1 + c2;
+	
+	// 滥用友元函数：
+	Complex<int> c4 = MySub(c1, c2);
+	cout << c4 << endl;
+}
+
+
+第三种方式：所有函数实现写在函数外部，.h和.cpp分开================================
+// 声明文件.h
+#pragma once
+
+#include <iostream>
+using namespace std;
+
+template<typename T>
+class Complex{
+	public:
+		Complex(T a, T b);
+		void printCom();
+		Complex operator+(Complex& c2);		
+		friend ostream& operator<< <T> (ostream& out, Complex& c3);		
+	private:
+		T a;
+		T b;
+}
+
+// 实现文件 实际开发中经常把该文件后缀写为.hpp
+#include "声明的头文件(.h文件)"
+上面写的所有的文件
+
+// main函数文件
+#include "实现文件(.cpp文件)" // 注意不是包含.h头文件
+
+// 注意：滥用的友元函数在这样分开写的时候无法解决
+
+==================类模板中的静态成员，不同的泛型拥有各自的静态成员
+template <typename T>
+class AA{
+	public:
+		static T m_a;
+}
+
+template <typename T>
+T AA<T>::m_a = 0;
+
+void main(){
+	AA<int> a1, a2, a3;
+	a1.m_a = 10;
+	a2.m_a++;
+	a3.m_a++; // 12
+	
+	AA<char> c1, c2, c3;
+	a1.m_a = 'a';
+	a2.m_a++;
+	a3.m_a++; // 99
+}
+
+设计数组模板类MyVector，完成对int char Teacher类型元素的管理==================
+#include <iostream>
+using namespace std;
+
+template<typename T>
+class MyVector{
+	public:
+		MyVector(int size = 0);
+		MyVector(const MyVector& obj); // 拷贝构造函数
+		~MyVector(); // 析构函数
+		
+		// 运算符重载
+		T& operator[](int index);
+		MyVector& operator=(const MyVector& obj);
+		friend ostream& operator<< <T>(ostream& out, const MyVector& obj);
+		
+		// 获取长度
+		int getLen(){return m_len;}
+	protected:
+		T* m_space;
+		int m_len;
+		
+}
+
+=================
+实现文件：
+#include <iostream>
+using namespace std;
+#include "MyVector.h"
+
+template <typename T>
+MyVector<T>::MyVector(int size = 0){
+	m_space = new T[size];
+	m_len = size;
+}
+
+template <typename T>
+MyVector<T>::MyVector(const MyVector& obj){
+	m_len = obj.m_len;
+	m_space = new T[m_len];
+	
+	for (int i = 0; i < m_len; i++) {
+		m_space[i] = obj.m_space[i];
+	}
+}
+
+template <typename T>
+MyVector<T>::~MyVector(){
+	if (m_space != NULL){
+		delete [] m_space;
+		m_space = NULL;
+		m_len = 0;
+	}
+}
+
+// 运算符重载
+template <typename T>
+T& MyVector<T>::operator[](int index){
+	return m_space[index];
+}
+
+template <typename T>
+MyVector<T>& MyVector<T>::operator=(const MyVector<T>& obj){
+	if (m_space != NULL) {
+		delete [] m_space;
+		m_space = NULL;
+		m_len = 0;
+	}
+	
+	m_len = obj.m_len;
+	m_space = new T [m_len];
+	
+	for (int i = 0; i < m_len; i++) {
+		m_space[i] = obj[i];
+	}
+	
+	return *this;
+}
+
+template <typename T>
+ostream& operator<<(ostream& out, const MyVector<T>& obj){
+	for (int i = 0; i < obj.m_len; i++) {
+		out << obj.m_space[i] << "";
+	}
+	out << endl;
+	return out;
+}
+
+入口文件===================
+#include "MyVector.cpp"
+// 自定义的数组中如果放自定义的类的实例化对象并且对象成员有指针类型并且动态分配内存时
+// 由于直接赋值出现的浅拷贝的问题，需要重载等号
+class Teacher{
+	public:
+		Teacher(){
+			age = 33;
+			m_p = new char[1];
+			//strcpy(name, "");
+			strcpy(m_p, "");
+		}
+		Teacher(char* name, int age){
+			this -> age = age;
+			//strcpy(this -> name, name);
+			m_p = new char[strlen(name) + 1];
+			strcpy(m_p, name);
+		}
+		Teacher(const Teacher& obj){
+			m_p = new char[strlen(obj.m_p) + 1];
+			strcpy(m_p, obj.m_p);
+			age = obj.age;
+		}
+		~Teacher(){
+			if (m_p != NULL) {
+				delete [] m_p;
+				m_p = NULL;
+			}
+		}
+		void printT(){
+			cout << m_p << " " << age << endl;
+		}
+		// 运算符重载
+		friend ostream& operator<<(ostream& out, Teacher& t);
+		Teacher& operator=(const Teacher& obj){
+			if (m_p != NULL) {
+				delete [] m_p;
+				m_p = NULL;
+				age = 33;
+			}
+			m_p = new char[strlen(obj) + 1];
+			strcpy(m_p, obj.m_p);
+			age = obj.age;
+			return *this;
+		}
+	private:
+		int age;
+		//char name[32];
+		char* m_p;
+}
+ostream& operator<<(ostream& out, Teacher& t){
+	out << t.m_p << " " << t.age << endl;
+	return out;
+}
+void main(){
+	MyVector<int> myv1(10);
+	
+	for(int i = 0; i < myv1.getLen(); i++){
+		myv1[i] = i + 1;
+		cout << myv1[i] << endl;
+	}
+	
+	MyVector<int> myv2 = myv1;
+	
+	for(int i = 0; i < myv2.getLen(); i++){
+		myv1[i] = i + 1;
+		cout << myv2[i] << endl;
+	}
+	
+	cout << myv2 << endl;
+	
+	MyVector<char> myv3(10);
+	for(int i = 0; i < myv3.m_len; i++){
+		
+	}
+	
+	Teacher t1("t1", 31),Teacher t2("t1", 31),Teacher t3("t1", 31),Teacher t4("t1", 31);
+	MyVector<Teacher> myv4(4);
+	myv4[0] = t1;
+	myv4[1] = t2;
+	myv4[2] = t3;
+	myv4[3] = t4;
+	
+	// 数组中的成员是指针类型时：
+	MyVector<Teacher*> myv5(4);
+	myv5[0] = &t1;
+	myv5[1] = &t2;
+	myv5[2] = &t3;
+	myv5[3] = &t4;
+	
+}
+
+c++类型转换============================
+static_cast 静态类型转换
+reinterpreter_cast 重新解释类型
+dynamic_cast 命令上理解是动态类型转换，如子类和父类之间的多态类型转换
+const_cast 字面上理解就是去const属性
+
+4种类型转换的格式：
+TYPE B = static_cast<TYPE>(a);
+
+int main(){
+	double dPI = 3.1415926;
+	int num1 = (int)dPI; // C语言中类型转换
+	
+	//C++中静态类型转换
+	//编译时C++编译器会做类型检查，如果转换失败编译不通过
+	int num2 = static_cast<int>(dPI);
+	
+	//C中如下的依赖隐式类型转换会有警告，可以用static_cast来代替
+	int num3 = dPI;
+	
+	char* p1 = "hello";
+	int* p2 = NULL;
+	//不同类型的指针之间赋值，C编译器编译时直接error，编译不通过
+	p2 = p1;
+	//static_cast不可以转这种
+	p2 = static_cast<int*>(p1);
+	
+	//强制将char*转换为int*
+	p2 = reinterpreter_cast<int*>(p1);
+	
+	cout << p1 << endl; //"hello"
+	cout << p2 << endl; //某个地址
+}
+====================================
+class Animal{
+	public:
+		virtual void cry() = 0;
+}
+class Dog:public Animal{
+	public:
+		virtual void cry(){
+			cout << "wangwnag" << endl;
+		}
+		void doHome(){
+			cout << "看家" << endl;
+		}
+}
+class Cat:public Animal{
+	public:
+		virtual void cry(){
+			cout << "miaomiao" << endl;
+		}
+		void doThing(){
+			cout << "捉老鼠" << endl;
+		}
+}
+class Tree{
+	
+}
+void playObj(Animal* base){
+	base -> cry();
+	//希望这里识别子类对象，可以使用dynamic_cast
+	//dynamic_cast运行时类型识别 向下转型
+	Dog d1 = dynamic_cast<Dog*>(base);
+	if (d1 != NULL) {
+		d1 -> doHome();
+	}
+	Cat c1 = dynamic_cast<Cat*>(base);
+	if (c1 != NULL) {
+		c1 -> doThing();
+	}
+}
+void main(){
+	Dog d1;
+	Cat c1;
+	
+	Animal* pBase = NULL;
+	pBase = &d1;
+	//pBase = &d1;可以用static_cast来代替，静态类型转换是让c++编译器在编译时检查
+	pBase = static_cast<Animal*>(&d1);
+	
+	Tree t1;
+	// c++编译器会做检查，是不相关的类型之间转换，转换会失败
+	pBase = static_cast<Animal*>(&t1);
+	// 重新解释，强制转换
+	pBase = reinterpret_cast<Animal*>(&t1);
+	
+	playObj(&d1);
+	playObj(&c1);
+}
+================================
+void printBuf(const char* p){
+	char* p1 = NULL;
+	// 去除p的只读属性，但必须保证p的内存空间可读才可以
+	// const char* -> char*
+	p1 = const_cast<char*>(p);
+	p[0] = 'Z'; // 不会报错
+}
+void main(){
+	char buf[] = "abc";
+	// char* myp = "abc";这种写法并没有在栈或堆上分配内存，指向的内存空间不可以改，即使用const_cast去除只读属性也不可以改
+	char* myp = "abc";
+	printBuf(buf);
+}
+异常===========================
+抛异常时以类型作为依据，接收异常时也是以类型接收
+void divide(int x, int y){
+	if (y == 0) {
+		throw x; // 抛出int类型异常，该函数不会再往后执行
+	}
+	cout << x/y << endl;
+}
+void myDivide(int x, int y){
+	divide(x, y);
+}
+int main(){
+	try{
+		divide( 3, 0 );
+	}catch(int e){ // 这里的e接到的是传入的x
+		cout << e << endl;
+	}catch(...){
+		cout << "其他未知类型异常" << endl;
+	}
+	
+	
+	try{
+		myDivide( 3, 0 ); //divide里面抛出了异常，myDivide没有接收，继续抛，就抛给了main函数
+	}catch(int e){
+		cout << e << endl;
+	}catch(...){
+		cout << "其他未知类型异常" << endl;
+	}
+	
+	// 如果抛出了异常，但是没有任何地方捕获，程序会终端down掉
+	
+	try{
+		throw 'Z';
+	}catch(int e){
+		// throw出来了一个char类型的值，在int类型catch中无法接收
+	}
+	
+	// 进入到try语句块中的代码发生异常时try语句块内在栈上开辟的变量给析构掉
+}
+
+在函数声明的时候可以规定只能抛出某些类型的异常，如果不写可以抛出任何类型
+void func() throw (int, char, char*);
+
+异常变量声明周期================================
+// 传统的错误处理机制
+int my_strcpy(char* to, char* from){
+	if (from == NULL) {
+		return 1;
+	}
+	if (to == NULL) {
+		return 2;
+	}
+	// copy场景检测
+	if (*from == 'a') {
+		return 3;
+	}
+	while (*from != '\0') {
+		*to = *from;
+		to++;
+		from++;
+	}
+	*to = '\0';
+	return 0;
+}
+// try catch处理方式
+void my_strcpy1(char* to, char* from){
+	if (from == NULL) {
+		throw "源buf出错\n";
+	}
+	if (to == NULL) {
+		throw "目标buf出错\n";
+	}
+	// copy场景检测
+	if (*from == 'a') {
+		throw "未知错误\n";
+	}
+	while (*from != '\0') {
+		*to = *from;
+		to++;
+		from++;
+	}
+	*to = '\0';
+}
+
+class BadSrcType{}
+class BadDestType{}
+class BadProcessType{
+	public:
+		BadProcessType(){
+			cout << "BadProcessType构造" << endl;
+		}
+		~BadProcessType(){
+			cout << "BadProcessType析构" << endl;
+		}
+		BadProcessType(const BadProcessType& obj){
+			cout << "BadProcessType拷贝构造" << endl;
+		}
+}
+void my_strcpy3(char* to, char* from){
+	if (from == NULL) {
+		throw BadDestType();
+	}
+	if (to == NULL) {
+		throw BadDestType();
+	}
+	// copy场景检测
+	if (*from == 'a') {
+		throw BadProcessType();
+	}
+	while (*from != '\0') {
+		*to = *from;
+		to++;
+		from++;
+	}
+	*to = '\0';
+}
+
+void main1(){
+	int ret = 0;
+	char buf1[] = "abcdefg";
+	char buf2[1024];
+	
+	ret = my_strcpy(buf1, buf2);
+	if (ret != 0) {
+		switch(ret){
+			case 1:
+				printf("源buf出错\n");
+				break;
+			case 2:
+				printf("源buf出错\n");
+				break;
+			case 3:
+				printf("源buf出错\n");
+				break;
+			default:
+				printf("未知错误\n");
+				break;
+		}
+	}
+}
+
+void main(){
+	int ret = 0;
+	char buf1[] = "abcdefg";
+	char buf2[1024];
+	
+	try{
+		my_strcpy1(buf1, buf2);
+	}catch(int e){ // 可以给异常起名字，也可以不起
+		
+	}catch(char* e){ my_strcpy1中传来的char*类型的数据是常量，因此在这里e也可以拿到这个常量数据
+		
+	}catch(BadSrcType e){ // 将会把throw那里的BadSrcType()创建的对象拷贝给了这里的e，而不是直接把BadSrcType()对象赋值给e，即遵循函数调用时的规则
+	
+	}catch(BadDestType e){
+	
+	}catch(BadProcessType e){ // 如果这里catch异常的时候使用的是异常变量，则进行拷贝构造，最后会把e和throw时抛出的BadProcessType()两个对象都析构掉，即调用两次析构函数
+	
+	}catch(BadProcessType& e){ // 此处会报错，同一类型的异常变量和引用不可以都写上
+		
+	}catch(...){
+	
+	}
+	
+	try{
+		my_strcpy1(buf1, buf2);
+	}catch(BadProcessType& e){ // 构造函数和析构函数都只执行了一次，即使用引用时会使用throw时候的那个对象
+		
+	}catch(BadProcessType* e){ // 引用和指针可以写在一起，指针和元素也可以写在一起
+	
+	}
+	
+	try{
+		my_strcpy1(buf1, buf2);
+	}catch(BadProcessType* e){ // 指针也是一种类型，throw的时候throw的是一个对象，而不是一个地址，所以这里根本接不到BadProcessType()这个异常对象
+		// 此处需要注意的是如果抛异常的地方写成了throw &(BadProcessType());走到这里虽然也可以通过e接收到异常对象，但在此通过e接收到的异常对象指向的内存空间已经被析构，e将指向野指针
+		// 因此，如果想要throw一个指针类型的异常，必须要在堆中分配内存，即写成throw new BadProcessType; // 注意没括号，然后在catch里面delete析构
+		// 手动管理内存出现内存泄露的概率非常高，因此通常都是通过引用来抛异常
+	}
+}
+
+C++提供了标准异常库
+ios
+istream		ostream
+ifstream
+
+void main(){
+	int myInt;
+	long myLong;
+	char mybuf[1024];
+	
+	cin >> myInt;
+	
+	cin >> myLong;
+	
+	cin >> mybuf; // 不能接收空格，遇见空格停止接收数据
+	
+	char ch;
+	// ctrl + Z是EOF
+	while((ch = cin.get()) != EOF){
+		cout << ch << endl;
+	}
+	// 注意，缓冲区的效果
+	
+	// =================================
+	
+	// 如果缓冲区没有数据，则程序阻塞，而缓冲区一旦有数据，程序不会阻塞
+	char a, b, c;
+	// 刚上来的时候缓冲区肯定没数据，因此这里会阻塞，也就是等待用户输入
+	// 假设我们输入了abcdefghij
+	cin.get(a);
+	cin.get(b);
+	cin.get(c);
+	cout << a << b << c;
+	// 上面的cout输出完了以后由于缓冲区依然有数据（defghij）
+	// 因此这里就不会中断了，也就是不会等待用户输入而是直接把def输出出来了
+	cin.get(a).get(b).get(c); // 可以链式编程
+	cout << a << b << c;
+	
+	// =================================
+	
+	char buf1[256];
+	char buf2[256];
+	
+	cin >> buf1;
+	// 假设我们输入了aa bb cc dd
+	// getline可以接受空格
+	cin.getline(buf2, 256);
+	
+	cout << buf1 << buf2 << endl;
+	// 得到结果如下：
+	// aa
+	// bb cc dd
+	
+	// =================================
+	cin >> buf1;
+	// 假设输入了aa  bbccdd
+	cin.ignore(2); //忽略接下来的两个字符
+	cin.getline(buf2, 256);
+	// buf1是aa，buf2是bbccdd
+	
+	// =================================
+	int myint = cin.peek(); // 查看一下缓冲区是否有数据，如果有数据就把第一个字符返回给myint
+	// 但是如果缓冲区没有数据，会一直在此处于中断状态
+	
+	// =================================
+	cin.pushstack();
+	
+	// =================================
+	cout.put('h').put('e').put('l'); // 输出hel
+	
+	char* p = "hello";
+	cout.write(p, strlen(p)) << endl;
+	cout.write(p, strlen(p) - 2) << endl;
+	cout.write(p, strlen(p) + 2) << endl; // 比较危险，可能会出乱码
+	
+	// 格式化输出=================================
+	cout.width(30);
+	cout.fill('*');
+	cout.setf(ios::showbase);
+	cout.self(ios::internal);
+	
+	// 使用控制符 需要加上<iomainp>头文件
+	// 在此的意思就是把123按照setw(30) setfill('*') setiosflags(ios::showbase)等控制条件输出
+	cout << setw(30)
+		<< setfill('*')
+		<< setiosflags(ios::showbase)
+		<< setiosflags(ios::)
+		<< hex
+		<< 123;
+}
+
+文件io=====================================
+#include "fstream"
+void main(){
+	char* fname = "c:/2.txt";
+	ofstream fout(fname); // 建立一个输出流，和文件关联
+	
+	fout << "abc" << endl;
+	fout << "def" << endl;
+	
+	fout.close();
+	
+	// 读文件
+	ifstream fin(fname); // 建立一个输入流，和文件关联
+	while(fin.get(ch)){
+		cout << ch;
+	}
+	fin.close();
+	
+	// fout构造函数第二个参数控制打开的方式
+	ofstream fout(fname, ios::app | ios::ate);
+	if (!fout) { // 判断条件也可以写成fout.fail()
+		cout << "打开文件失败" << endl;
+	}
+}
+
+读或写二进制文件===============
+class Teacher{
+public:
+	Teacher(){
+		age = 33;
+		strcpy(name, "");
+	}
+	Teacher(int age, char* name){
+		this -> age = age;
+		strcpy(this -> name, name);
+	}
+	void printT(){
+		cout << age << name << endl;
+	}
+private:
+	int age;
+	char* name;
+}
+void main(){
+	char* fname = "c:/2.dat";
+	ofstream fout(fname, ios::binary); // 二进制方式打开文件
+	
+	Teacher t1(21, "abc");
+	Teacher t2(21, "abc");
+	
+	fout.write((char*)&t1, sizeof(t1));
+	fout.write((char*)&t2, sizeof(t2));
+	fout.close();
+	
+	// 读文件
+	ifstream fin(fname);
+	Teacher tmp;
+	
+	fin.read((char*)&tmp, sizeof(Teacher));
+	tmp.printT();
+	
+	fin.read((char*)&tmp, sizeof(Teacher));
+	tmp.printT();
+	
+	fin.close();
+}
+
+STL==========================
+STL六大组成部分：容器 算法 迭代器 仿函数 适配器 空间适配器
+使用某个容器时需要将相应的头文件包含进来
+#include "vector"
+#include "algorithm"
+class Teacher{
+	public:
+		void printT(){
+			cout << age << name << endl;
+		}
+	private:
+		int age;
+		char name[64];
+}
+void main(){
+	vector<int> v1;
+	v1.push_back(1);
+	v1.push_back(2);
+	v1.push_back(3);
+	
+	// 可以用迭代器遍历
+	for(vector<int>::iterator it = v1.begin(); it != v1.end(); it++){
+		cout << *it << endl;
+	}
+	
+	// 可以通过相关算法达到某种目的
+	int num1 = count(v1.begin(), v1.end(), 3);
+	cout << num1 << endl;
+	
+	
+	// 容器里面放复杂数据类型===========
+	Teacher t1, t2, t3;
+	t1.age = 21;
+	t2.age = 22;
+	t3.age = 23;
+	vector<Teacher> v1;
+	v1.push_back(t1);	
+	v1.push_back(t2);	
+	v1.push_back(t3);
+
+	for(vector<Teacher>::iterator it = v1.begin(); it != end(); it++){
+		cout << it -> age << endl;
+	}
+	
+	
+	// 容器里面装指针
+	Teacher* p1, * p2, * p3;
+	vector<Teacher*> v1;
+	v1.push_back(p1);
+	v1.push_back(p2);
+	v1.push_back(p3);
+	for(vector<Teacher*>::iterator it = v1.begin(); it != end(); it++){
+		cout << *it -> age << endl;
+	}
+	
+	// push_back往容器里放东西的时候实际上是把源数据拷贝了一份放进去，需要注意浅拷贝问题
+}
+
+序列式容器：每个元素都有固定位置，取决于插入时机和地点，和元素值没关系
+vector deque list
+关联式容器：元素位置取决于特定的排序规则，和插入顺序无关
+set multiset map multimap
+
+STL中的string====================
+#include "string"
+
+void main(){
+	string s1 = "abc";
+	string s2("bbb");
+	string s3 = s2;
+	string s4 = (10, 'a'); // 长度为10，每个字符都是'a'
+	
+	cout << "s1:" << s1 << endl;
+	cout << "s2:" << s2 << endl;
+	cout << "s3:" << s3 << endl;
+	cout << "s4:" << s4 << endl;
+	
+	// 遍历
+	for(int i = 0; i < s1.length(); i++){
+		cout << s1[i] << endl;
+	}
+	
+	// 迭代器遍历
+	for(string::iterator it = s1.begin(); it != s1.end(); it++){
+		cout << *it << endl;
+	}
+	
+	try{
+		for(int i = 0; i < s1.length() + 3; i++){
+			cout << s1.at(i) << endl; //at和[]的区别是at访问越界的下标可以抛出异常，而[]形式访问越界时直接使程序down掉
+		}
+	}catch(...){
+		
+	}
+	
+	// 和字符数组指针之间转换
+	string s1 = "aaa";
+	printf("%s", s1.c_str());
+	
+	// 字符串拷贝
+	char buf1[128] = {0};
+	s1.copy(buf1, 3, 0); // 将s1中的字符数组内容拷贝到buf1字符数组中，从第0个开始拷贝，拷贝3个字符
+	// 注意指拷贝3个字符进去，并没有把最后一个字符设置为0
+	
+	// 字符串连接
+	string s1 = "aaa";
+	string s2 = "bbb";
+	s1 = s1 + s2;
+	cout << s1 << endl;
+	
+	string s3 = "aaa";
+	string s4 = "bbb";
+	s3.append(s4); // 也可以连接字符串
+	
+	// 字符串查找和替换
+	string s1 = "wbm hello wbm 111 wbm 222 wbm 333";
+	int index = s1.find("wbm", 0); // 从s1字符串的第0个位置开始查找"wbm"第一次出现的位置，如果没找到返回-1
+	cout << "index:" << index << endl;
+	
+	// 求wbm出现的次数以及每次出现的下标
+	int offindex = s1.find("wbm", 0);
+	// string:npos是静态成员，值为-1
+	while(offindex != string::npos){
+		cout << offindex << endl;
+		offindex += 3;
+		offindex = s1.find("wbm", offindex);
+	}
+	
+	// 找到wbm之后将其替换成大写
+	int offindex = s1.find("wbm", 0);
+	while(offindex != string::npos){
+		cout << offindex << endl;
+		s1.replace(offindex, 3, "WBM"); //从offindex开始，将此后3个字符替换成"WBM"
+		offindex += 3;
+		offindex = s1.find("wbm", offindex);
+	}
+	
+	string s1 = "hello1 hello2 hello3";
+	// find属于算法头文件中的函数，需要引入头文件include "algrithom"
+	// find返回迭代器的位置
+	string::iterator it = find(s1.begin(), s1.end(), 'l');
+	if(it != s1.end()){
+		s1.erase(it);
+	}
+	
+	// string& erase(int pos = 0, int n = npos); 删除从pos开始的的n个字符，返回修改后的字符串
+	s1.erase(s1.begin(), s1.end()); // 将s1全部删除
+	
+	// string& insert(int pos, const string& s); 在pos位置插入s
+	s1.insert(0, "AAA"); // 向s1开头插入AAA
+	
+	// string算法相关
+	string s1 = "aaaBBB";
+	// toupper变成大写 把s1.begin()到s1.end()的所有字符变成大写，再赋到s1.begin()位置
+	transform(s1.begin(), s1.end(), s1.begin(), toupper);
+	// tolower变成小写
+	transform(s1.begin(), s1.end(), s1.begin(), tolower);
+}
+
+Vector容器：将元素置于一个动态数组中加以管理的容器
+Vector可以随机存取元素（支持索引值直接存取，用[]操作符或at()方法）
+Vector尾部添加或移除元素非常快速，但是在中部或头部插入元素或移除元素比较费时（中间删除或添加时需要把所有删除位置后面的元素向后或向前移动）
+// 需要引入vector头文件
+#include "vector"
+void main(){
+	vector<int> v1;
+	v1.push_back(1);
+	v1.push_back(3);
+	v1.push_back(4);
+	cout << v1.size() << endl;
+	
+	cout << v1.front() << endl; // 获取头部元素
+	
+	while(v1.size() > 0){
+		cout << v1.back() << endl; // 获取尾部元素
+		v1.pop_back(); // 删除尾部元素
+	}
+	
+	v1.front() = 11; // v1.front返回的是引用 将最开头的元素（第0个元素）改成11
+	v1.back() = 55; // 尾部同理
+	
+	// vector的初始化===============================
+	vector<int> v1;
+	v1.push_back(1);
+	v1.push_back(3);
+	v1.push_back(4);
+	
+	vector<int> v2 = v1;
+	
+	// vector(beg, end); 将beg到end区间中元素拷贝，该区间是左闭右开
+	vector<int> v3(v1.begin(), v1.begin() + 2); // 把v1的第v1.begin()个元素到第v1.begin() + 2个元素拷贝到v3
+	
+	// vector(n, elem); 拷贝n个elem
+	vector<int> v4(3, 9); // v4中将存在3个9
+	
+	// vector(const vector& vec);
+	vector<int> v5(v4);
+	
+	// vector的遍历====================================
+	vector<int> v1(10); // 注意写成vector<int> v1不可以，必须提前把内存准备好接下来才可以赋值
+	for(int i = 0; i < 10; i++){
+		v1[i] = i + 1;
+	}
+	for(int i = 0; i < 10; i++){
+		cout << v1[i] << endl;
+	}
+	
+	=======================
+	vector<int> v1(10);
+	v1.push_back(100);
+	v1.push_back(200);
+	for(int i = 0; i < v1.size(); i++){
+		cout << v1[i] << endl; // 0 0 0 0 0 0 0 0 0 0 100 200 因为初始化时已经有了10个元素了，所以再往后push就是给第11 12个元素赋值了
+	}	
+}
+
+迭代器=============================
+void main(){
+	vector<int> v1(10);
+	for(int i = 0; i < 10; i++){
+		v1[i] = i + 1;
+	}
+	// 迭代器定义的地方：
+	// typedef iterator pointer;
+	// typedef const_iterator const_pointer;
+	// typedef _STD reverse_iterator<iterator> reverse_iterator;
+	// typedef _STD reverse_iterator<const_iterator> const_reverse_iterator;
+	// v1.end()指向最后一个元素后面的位置
+	for(vector<int>::iterator it = v1.begin(); it != v1.end(); it++){
+		cout << *it << endl;
+	}
+	// 逆向迭代器遍历
+	for(vector<int>::reverse_iterator rit = v1.rbegin(); rit != v1.rend(); rit++){
+		cout << *rit << endl;
+	}
+	
+	// vector删除=============================
+	vector<int> v1(10);
+	for(int i = 0; i < 10; i++){
+		v1[i] = i + 1;
+	}
+	
+	v1.erase(v1.begin(), v1.begin() + 3); // 删除v1.begin()到v1.begin() + 3的元素
+	v1.erase(v1.begin()); // 删除索引为v1.begin()位置的元素
+	
+	// 删除vector中值为2的元素
+	for(vector<int>::iterator it = v1.begin(); it != v1.end();){
+		if(*it == 2){
+			it = v1.erase(it); // erase返回迭代器位置对象，删除了之后把当前迭代器位置对象赋给it
+		}else{
+			it++;
+		}
+	}
+	
+	v1.insert(v1.begin(), 100); // 头部插入100
+	v1.insert(v1.end(), 200); // 尾部插入200
+}
+
+deque双端数组=======================================
+#include "deque"
+void main(){
+	deque<int> d1;
+	d1.push_back(1);
+	d1.push_back(3);
+	d1.push_back(4);
+	
+	d1.push_front(1);
+	d1.push_front(3);
+	d1.push_front(4);
+	
+	for(deque<int>::iterator it = d1.begin(); it != d1.end(); it++){
+		cout << *it << endl;
+	}
+	
+	cout << d1.front() << endl; // 头部元素
+	cout << d1.back() << endl; // 尾部元素
+	
+	d1.pop_front(); // 弹出头部元素
+	d1.pop_back(); // 弹出尾部元素
+	
+	// 用迭代器查找数组下标
+	deque<int>::iterator it = find(d1.begin(), d1.end(), -33);
+	if(it != d1.end()){
+		cout << distance(d1.begin(), it) << endl;
+	}else{
+		cout << "没有找到对应值" << endl;
+	}
+}
+
+stack========================
+#include "stack"
+class Teacher{
+	public:
+		int age;
+		char name[32];
+	public:
+		void printT(){
+			cout << age << endl;
+		}
+}
+void main(){
+	stack<int> s;
+	for(int i = 0; i < 10; i++){
+		s.push(i + 1);
+	}
+	cout << s.size() << endl; // 栈的大小为10
+	while( !s.empty() ){
+		int tmp = s.top(); // 获取栈顶元素
+		cout << tmp << endl;
+		s.pop(); // 删除栈顶元素
+	}
+	
+	//===================
+	Teacher t1,t2,t3;
+	t1.age = 31;
+	t2.age = 32;
+	t3.age = 33;
+	
+	stack<Teacher> s;
+	s.push(t1);
+	s.push(t2);
+	s.push(t3);
+	
+	while( s.empty() ){
+		Teacher tmp = s.top();
+		tmp.printT();
+		s.pop();
+	}
+	
+	//=================
+	stack<Teacher*> s;
+	s.push(&t1);
+	s.push(&t2);
+	s.push(&t3);
+	
+	while( !s.empty() ){
+		Teacher* p = s.top();
+		p->printT();
+		s.pop();
+	}
+}
+//队列===================
+#include "queue"
+void main(){
+	queue<int> q;
+	q.push(1);
+	q.push(2);
+	q.push(3);
+	
+	cout << q.front() << endl; // 队头元素
+	cout << q.size() << endl; // 队列长度
+	
+	while( !q.empty() ){
+		q.pop(); // 出队 因为是先进先出，所以出队顺序为1 2 3
+	}
+}
 
 
 
