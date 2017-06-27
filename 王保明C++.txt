@@ -8936,11 +8936,20 @@ Stack* Stack_Create(){
 	return LinkList_Create();
 }
 void Stack_Destroy(Stack* stack){
-	
+	Stack_Clear(stack);
+	LinkList_Destroy(stack);
+	return;
 }
 // 清空栈时涉及到栈元素生命周期的管理
+// 所有入栈的节点都是malloc出来的，如果要清空栈，要把栈中元素弹出，并释放节点内存
 void Stack_Clear(Stack* stack){
-	
+	if (stack == NULL) {
+		return;
+	}
+	while(Stack_Size(stack) > 0){
+		Stack_Pop(stack); // 这个函数中会释放内存
+	}
+	return;
 }
 int Stack_Push(Stack* stack, void* item){
 	TStack* tmp = NULL;
@@ -8961,17 +8970,31 @@ int Stack_Push(Stack* stack, void* item){
 	}
 	return 0;
 }
+// 把线性表业务节点转成栈的业务节点
 void* Stack_Pop(Stack* stack){
-	return List_Delete(stack, List_Length(stack) - 1);
+	// 栈的业务节点
+	void* item = NULL;
+	TLinkStackNode* tmp = NULL;
+	tmp = (TLinkStackNode*)LinkList_Delete(stack, 0);
+	if (tmp == NULL) {
+		return NULL;
+	}
+	item = tmp -> item;
+	// 因为LinkList_Insert的时候分配了内存，所以LinkList_Delete释放内存
+	free(tmp);
+	return item;
 }
+// 获取栈顶元素相当于获取线性表的0号位置
 void* Stack_Top(Stack* stack){
-	return List_Get(stack, List_Length(stack) - 1);
-}
-int Stack_Capacity(Stack* stack){
-	return List_Capacity(stack);
+	TLinkListNode* tmp = NULL;
+	tmp = (TLinkListNode*)LinkList_Get(stack, 0);
+	if (tmp == NULL) {
+		return NULL;
+	}
+	return tmp -> item;
 }
 int Stack_Size(Stack* stack){
-	return List_Length(stack);
+	return LinkList_Length(stack);
 }
 
 // 主文件
