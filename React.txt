@@ -273,43 +273,116 @@ npm install --save-dev gulp //--save-dev会添加到devDependences里面，devDe
 
 npm install --save //卸载的同时会删除在package.json中的依赖
 
-babel
-babel-core 核心-（如果和操作系统作类比相当于一个空白的操作系统）
+babel 搞清楚四个概念 babel-core plugins presets .babelrc
+babel-core是babel的核心，但也没中如果只引入了babel-core，那什么也做不了，但是它为编译其他ES6语法提供了基础
+如果将babel和操作系统作类比的话，babel-core相当于一个空白的操作系统
 plugins 插件 例如es2015-arrow-function用来编译箭头函数 es2015-spread用来编译spread语法，如果一个一个插件装太麻烦，所以出现了presets预设的概念，相当于很多插件的集合
 
 .babelrc 一个配置文件，需要在该文件中指明需要用到什么presets或plugins，此外还有ignore选项
+
+babel还可以把jsx的语法编译成js的语法，用到的插件如下：
+preset-flow
+syntax-jsx
+transform-react-jsx
+transform-react-display-name
 
 npm i -D webpack // 是npm install --save-dev webpack的缩写
 
 webpack.config.js
 const path = require("path");
 module.exports = {
-	entry: "./src/app.js", //相对于webpack.config.js本身
+	// 配置入口，即将src目录下的app.js压缩打包，webpack会分析出app.js里面import了哪些js一起压缩进来
+	entry: "./src/app.js", //该路径相对于webpack.config.js本身
+	// 程序打包好之后的出口
 	output: {
 		filename: "main.js",
+		// 目的路径必须是绝对路径
 		path: path.resolve(__dirname, "dist/assets"),
+		// 
 		publicPath: "/assets/"
 	}
 };
 
+完成上述webpack.config.js配置文件之后，需要再在package.json中增加
+scripts: {
+	"test": "echo \"Error: no test specified\" && exit 1",
+	"dev": "webpack", //执行npm run dev就相当于执行webpack命令，即根据webpack.config.js打包文件
+	//"start": "node server" //执行npm run start就相当于执行node server命令
+}
+再在该文件夹下执行npm run dev，就可以将所有的文件压缩打包，将程序跑起来
+
+再新建一个index.html页面，在该html里面引入刚刚打包好的main.js
+<script src="../dist/main.js"></script>
+这个工作我们之后会自动化，而不是手动引入
+
+正式开始react之前，需要先配置package.json和webpack=============================================
+webpack.config.js
+const path = require("path");
+module.exports = {
+	entry: [
+		"./src/app.js"
+	],
+	output: {
+		filename: "main.js",
+		path: path.resolve(__dirname, "dist/assets"),
+		// 打包到dist文件夹里面的index.html文件里面自动加上的script的src中会加上publicPath中设置的/assets/前缀
+		publicPath: "/assets/"
+	},
+	module: {
+		rules: [
+			{
+				// 遇到结尾为js的文件时会用babel-loader插件处理该文件，会在.babelrc中会寻找preset预设的react插件
+				test: /\.js$/,
+				use: ["babel-loader"],
+				include: [
+					path.resolve(__dirname, "./src")
+				]
+			},
+			{
+				test: /\.css$/,
+				use: ["style-loader", "css-loader"]
+			}
+		]
+	},
+	plugins: [
+		// 开启热替换
+		new webpack.HotModuleReplacementPlugin(),
+		new HtmlWebpackPlugin({
+			// 将template中设置的页面打包到dist目录下，而且还会在该页面中插入script标签，并将js动态引入
+			// 此处的路径还可以设置为../in.html等自定义的形式
+			filename: "index.html",
+			// 源路径
+			template: "./src/index.html"
+		})
+	],
+	// 以后再说
+	devtool: "cheap-module-eval-source-map"
+};
+
+还需要编写server.js，来开启一台开发服务器
+const webpack = require("webpack");
+const path = require("path");
+const webpackDevMiddleware = require("webpack-dev-middleware");
+const webpackHotMiddleware = require("webpack-hot-middleware");
+const config = require("./webpack.config");
+const bs = require("browser-sync").create();
+
+// 将webpack-hot-middleware/client?reload=true插入到webpack.config.js中entry配置项的前面
+config.entry.unshift("webpack-hot-middleware/client?reload=true");
+// 启动express服务器
+let app = new (require("express"))();
+let port = 9000;
+let compiler = webpack(config);
+
+app.use(webpackDevMiddleware(compiler, {publicPath: "/assets/"}));
+app.use(webpackHotMiddleware(compiler));
+app.get("/", (req, res) => res.sendFile(path.resolve(__dirname, "src/index.html")));
+app.listen(port);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+jsx中如果想要使用自定义的属性需要加上data-前缀
+此外，对于style属性，值要写成对象形式，内层花括号表示json对象，外层花括号表示把内层对象当成表达式包起来
+<span data-abc="123" style={{color: "red"}}></span>
 
 
 

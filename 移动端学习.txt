@@ -205,6 +205,60 @@ align-items: baseline; //根据与排列方向垂直方向上文字的基线对齐
 新版的可以通过给#box div设置order样式来对其顺序进行控制
 老版的：-webkit-box-ordinal-group 最小值如果写的比1还要小，则会处理为1
 
+<style>
+	// braille 以下设置代表如果当前媒体是盲文触觉设备，则背景显示红色
+	@media braille{
+		#div{background: red;}
+	}
+	@media tv{
+		#div{background: red;}
+	}
+	// 不管什么媒体都将背景设置为红色
+	@media all{
+		#div{background: red;}
+	}
+	// 只在彩屏设备上将背景设置为红色
+	@media only screen{
+		#div{background: red;}
+	}
+	// 对所有大于500px的设备设置样式 max-width相反
+	@media all and (min-width: 500px){
+		#div{background: red;}
+	}
+	
+	注：min-width一定要从小到大排列
+	
+	// 横屏landscape 竖屏portrait
+	@media (orientation:landscape){
+		#div{background: red;}
+	}
+</style>
+
+@media还可以通过link来引入
+<link media="all and (min-width:400px)" />
+
+@media也可以通过import引入
+
+bootstrap：
+	.container 固定宽度
+	.container-fluid 百分比宽度
+
+移动端事件===================
+touchstart
+touchmove
+touchend	
+	
+在移动端开发时，浏览器模拟器对上述事件的支持并不太好，一般不用on的方式绑定，而用事件绑定的方式:
+oDiv.addEventListener("touchstart", function(){alert(1);});
+
+移动端的点透：当上层元素发生点击的时候下层元素也有点击（或者焦点特性，例如a连接点击可以条页面）特性，在300ms之后，如果上层元素消失或隐藏，目标点就会飘移到下层元素身上，就会触发点击行为
+解决：下层不要使用有点击（焦点）特性的元素
+
+
+
+
+
+
 
 
 
