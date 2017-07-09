@@ -385,6 +385,115 @@ jsx中如果想要使用自定义的属性需要加上data-前缀
 <span data-abc="123" style={{color: "red"}}></span>
 
 
+webpack增加配置：
+resolve: {
+	"node_modules",
+	path.resolve(__dirname, "src/common"),
+	path.resolve(__dirname, "src/components")
+}
+
+加了该配置之后，在页面中的import xxx from xxx中的from后面跟着的路径就会依次从上述路径下寻找
+require后面跟着的路径也是同理：<img src={require("img/matthew.png")} />
+
+=====================
+let {isHeartON} = this.state;
+isHeartON = !isHeartON;
+this.state({
+	isHeartON // 属性和值的token串是一样的，可以只写一个
+})
+
+=======================
+setState是异步更新的
+setState会引起render的执行，但是会尽可能少的执行render
+
+yearAdd(){
+	let {year} = this.state;
+	
+	this.setState({
+		year: year + 10
+	});
+	// 这里打印出来的year还是原来的值，而不会是加了10之后的值
+	// 因为state的更新是异步的
+	console.log(this.state.year);
+	this.heartClick();
+}
+
+yearAdd(){
+	let {year} = this.state;
+	
+	setTimeout(() => {
+		this.setState({
+			year: year + 10
+		});
+		// 放到异步函数中之后year变化之后会立即更新
+		console.log(this.state.year);
+		this.heartClick();
+	});	
+}
+
+heartClick(event){
+	console.log(event.native); // 浏览器原生事件对象
+}
+
+后台是做服务的，所以后端路由是在找Controller
+前端是做显示的，所以前端路由是在找Component
+
+路由也是一个组件，因此只需要在页面中将业务根组件包起来
+ReactDOM.render(
+	<BrowserRouter>
+		<div>
+			<Router path="/app" component={App} />
+			<Router path="/aaa" component={Aaa} />
+			<Router path="/bbb" component={Bbb} />
+			<Router path="/ccc" component={
+				() => {
+					return (
+						<div></div>
+					);
+				}
+			} />
+		</div>
+	</BrowserRouter>
+);
+
+
+redux==========================
+import {createStore} from "redux";
+
+// counter函数就是reducer的概念，一个应用中只有一个reducer
+function counter(state=0, action){
+	let {type} = action;
+	
+	switch(type){
+		case "INCREMENT":
+			return ++state;
+		default:
+			return state;
+	}
+}
+// 一个应用中只有一个store
+let store = createStore(counter);
+
+$(document).click(ev => {
+	store.dispatch({type: "INCREMENT"});
+});
+
+store.subscribe( () => {
+	// store既然只有一份，state也只有一份
+	let state = store.getState();
+	console.log(state);
+} );
+
+redux相关概念：Action reducer state store
+Action：action就是一个普通的js对象，例如上面例子中的{type: "INCREMENT"}，每个action至少应该有一个type字段
+reducer：参数不可以修改，reducer里面不应该修改state，也就是在counter中不可以出现像state += 6;这样的代码，因为这样做改了state了，而应该写成
+return Object.assign({}, state, {
+	value: state.value + 6
+});
+因为counter必须保证每次返回一个新的state对象
+
+
+
 
 
 
