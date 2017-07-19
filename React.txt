@@ -438,14 +438,15 @@ heartClick(event){
 后台是做服务的，所以后端路由是在找Controller
 前端是做显示的，所以前端路由是在找Component
 
+router4.0将react-router和react-router-dom分开了，在web端只需要引入react-router-dom就可以得到所有的路由的功能
 路由也是一个组件，因此只需要在页面中将业务根组件包起来
 ReactDOM.render(
 	<BrowserRouter>
 		<div>
-			<Router path="/app" component={App} />
-			<Router path="/aaa" component={Aaa} />
-			<Router path="/bbb" component={Bbb} />
-			<Router path="/ccc" component={
+			<Route path="/app" component={App} />
+			<Route path="/aaa" component={Aaa} />
+			<Route path="/bbb" component={Bbb} />
+			<Route path="/ccc" component={
 				() => {
 					return (
 						<div></div>
@@ -486,11 +487,168 @@ store.subscribe( () => {
 
 redux相关概念：Action reducer state store
 Action：action就是一个普通的js对象，例如上面例子中的{type: "INCREMENT"}，每个action至少应该有一个type字段
-reducer：参数不可以修改，reducer里面不应该修改state，也就是在counter中不可以出现像state += 6;这样的代码，因为这样做改了state了，而应该写成
-return Object.assign({}, state, {
-	value: state.value + 6
-});
+reducer：参数不可以修改，reducer里面不应该修改state，也就是在counter中不可以出现像
+function counter(state = {value: 0}, action){
+	let {type} = action;
+	
+	switch(type){
+		case "INCREMENT":
+			return state += 6; // 错误的做法
+		default:
+			return state;
+	}
+}
+
+这样的代码，因为这样做改了state了，而应该写成
+function counter(state = {value: 0}, action){
+	let {type} = action;
+	
+	switch(type){
+		case "INCREMENT":
+			// assign会返回第一个参数，后面的参数会把它们的属性扩展给第一个对象
+			// 注意state和{ value: state.value + 6 }的顺序
+			return Object.assign({}, state, {
+				value: state.value + 6
+			});
+		default:
+			return state;
+	}
+}
+
 因为counter必须保证每次返回一个新的state对象
+
+状态变化时才会调用subscribe里面绑定的回调
+一个应用的store、reducer、state都只有一份
+
+reducer回调（例如上面的counter）的第一个参数是state，第二个参数是action对象，这个参数是固定的，不可以用作别的用途
+
+reducer的工作原则是给定一个特定的状态，reducer也返回一个特定的状态，所谓可预测的状态管理就是这个意思
+
+dispatch的本质就是更新state
+
+======================================
+// state存放和Counter相关的对象，注意不是Counter对象本身，Counter对象太大了，里面的方法和状态都是没有关系的，state应该尽量保持轻量
+function counter(state = [], action){
+	let {type} = action;
+	
+	switch(type){
+		case "ADD_COUNTER":
+			// 只需要一个id和一个value属性构成一个对象就可以表示一个Counter
+			return [...state, {
+				id: new Date().getTime(),
+				value: 0
+			}];
+		default:
+	}
+}
+
+// 第二个参数是初始化的state对象
+let store = createStore(counter, []);
+
+$addCounter.click(ev => {
+	// dispatch只去指定改变为哪种状态，不要操作具体的DOM，操作具体DOM的事情要放在subscribe中
+	store.dispatch({type: "ADD_COUNTER"});
+});
+
+store.subscribe(() => {
+	// 拿到状态刷新view
+	let state = store.getState();
+	$counterPanel.html("");
+	state.forEach( data => {
+		$counterPanel.append(new Counter(store, data).elt)
+	} );
+});
+
+class Counter{
+	// 第一个参数是createStore创建出来的store
+	// 第二个参数实际上是state数组中的一项，我们在此将其中的两个属性id value解构了出来
+	constructor(store, {id, value}){
+		this.value = value;
+		this.store = store;
+		this.id = id;
+        this.elt = $('<div class="counter"></div>');
+		
+		let incrementBtn = this.incrementBtn = $('<button class="add"></button>');
+		
+		this.elt.append(incrementBtn);
+		
+		this.increment = this.increment.bind(this);
+		
+		incrementBtn.click( this.increment );
+	}
+	
+	// 只应该指定改变为哪个状态，不应该操作具体的DOM元素
+	increment(){
+        this.store.dispatch({
+			type: "INCREMENT",
+			id: this.id
+		});
+    }
+}
+
+当很多地方都需要发起INCREMENT这样一个action的时候，就需要写很多次
+this.store.dispatch({
+	type: "INCREMENT",
+	id: this.id
+});
+
+我们可以将其封装为action函数
+function increment(id){
+	return {
+		type: "INCREMENT",
+		id
+	};
+}
+
+甚至可以将this.store.dispatch也封装起来
+const boundIncrement = (id) = store.dispatch(increment(id));
+
+
+thunk中间件====================
+
+class Counter{
+	// 这里面可能是某个异步的请求，这个异步请求如果在别的地方也用到了
+	// 就得再写一遍，很麻烦，所以我们可以借助中间件来做
+	asyncAdd(){
+		setTimeout(() => {
+			boundIncrement(this.id);
+		}, 1000);
+	}
+}
+
+// 将这个函数返回回来的函数给dispatch传入，从而达到复用的目的
+this.store.dispatch(asyncAdd(this.id));
+// 注意此时传入的是一个函数，而不是一个对象
+// createStore第三个参数需要传入applyMiddleware
+function asyncAdd(id){
+	return function(dispatch, getState){
+		setTimeout(() => {
+			dispatch({
+				type: "INCREMENT",
+				id
+			});
+		}, 1000);
+	};	
+}
+
+const addIfOdd = (id, value) => (dispatch, getState) =>{
+	// 中间件函数中甚至可以直接return，什么都不做
+    if( value%2 === 0 ) return;
+    boundIncrement(id);
+}
+
+combineReducers=================
+function counters(state, action){
+	return {
+		counterA: counterA(state.counterA, action),
+		counterB: counterB(state.counterB, action)
+	};
+}
+
+// 上面的reducer函数可以改造为下面这样
+counters = combineReducers({
+	counterA, counterB
+});
 
 
 

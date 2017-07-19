@@ -926,6 +926,465 @@ umask掩码
 进程可以使用的资源上限
 
 
+Linux是一个多用户多任务（并发）的开源操作系统
+环境变量是指在操作系统总用来指定操作系统运行环境的一些参数。通常具备以下特征：
+都是字符串
+有统一格式：名=值
+值用来描述进程环境信息
+
+存储形式：与命令行参数类似。char* []数组，数组名environ，内部存储字符串，NULL作为结尾
+使用形式：与命令行参数类似
+加载位置：与命令行参数类似，位于用户区，高于stack起始位置
+引入环境变量表需声明环境变量：extern char** environ;
+
+当输入date执行时实际上是shell将date命令解析，在/bin/date中找到可执行文件执行
+shell之所以去/bin目录下寻找date命令，是因为shell去PATH环境变量中挨个查找各个路径下是否有date命令，找到就执行
+
+echo $PATH 会把PATH环境变量输出
+
+echo $SHELL 记录当前命令解析器是哪个
+echo $HOME 当前用户家目录
+echo $LANG 当前使用语言及编码
+echo $TERM 当前使用的终端
+
+打印所有环境变量
+#include <stdio.h>
+extern char **environ;
+int main(void){
+	int i;
+	for(i = 0; environ[i]; i++){
+		printf("%s\n", environ[i]);
+	}
+	return 0;
+}
+
+char* getenv(const char* name); //获取环境变量的值，如果没找到返回NULL
+int setenv(const char *name, const char *value, int overwrite); // 改变或添加环境变量的值
+// 如果overwrite非0，name如果已存在，将改变环境变量
+// 如果overwrite为0，name如果已存在，不可以修改环境变量
+// 成功返回0，失败返回-1
+int unsetenv(const char *name); // 删除name环境变量
+
+创建进程============================
+程序中执行一个可执行文件就相当于创建一个进程，除此之外还可以通过调用fork函数创建进程
+注意fork是用来创建子进程的
+#include <unistd.h>
+pid_t fork(void); // 注意该函数的返回值返回了两个，返回刚创建的子进程的id和0，0代表创建子进程成功
+
+如果a.out在某一时刻调用了fork，则就创建了一个子进程，该子进程会保留父进程在调用fork之前的指令，创建成功之后会从父进程走到fork时的位置开始继续向后走
+
+注意父进程和子进程都会有fork命令，父进程的fork命令返回的是子进程的id，而子进程的fork命令返回的是0，这个0表示进程创建成功
+
+因此上述fork函数调用实际上并不是返回两个值，而是创建了两个进程，两个进程的fork各自返回了各自的值
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+int main(){
+	pid_t pid;
+	printf("fork之前，xxx"); // 这一行只会打印一次
+	pid = fork();
+	
+	if (pid == -1) {
+		perror("fork error");
+		exit(1);
+	} else if (pid == 0) {
+		printf(getpid(), getppid()); // 刚创建出的子进程的进程id，和其父进程id
+	} else {
+		printf(getpid(), getppid()); // 父进程的id，和父进程的父进程id
+	}
+	
+	printf("fork之后，yyyyyy"); // 这一行会打印两次
+}
+
+循环创建5个子进程
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+int main(){
+	int i;
+	pid_t pid;
+	printf("fork之前，xxx"); // 这一行只会打印一次
+	
+	// 注意不可以只写循环不做其他处理创建5个
+	// i最初为0，首次调用fork，得到父进程和子进程1，共2个进程
+	// i自增变为1后，再次调用fork，不仅子进程1会创建出孙进程1，父进程会再次创建出子进程2，则得到父进程、子进程1、子进程2、孙进程1，共4个进程
+	// i自增变为2后，再次调用fork，会创建更多
+	// 所以这样做实际上创建了2^5-1个进程，减去的1是最初的父进程
+	// 通过分析发现，原因在于创建出来的子进程也会再次创建子进程
+	
+	// 通过上述分析，可以想到，只需要在子进程试图创建子进程时break就可以，所以在pid == 0时break
+	for(i = 0; i < 5; i++){
+		pid = fork();
+		
+		if (pid == -1) {
+			perror("fork error");
+			exit(1);
+		} else if (pid == 0) {
+			break; // 所有子进程都会走这个分支，break出去
+		}
+	}
+	
+	if (i < 5) {
+		sleep(i);
+		printf("child %d pid %d", i + 1, getpid()); // 每个子进程的睡眠时间不一样
+	} else {
+		sleep(i);
+		printf("parent"); // parent最后打印
+	}
+}
+
+创建进程成功之后，子进程和父进程有同样的机会争夺CPU资源，
+还要注意一点，正常情况下shell终端是等待用户输入命令然后执行这样一个工作状态，但是如果去掉程序中的sleep延迟，执行了上面我们写的创建多个子进程的程序之后，可能输出结果变为：
+parent
+child 0 pid 6050
+child 1 pid 6051
+child 2 pid 6052
+itcast@itcast:~/0323_Linux/process_test/fork$ child 3 pid 6053 // 会发现这里出现了终端提示信息，这是因为我们的parent进程，创建出来的5个子进程和shell进程混在一起执行了，shell进程会从头到尾执行一条指令，执行完了之后会将CPU权限收回，但是shell仅仅是当parent执行完之后就收回CPU使用权，但虽然parent执行完了，创建出来的子进程还没执行完，因此当shell进程刚一收回CPU使用权，却又被还没执行的子进程强走了
+child 4 pid 6054
+
+父子进程之间在fork后，父子两个进程各有一份全局变量 .data .text 栈 堆 环境变量 用户ID 宿主目录 进程工作目录 信号处理方式
+而父子进程之间的不同之处在于进程ID fork返回值 父进程ID 进程运行时间 闹钟(定时器) 未决信号集
+
+注意：子进程并不是复制了父进程0-3G用户空间的内容
+
+进程之间共享数据=========================================
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+int var = 34;
+
+int main(){
+	pid_t pid;
+	
+	pid = fork();
+	
+	if (pid == -1) {
+		perror("fork error");
+		exit(1);
+	} else if (pid > 0) {
+		sleep(1);
+		var = 55;
+		printf("parent_pid = %d parentID = %d var = %d", getpid(), getppid(), var);
+	} else if (pid == 0) {
+		var = 100;
+		printf("child_pid = %d parentID = %d var = %d", getpid(), getppid(), var);
+	}
+	printf(var);
+	// 最后会输出两段(父进程和子进程)
+	// 子进程输出的是child_pid = 111 parentID = 222 var = 100 100
+	// 父进程输出的是parent_pid = 222 parentID = 333 var = 55 55
+	// 由此可以看出父进程和子进程各有各的全局变量，互不干扰
+	
+	return 0;
+}
+
+早期Linux的设计就是每fork一次就开辟一套独立的0-4G虚拟内存空间，这样做的好处就是进程之间相互独立，缺点也很明显，占据空间过多
+后来设计为读时共享写时复制的原则
+
+重点：父子进程之间共享的是文件描述符（打开文件的结构体）和mmap建立的映射区（进程间通信详解）
+
+gdb调试设置跟踪子进程，如果不设置默认跟踪父进程
+需要在创建子进程之前设置才可以
+set follow-fork-mode child
+
+exec函数族========
+之前在程序中区分父子进程得通过if else来判断fork返回值来实现
+但是假如希望子进程再调用其他程序例如a.out就不可以这样做了
+fork创建子进程后执行的是和父进程相同的程序（但有可能执行不同的代码分支），子进程往往要调用一种exec函数以执行另一个程序。当进程调用一种exec函数时，该进程的用户空间代码和数据完全被新程序替换，从新程序的启动例程（main函数）开始执行。调用exec并不创建新进程，所以调用exec前后该进程的id并未改变
+
+// list path 借助环境变量加载一个进程
+int execlp(const char *path, const char *arg, ...);
+// 通过"路径 + 程序名" 来加载一个进程
+int execp(const char *path, const char *arg, ...);
+// list enviroment 借助环境变量表
+int execle(const char *path, const char *arg, ..., char *const envp[]);
+// v代表argv
+int execv(const char *path, char *const argv[]);
+
+execlp 通常来调用系统可执行程序
+execl  通常来调用用户自定义的可执行程序
+execv  
+execvp 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h> // Unix standard
+
+int main(){
+	pid_t pid;
+	pid = fork();
+	if (pid == -1) {
+		perror("fork error");
+		exit(1);
+	} else if (pid > 0) {
+		printf("parent");
+	} else {
+		execlp("ls", "ls", "-l", "-a", NULL);
+		// 如果用execl函数的话应该是 execl("/bin/ls", "ls", "-l", "-a", NULL);
+	}
+	
+	return 0;
+}
+
+
+char *argv[] = {"ls", "-l", "-a", "-h", NULL};
+execv("/bin/ls", argv);
+
+将打印的命令放到文件中==========
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(void){
+	int fd;
+	
+	// 只写的方式 如果文件不存在则创建 若果文件存在将长度截为0，属性不变
+	fd = open("ps.out", O_WRONLY|O_CREATE|O_TRUNC, 0644);
+	if (fd < 0) {
+		perror("open ps.out error");
+		exit(1);
+	}
+	dup2(fd, STDOUT_FILENO);
+	
+	// exec函数族所有函数没有成功返回值，只是在失败的时候返回-1
+	// 因此这里的execlp一旦调用成功就会走ps -ax这个进程，不会回来了
+	// 所以在execlp后面的exit只有失败时才会执行
+	execlp("ps", "ps", "ax", NULL);
+	exit(1);
+	
+	return 0;
+}
+
+exec函数族中后缀代表的意思
+l list 命令行参数列表
+p path 搜索file时使用path变量
+v vector 使用命令行参数数组
+e environment 使用环境变量数组，不使用进程原有的环境变量，设置新加载程序运行的环境变量
+
+孤儿进程
+父进程先于子进程结束，则子进程成为孤儿进程，子进程的父进程成为init进程，称为init进程领养孤儿进程
+
+int main(){
+	pid_t pid;
+	
+	pid = fork();
+	
+	if (pid == -1) {
+		perror("fork error");
+		exit(1);
+	} else if (pid > 0) {
+		sleep(1);
+		printf("parent_pid = %d parentID = %d pid = %d", getpid(), getppid(), pid);
+	} else if (pid == 0) {
+		printf("child_pid = %d parentID = %d pid = %d", getpid(), getppid(), pid);
+		sleep(3); // 睡完3秒钟醒了之后发现父进程已经死掉了，因此再获取父进程id就变成了1，id为1的进程就是init进程
+		printf("child_pid = %d parentID = %d pid = %d", getpid(), getppid(), pid);
+	}
+	
+	return 0;
+}
+
+僵尸进程：进程终止，父进程尚未回收，子进程残留资源（PCB）存放于内核中，称为僵尸进程
+
+int main(){
+	pid_t pid;
+	
+	pid = fork();
+	
+	if (pid == -1) {
+		perror("fork error");
+		return 1;
+	} else if (pid > 0) {
+		while(1){
+			printf("i am parent, pid = %d my son = %d", getpid(), pid);
+			sleep(1);
+		}
+	} else if (pid == 0) {
+		printf("i am child, my parents = %d ,going to sleep 10s", getppid());
+		// 睡10s钟之后die掉了，但是即使子进程死掉了，父进程也不会管，对于我们现在的程序，父进程还会一直打印出子进程的id，此时在另外复制一个终端执行ps -aux会发现这样一条记录：
+		// itcast 9153 Z+ [zoom] <defunct> //用中括号括起来代表已经死掉的进程，也就是僵尸进程，但是还存在于PCB控制块中
+		sleep(10);
+		printf("-----------------------child die------------------------");
+	}
+	
+	return 0;
+}
+
+需要通过wait和waitpid函数来回收僵尸进程
+父进程调用wait函数可以回收子进程终止信息。该函数有3个功能：
+1、阻塞等待子进程退出
+2、回收子进程残留资源（PCB中的残留资源）
+3、获取子进程结束状态
+
+int main(){
+	pid_t pid, wpid;
+	int status;
+	
+	pid = fork();
+	
+	if (pid == -1) {
+		perror("fork error");
+		return 1;
+	} else if (pid > 0) {
+		// wait函数会等待子进程的死亡，一旦调用成功，ps查看进程时将没有僵尸进程
+		wpid = wait(&status);
+		// 宏函数WIFEXITED(status) 分解为W IF EXITED，全拼为WAIT IF EXITED
+		// 如果WIFEXITED(status)的返回值为真，再进一步调用WEXITSTATUS WAIT EXIT STATUS
+		if (WIFEXITED(status)) {
+			printf("child exit with %d", WEXITSTATUS(status)); // 打印进程退出值
+		}
+		// 是否是由于信号而退出的，即是否为异常退出的
+		// 如果是由于信号退出的，再进一步调用WTERMSIG判断是由于什么信号退出的
+		if (WIFSIGNALED(status)) {
+			// 如果在另外一个窗口通过kill -9 9155 假设9155是子进程id，这里打印出的值就是9
+			printf("child killed by %d", WTERMSIG(status));
+		}
+		
+		// 当子进程并未死亡，而是处于暂停时可以通过WIFSTOPPED(status)
+		// 如果上述宏为真，接下来可以进一步通过WSTOPSIG(status)取得暂停的那个信号的编号
+		// WIFCONTINUED(status)如果返回为真，代表进程暂停后已经继续运行
+		
+		
+		if (wpid == -1) {
+			// 回收失败
+			exit(1);
+		} else if (wpid > 0) {
+			// 回收成功
+		}
+		while(1){
+			printf("i am parent, pid = %d my son = %d", getpid(), pid);
+			sleep(1);
+		}
+	} else if (pid == 0) {
+		printf("i am child, my parents = %d ,going to sleep 10s", getppid());
+		sleep(10);
+		// 这里的76将会作为wait函数传入的status调用WEXITSTATUS(status)的值，exit退出就是正常退出
+		exit(76);
+		printf("-----------------------child die------------------------");
+	}
+	
+	return 0;
+}
+
+Linux中所有异常结束是收到某个信号而结束的
+
+一次wait调用只能回收一个子进程，如果要回收多个子进程可以使用waitpid函数
+pid_t waitpid(pid_t pid, int *status, in options); 
+// 第三个参数options可以配置是否阻塞
+// 执行成功时返回清理掉的子进程id
+// 失败时返回-1(无子进程)
+
+// 第一个参数pid：
+// pid传入>0的值：回收指定id的子进程
+// pid传入-1：回收任意子进程，相当于wait
+// pid传入0：回收和当前调用waitpid一个组的所有子进程
+// pid传入<-1的值：回收指定进程组内的任意子进程 例如waitpid(-10058, NULL, 0);回收的是10058组内的子进程
+
+waitpid会轮询执行，即隔一段时间就看一看要回收的子进程是否死亡
+#include <unstd.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+int main(int argc, char* argv[]){
+	int n = 5;
+	int i;
+	pid_t p;
+	pid_t q;
+	pid_t wpid;
+	
+	if (argc == 2) {
+		n = atoi(argv[1]);
+	}
+	
+	for(i = 0; i < n; i++){
+		p = fork();
+		if (p == 0) {
+			break;
+		} else if (i == 3) {
+			// 创建了第3个进程之后将其id保留一下，一会儿供waitpid()使用
+			q = p;
+		}
+	}
+	
+	if (n == i) {
+		sleep(n);
+		printf("i am parent, pid = %d\n", getpid());
+		// 如果wait里面传入NULL的话，不关心回收哪个进程，但只回收一个进程
+		// wait(NULL);
+		
+		// 可以通过循环wait函数来回收所有僵尸进程
+		// while(wait(NULL));
+		
+		// 但要指定回收某个进程，就得用waitpid()了
+		// waitpid(q, NULL, 0); // 第三个参数传0的时候就和wait一样，是阻塞的
+		
+		// 循环调用可以回收多个子进程
+		// while (waitpid(-1, NULL, 0));
+		
+		// 异步回收
+		// WNOHANG 全拼 WOULD NO HANG
+		do {
+			// 当第三个参数指定为WNOHANG，并且没有子进程执行结束，则返回值为0
+			// 当第三个参数指定为0，并且没有子进程执行结束，不会返回，会阻塞
+			// 当所有子进程全部回收时返回-1
+			wpid = waitpid(-1, NULL, WNOHANG);
+			if (wpid > 0) {
+				n--;
+			}
+		} while(n > 0);
+		
+		printf("wait() finish");
+	} else {
+		sleep(i);
+		printf("i am %d child, pid = %d, gpid = %d", i + 1, getpid(), getgid());
+		while(1);
+	}
+	
+	return 0;
+}
+
+
+进程间通信（又称IPC）===================================
+比较常用的方式有：
+管道（使用最简单）
+信号（开销最小）
+共享映射区（无血缘关系）
+本地套接字（最稳定）
+
+在学习进程通信之前可以考虑目前有没有方法可以实现进程通信，实际上是可以的，那就是让一个进程把数据写到一个文件中，再让另一个进程读取同样的文件
+
+管道是一种最基本的IPC机制，作用于有血缘关系的进程之间，完成数据传递。调用pipe系统函数即可创建一个管道，有如下特质：
+1、其本质是一个伪文件（实为内核缓冲区）
+2、由两个文件描述符引用，一个表示读端，一个表示写端
+3、规定数据从管道的写端流入管道，从读端流出
+
+管道的原理：管道实为内核使用环形队列机制，借助内核缓冲区（4K）实现
+管道的局限性：
+	1、数据自己读不能自己写
+	2、数据一旦被读走，便不在管道中存在，不可以反复读取
+	3、由于管道采用半双工通信方式，因此，数据只能在一个方向上流动
+	4、只能在公共祖先的进程间使用管道
+
+Linux下7种文件类型
+- 文件
+d directory 目录
+l link 符号链接
+s socket 套接字
+b block 块设备
+c 字符设备
+p pipe 管道
+
+- d l 占用磁盘存储，其他四种不占用，这四种同一称为伪文件
+
+管道的本质：伪文件（实为内核缓存区）
+
+磁盘的一个扇区占512byte
+
+调用pipe函数创建管道的同时就会把管道的两端打开
+
+
+
 
 
 
