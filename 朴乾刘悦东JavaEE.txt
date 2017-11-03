@@ -360,7 +360,9 @@ response
 		response.setContentType("text/html;charset=utf-8");
 		response.getOutputStream().write("".getBytes("utf-8"));
 		
+		// 设置服务器端编码
 		response.setCharacterEncoding("utf-8");
+		// 设置客户端编码 下面这句话其实同时也会设置了服务器端编码，但是通常还会把上面这行代码加上，看起来更明显一些
 		response.setContentType("text/html";charset=utf-8);
 		response.getWriter().write("");
 
@@ -457,7 +459,7 @@ Jsp语法
 	3、Jsp脚本片段 <% 若干Java语句 %> 在翻译过来的servlet中直接被复制粘贴到了对应的位置执行
 	4、Jsp声明 <%! 若干Java语句 %> 在翻译过来的Servlet中会被放置到和Service方法同级的位置，变成一个类的成员
 	5、Jsp注释 <%-- 注释 --%>
-	<% i=i+100; %> 这句被翻译成了 out.write("<!--"); i=i+100; out.write("-->");
+	<%-- i=i+100; --%> 这句被翻译成了 out.write("<!--"); i=i+100; out.write("-->");
 	6、Jsp指令 <%@ 指令名称 属性=... %>
 	为Jsp引擎设计，并不直接产生任何可见输出，而只是告诉引擎如何处理Jsp页面的其余部分
 	page指令
@@ -1267,7 +1269,1084 @@ Object o=runner.query("select count(*) from account",new ScalarHandler());
 create database estore;
 use estore;
 
-primary key(order_id,product_id) 联合主键，两列的值加在一起使用
+primary key(order_id,product_id) 联合主键，两列的值加在一起作为这张表的主键
+
+生成订单的步骤：
+0、AddOrderServlet创建Order对象的基本信息，让用户输入收货地址、支付方式
+1、后台动态计算出要购买的所有商品的money
+2、调用OrderService中生成订单的方法生成订单
+3、购物车表中删除记录
+4、订单表中插入记录
+5、订单-商品表增加记录
+6、从商品表中扣除购买数量
+
+
+ThreadLocal tl = new ThreadLocal();
+tl.set(obj); // 调用ThreadLocal的set方法会向当前正在执行的线程所属的map中加入一项，键是ThreadLocal对象，值是set里面的参数
+tl.get(); // 调用get方法的时候会将当初存进去的obj返回
+tl.remove(); // 删除tl对应的值
+
+ThreadLocal tl = new ThreadLocal(){
+	public initValue(){
+		return "xxx";
+	}
+};
+// 后面直接跟大括号构成一个匿名内部类，该内部类就是ThreadLocal的子类，在该子类中会重写父类的initValue方法
+
+
+public class TransactionManager{
+	private TransactionManager(){}
+	
+	// conn_local将会作为键保存到当前线程管辖的那个map中，值就是下面匿名内部类重写initValue返回的Connection连接对象
+	private static ThreadLocal<Connection> conn_local = new ThreadLocal<Connection>(){
+		protected Connection initValue(){
+			return DaoUtils.getConn();
+		}
+	};
+	
+	public static void startTran() throws SQLException{
+		conn_local.get().setAutoCommit(false);
+	}
+	
+	public static void commit(){
+		DbUtils.commitAndCloseQuietly(conn_local.get());
+	}
+	
+	public static void rollback(){
+		DbUtils.rollbackAndCloseQuietly(conn_local.get());
+	}
+	
+	public static void getConn(){
+		return conn_local.get();
+	}
+	
+	public static void release(){
+		conn_local.remove();
+	}
+}
+
+很多方法都需要在执行之前开启事务，执行之后关闭事务，我们可以在顶级Service中返回一个代理对象，该对象在真正执行具体业务逻辑方法之前先把开启和关闭事务的工作做了
+
+public class BasicFactory {
+	private static BasicFactory factory = new BasicFactory();
+	private static Properties prop = null;
+	private BasicFactory(){}
+	static{
+		try {
+			prop = new Properties();
+			prop.load(new FileReader(BasicFactory.class.getClassLoader().getResource("config.properties").getPath()));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
+	public static BasicFactory getFactory(){
+		return factory;
+	}
+	// 该方法会返回Service或Dao实例，但是只有Service实例需要事务处理，而Dao实例不需要事务处理
+	// 所以，需要将其拆成两个方法分别返回Service实例和Dao实例
+	// public <T> T getInstance(Class<T> clazz){
+	// 	try{
+	// 		String infName = clazz.getSimpleName();
+	// 		String implName = prop.getProperty(infName);
+	// 		return (T)Class.forName(implName).newInstance();
+	// 	}catch(Exception e){
+	// 		e.printStackTrace();
+	// 		throw new RuntimeException();
+	// 	}
+	// }
+	
+	// 定义一个接口Dao，其他Dao接口都extends该接口（类会implements接口，接口会extends父接口）
+	// 然后T extends Service限制了getService返回的只能是Service实例
+	public <T extends Service> T getService(Class<T> clazz){
+		try{
+			String infName = clazz.getSimpleName();
+			String implName = prop.getProperty(infName);
+			// service将在下面的内部类中用到，内部类使用外部类的变量，外部类的变量必须是final类型的
+			final T service = (T)Class.forName(implName).newInstance();
+			// 目前希望调用service对象上某个方法时，在执行之前需要做一些事情（开启事务），执行完之后需要做一些事情（关闭事务），就可以在此返回一个代理对象，代理对象帮忙去做service方法执行之前或之后的事情
+			T proxyService = (T)Proxy.newProxyInstance(service.getClass().getClassLoader(), service.getClass().getInterfaces(), new InvocationHaddler(){
+				public Object invoke(Object proxy, Method method, Object[] args) throws Throwable{
+					try{
+						TransactionManager.startTran();
+						Object obj = method.invoke(service, args);
+						TransactionManager.commit();
+						return obj;
+					}catch(InvocationTargetException e){
+						// 先捕获method.invoke执行的时候抛出的异常
+						TransactionManager.rollback();
+						throw new RuntimeException(e.getTargetException());
+					}catch(Exception e){
+						TransactionManager.rollback();
+						throw new RuntimeException();
+					}finally{
+						TransactionManager.release();
+					}
+				}
+			});
+			return proxyService;
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new RuntimeException();
+		}
+	}
+	
+	// 定义一个接口Service，其他Service接口都extends该接口
+	// T extends Dao限制了getDao返回的只能是Dao实例
+	public <T extends Dao> T getDao(Class<T> clazz){
+		try{
+			String infName = clazz.getSimpleName();
+			String implName = prop.getProperty(infName);
+			return (T)Class.forName(implName).newInstance();
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new RuntimeException();
+		}
+	}
+}
+
+
+在目前的写法下，所有方法执行之前都开了事务或执行之后关了事务，这样不太好，因为有些不需要事务管理，解决这个问题的方案是接下来要介绍的注解
+除此之外，现在的代码中Dao层封装的很不好：
+public void addOrder(Order order) throws SQLException{
+	String sql = "insert into orders values (?,?,?,?,null,?)";
+	QueryRunner runner = new QueryRunner();
+	runner.update(TransactionManager.getConn(), sql, order.getId());
+}
+runner对象的方法在有事务控制和没事务控制两种情况下传的参数不同，有事务控制时需要把Connection对象也传进去，带有了一定的业务逻辑
+
+JDK内置了很多注解，例如@Override
+class Chinese extends People{
+	@Override // 该注解加或不加都可以，但是加上之后如果方法名写成People父类中不存在的方法名的话编译器会报错
+	public void say(){
+		System.out.println("阿布");
+	}
+}
+
+
+@SuppressWarnings("unchecked"); // 可以写在方法或变量上，压制警告
+
+注解的典型应用是可以通过反射技术得到类里面的
+
+元注解：描述注解的注解
+@Retention：只能用于修饰一个Annotation定义，用于指定该Annotation可以保留的域，有3个选项：
+RetentionPolicy.SOURCE：编译器直接丢弃这种策略的注解，这种注解通常给编译器看，编译器看到这些注解时会做一些操作
+RetentionPolicy.CLASS：编译器把注解记录在class文件中，当运行Java程序时，JVM不会保留注解，这是默认值，这种注解给虚拟机看，虚拟机拿到class文件之后看到该文件中有这样的注解时会做一些操作
+RetentionPolicy.RUNTIME：编译器将把注解记录在class文件中，当运行Java程序时，JVM会保留注解，程序可以通过反射获取该注解，该注解将会保存在程序运行时的内存中，开发人员通常用这种注解比较多
+
+@Target：指定注解用来修饰哪个成员
+
+@Documented：用于指定该元Annotation修饰的Annotation类将被javadoc工具提取成文档
+@Inherited：被它修饰的Annotation将具有继承性
+
+
+
+
+自定义注解：
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.Type) // ElementType.Type代表注解作用在类上
+public @interface First{
+	String name(); // 声明name属性，在使用注解时，必须得给name属性赋值：@First(name="xxx")
+	String address() default "beijing"; // 使用First注解时可以不给address属性赋值，因为有默认值"beijing"
+	String value(); // 如果注解定义中只有一个属性，而且属性名叫value时，在使用First注解时，可以直接将值写进去@First("xxx")，这样就将其赋给了value属性
+}
+
+反射注解：通过反射注解，来确定某个类方法属性上是否有注解从而控制程序的流转
+
+回到我们的案例中的情形，首先需要定义一个注解：
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Tran{
+	
+}
+
+在注册的时候用到了事务，所以加上Tran注解：
+@Tran
+void regist(User user);
+
+在工厂类中就可以改造，检测到有Tran注解的再进行事务控制
+public <T extends Service> T getService(Class<T> clazz){
+	try{
+		String infName = clazz.getSimpleName();
+		String implName = prop.getProperty(infName);
+		final T service = (T)Class.forName(implName).newInstance();
+		
+		T proxyService = (T)Proxy.newProxyInstance(service.getClass().getClassLoader(), service.getClass().getInterfaces(), new InvocationHaddler(){
+			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable{
+				if (method.isAnnotationPresent(Tran.class)){
+					try{
+						TransactionManager.startTran();
+						Object obj = method.invoke(service, args);
+						TransactionManager.commit();
+						return obj;
+					}catch(InvocationTargetException e){						
+						TransactionManager.rollback();
+						throw new RuntimeException(e.getTargetException());
+					}catch(Exception e){
+						TransactionManager.rollback();
+						throw new RuntimeException();
+					}finally{
+						TransactionManager.release();
+					}
+				} else {
+					return method.invoke(service, args);
+				}					
+			}
+		});
+		return proxyService;
+	}catch(Exception e){
+		e.printStackTrace();
+		throw new RuntimeException();
+	}
+}
+
+此外的问题就是我们的Dao层和事务绑在了一起，即有些方法只能在有事务的场合下使用，有些方法只能在没有事务的场合下使用，我们希望不管开不开事务都可以像下面这样一样写：
+public void delUser(int id){
+	String sql = "delete from users where id = ?";
+	try {
+		// 不论有没有事务控制，都通过TransactionManager.getSource()获取连接对象再执行sql，如果调用该方法的方法开启过事务，我们希望TransactionManager.getSource()能够智能的返回开启事务的Connection对象，而调用该方法的方法如果没有开启过事务，我们希望TransactionManager.getSource()能够返回一个普通的数据源
+		QueryRunner runner = new QueryRunner(TransactionManager.getSource());
+		runner.update(sql, id);
+	} catch (Exception e) {
+		e.printStackTrace();
+		throw new RuntimeException(e);
+	}
+}
+
+
+public class TransactionManager{
+	private static DataSource source = new ComboPooledDataSource();
+	// 标识是否开启过事务
+	private static ThreadLocal<Boolean> flag_local = new ThreadLocal<Boolean>(){
+		protected Boolean initalValue() {
+			return false;
+		}
+	};
+	
+	public static void startTran() throws SQLException{		
+		conn_local.get().setAutoCommit(false);
+		flag_local.set(true);
+		Connection conn = source.getConnection();
+		
+		Connection proxyConn = (Connection)Proxy.newProxyInstance(conn.getClass().getClassLoader(), conn.getClass().getInterfaces(), new InvocationHaddler(){
+			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable{
+				if ("close".equals(method.getName())){
+					return null;
+				} else {
+					return method.invoke(conn, args);
+				}
+			}
+		});
+		
+		conn_local.set(proxyConn);
+	}
+
+	// 这个方法应该做到如果没开启过事务，应该返回普通的数据源
+	// 如果开启过事务，则返回一个改造过getConnection方法的数据源，这个方法改造后每次都返回同一个开启过事务的Connection
+	public static DataSource getSource(){
+		if (flag_local.get()){
+			// 开启过事务
+			Connection conn = source.getConnection();
+			conn.setAutoCommit(false);
+			conn_local.set(conn);
+			
+			return (DataSource)Proxy.newProxyInstance(source.getClass().getClassLoader(), source.getClass().getInterfaces(), new InvocationHaddler(){
+				public Object invoke(Object proxy, Method method, Object[] args) throws Throwable{
+					if ("getConnection".equals(method.getName())){
+						return conn_local.get();
+					} else {
+						return method.invoke(source, args);
+					}
+				}
+			});
+		} else {
+			// 没开启事务，返回普通的数据源
+			return source;
+		}
+	}
+	public static void release(){
+		conn_local.remove();
+		flag_local.remove();
+	}
+}
+
+
+泛型：
+1、集合泛型
+如果没有泛型，集合中存入的数据类型会丢失掉，需要使用时再拿出来强转，有转换失败的风险，而这种风险在编译阶段无法检查出来，引入泛型可以避免该问题，泛型是给编译器看的，编译完之后生成的class文件中将不再带有泛型信息，以此使程序运行效率不受影响，这个过程称之为擦除。
+
+ArrayList<E> 读作 ArrayList typeof E
+E称为类型参数变量
+ArrayList<Integer>中Integer称为实际类型参数
+整个称为ArrayList<E>泛型类型
+整个ArrayList<Integer>称为参数化的类型ParameterizedType
+
+以下两种写法都是错的
+ArrayList<String> list = new ArrayList<Object>(); // Object类型的不能存成String类型
+ArrayList<Object> list = new ArrayList<String>(); // 试图往list中存Object类型时，转成String会出错
+结论：两边的类型必须完全一样
+
+为了兼容JDK1.5之前的程序，以下两种写法都是对的
+ArrayList<String> list = new ArrayList();
+ArrayList list = new ArrayList<String>();
+
+2、自定义泛型
+分为方法泛型和类泛型，顾名思义，分别作用在方法和类上
+泛型在使用之前必须先定义，下面的<T>就是定义
+public static <T> void doxx(T t);
+当方法在被调用时，虚拟机自动判断出泛型的具体类型
+举例，指定位置数组元素的交换，因为不知道交换什么类型的数组项，所以用泛型：
+public static <T> void change(T [] arrs, int i, int j){
+	T t = arrs[i];
+	arrs[i] = arrs[j];
+	arrs[j] = t;
+}
+
+泛型可以定义多个
+public static <T, A> void change(T [] arrs, int i, int j)
+
+
+public class Person<T>{
+	// 在下面的方法中使用泛型T
+	public void say(T t){}
+	
+	// 下面这种用法是错误的，类的泛型不可以用在静态方法上
+	// 静态方法是属于类的
+	// 泛型是在执行的时候才确定，即new一个对象指定泛型的时候才确定，但是new对象是对具体一个对象使用泛型
+	// 如果静态方法想使用泛型，需要自己定义
+	public static void eat(T t){}
+}
+
+
+Person g = new Person(); // 定义的时候如果没有指定泛型，则类型是上边界类型
+
+
+
+一个泛型引用不同的泛型的场合
+// 泛型没有继承关系，所以当需要用一个泛型引用不同的泛型实现时，泛型中写他们共同的父类是不行的
+// 此时引入一个新的概念：泛型通配符，用?来表示，泛型通配符只能用在泛型引用中，用来引用不同的泛型实现，不能出现在实现中
+List<?> list = null; // 目前看来，此处不写泛型也可以
+list = new ArrayList<String>();
+list = new ArrayList<Integer>();
+list = new ArrayList<?>(); // 错误写法，不能出现在实现中，只能出现在引用中
+
+为了更精确的控制泛型的引用，引入了：
+extends用来指定泛型的上边界，只用在引用中
+super用来指定泛型的下边界
+
+List<? extends People> list = null;
+list = new ArrayList<Teacher>();
+list = new ArrayList<Cat>(); // Cat不是People的子类，这样写是错的
+
+
+// 上边界
+List<? extends People> list = null;
+list = new ArrayList<Teacher>();
+list.add(new Object()); // 编译阶段就报错
+list.add(new Animal()); // 编译阶段就报错
+list.add(new Teacher()); // 编译阶段就报错
+list.add(null); // 只能往进存null，别的什么都不能存
+
+// 下边界
+List<? super Person> list = null;
+list = new ArrayList<Animal>();
+list.add(new Person()); // 编译可以通过
+list.add(new Teacher()); // 编译可以通过
+
+
+Struts2按照如下顺序加载配置：
+default.properties
+struts-default.xml
+struts-plugin.xml
+struts.xml
+struts.properties
+web.xml
+
+context上下文：是一个Map
+contextMap中的数据：
+key			value
+application	ServletContext中的所有属性attributes
+session		HttpSession中的所有属性attributes
+value stack	根，注意：是List结构！！没有和Servlet中对应的部分
+action		动作类
+request		ServletRequest中的所有属性
+parameters	request.getParameterMap()，相当于EL内置对象paramValues
+attr		从四大域范围中搜索，相当于JSP中的${}
+
+动作类的生命周期：每次访问都会重新创建新的动作类实例
+当Struts2接收一个请求时，会迅速创建ActionContext ValueStack action，然后把action存放进ValueStack，所以action的实例变量可以被OGNL访问
+ActionContext和ValueStack一直保存在你的线程中（ThreadLocal，ThreadLocal本质上是一个线程局部变量）
+1、ActionContext的API：是操作contextMap中的数据的
+2、ValueStack的API：是操作contextMap中的数据的
+
+ActionContext常用的API：
+public class Demo2Action extends ActionSupport{
+	public String m1(){
+		// ActionContext对象及其常用的API======================================
+		ActionContext ac = ActionContext.getContext(); // ActionContext类内部的getContext方法会调用actionContext.get(); actionContext实际上是ThreadLocal类的实例化对象：static ThreadLocal<ActionContext> actionContext = new ThreadLocal<ActionContext>();
+		
+		ac.put("p1", "p1value"); //向contextMap中存数据
+		
+		String s1 = ac.get("p1"); //从contextMap中获取数据
+		
+		// 获取ValueStack实例的方式一
+		ValueStack vs1 = ac.getValueStack(); //获取contextMap中的根
+		System.out.println(vs1.getRoot() instanceof ArrayList); //true
+		
+		
+		// 获取ValueStack实例的方式二
+		Map<String, Object> requestAttributes = (Map<String, Object>)ac.get("request");
+		ValueStack vs2 = (ValueStack)requestAttributes.get("struts.valueStack");
+		System.out.println(vs1 == vs2); //true 二者是同一个对象(引用一样)
+		
+		// 获取ValueStack实例的方式三
+		ValueStack vs3 = ac.get(ValueStack.VALUE_STACK); //和上面的vs1和vs2是同一个对象
+		
+		// 向HttpSession域中存放属性
+		HttpSession session = ServletActionContext.getRequest().getSession();
+		session.setAttribute("p2", "p2value");
+		// 用ActionContext获取HttpSession中的属性
+		String s2 = (String)ac.getSession().get("p2");
+		System.out.println(s2);
+		
+		// 获取请求参数
+		String[] s3 = (String)ac.getParameters().get("name");
+		System.out.println(Array.asList(s3));
+		
+		// 获取当前动作的名称
+		System.out.println("s4:" + ac.getName());
+		
+		// 获取应用范围的数据
+		ServletContext sc = ServletActionContext.getServletContext();
+		sc.setAttribute("p3", "p3value");
+		String s5 = ac.getApplication().get("p3");
+		System.out.println("s5:" + s5);
+		
+		// ValueStack及其常用API===============================
+		ValueStack vs = ActionContext.getContext().getValueStack();
+		Map<String, Object> contextMap = vs.getContext();
+		
+		ActionContext.getContext().put("p1", "ppp1");
+		String s1 = (String)contextMap.get("p1");
+		System.out.println("s1:" + s1); // 得到ppp1，即通过值栈vs.getContext()得到的Map对象和通过ActionContext.getContext()是一个Map对象
+		
+		CompoundRoot root = vs.getRoot(); // 这就是contextMap中的根，数据结构为ArrayList，有push pop peek cutStack方法
+		
+		// ===============================
+		vs.set("p1", "pp1"); // 检测栈顶是不是一个Map，如果不是，创建一个Map，Map中的数据就是p1 = pp1，再把Map压入栈顶 <s:property value="p1" />
+		vs.set("p2", "pp2"); // 检测到栈顶是一个Map，直接入栈
+		vs.setValue("abc", "aaa"); // 设置动作类的abc属性值，从栈顶开始搜索，调用setAbc("aaa"); 如果没有名为abc的属性，则报错
+		vs.setValue("#ddd", "bbb"); // 向contextMap中存数据，相当于ActionContext.getContext().put("ddd", "bbb")
+		Object obj1 = vs.findValue("abc"); // 参数是OGNL表达式
+		
+		Object obj2 = vs.findValue("#ddd");
+		
+		return SUCCESS;
+	}
+}
+
+在Jsp中使用OGNL显示contextMap/根中的数据：
+获取contextMap中的数据，OGNL表达式要用#开头<s:property value="#p1">
+获取根（List）中的对象属性，直接写属性的名称<s:property value="time" />
+会从栈顶的对象一直向下找
+取第2个对象的month：<s:property value="[1].month" />
+
+EL表达式在Struts2中，被做了小小的改动
+
+
+
+
+
+
+Hibernate=======================================================
+分布式事务：不同的服务器（Java虚拟机）之间的事务，例如从从北京向上海转钱，北京的某银行的服务器上的某张账户表中减，上海的某银行的服务器上的某张账户表中加
+jta：Java transaction API 是sun公司给分布式事务处理出的规范 是一套接口
+
+hibernate配置项
+hbm2ddl.auto配置项 根据持久化类(持久化类个人理解就是JavaBean)生成表的策略，有4种：
+validate 通过映射文件检查持久化类与表的匹配，检查出来问题时不管，因此不用
+create   每次hibernate启动的时候根据持久化类和映射文件生成表，实用性差，不用
+create-drop 每次hibernate启动的时候根据持久化类和映射文件生成表，容器关闭时表会被干掉，实用性差，不用
+update   每次hibernate启动的时候检查表是否存在，如果不存在则创建，如果存在什么都不做
+
+
+*.hbm.xml (hibernate mapping)映射配置文件：
+建立从表到类的映射
+建立从表的字段名称到类的属性名称的映射
+建立从表的字段类型到类的属性类型的映射
+
+
+hibernate配置文件的主要用途：告诉hibernate连接数据库的信息，用的什么样的方言，并根据持久化类和映射文件生成表的策略
+
+Serializable是将对象变成二进制码用于网络传输，序列化转换的过程由Java虚拟机完成，在分布式环境(多个Java虚拟机之间交互)下传递数据，必须实现序列化
+
+
+*.hbm.xml配置文件：
+<hibernate-mapping>
+	<!--
+		table:该持久化类对应的表名，可以不写，默认值为类名
+		catalog:数据库的名称，一般不建议写
+	-->
+	<class name="com.itheima12.hibernate.domain.Person" table="person">
+		<!-- 
+			id用来描述主键
+			name属性名称
+			column表字段名，可以不写，默认为属性名
+			length属性名对应的表的字段的长度，可以不写，默认是最大的长度，最好自己指定
+		-->
+		<id name="pid" column="">
+			<!-- 
+				generator:主键生成器
+			-->
+			<generator class="increment"></generator>
+		</id>
+		<!--
+			其他普通字段
+		-->
+		<property name="name" length="20" type="java.lang.String"></property>
+		<property name="description" length="50" type="java.lang.String"></property>
+	</class>
+</hibernate-mapping>
+
+
+hibernate操作流程(非常重要)：
+Configuration config = new Configuration();
+// 加载hibernate.cfg.xml、*.hbm.xml
+config.config(); // 也可以用config.config(url);
+config.buildSessionFactory();
+// 打开连接
+Session session = sessionFactory.openSession();
+// 如果只做查询就不需要开启事务
+// 增删改都需要开事务
+Transaction transaction = session.beginTransaction();
+// person必须是持久化对象，持久化类实例化的对象才是持久化对象，hibernate根据映射文件找到它对应的表
+// save执行过程中会拿person的Class形式去sessionFactory(即配置文件)中查找相应的类
+// 找到相应类，就会有对应的表，这个类就是持久化类，映射文件中持久化类和表有对应关系，因此表名也可确定
+// 找不到相应的类，直接报错
+session.save(person);
+// 提交事务
+transaction.commit();
+// 关闭连接，释放资源
+session.close();
+
+
+根据表生成持久化类和映射文件
+1、把一个工程变成一个hibernate工程
+2、把数据库引入到myeclipse中，即让myeclipse连接数据库
+3、反向生成
+
+类型：
+在hibernate内部，维护了一张表，这张表中有如下映射关系：
+hibernate类型		java类型			数据库字段类型
+string				java.lang.String	varchar/varchar2
+
+java类型的效率比hibernate类型效率高
+
+
+主键生成器：
+<id name="pid" column="">
+	<!-- 从库中找到id最大的再加1作为id -->
+	<generator class="increment"></generator>
+	<!-- 要求在程序中手动设置主键的值，不常用 -->	
+	<generator class="increment"></generator>
+	<!-- 主键必须是数字类型，表自动增长机制，和increment相比效率高 -->
+	<generator class="identity"></generator>
+	<!-- 唯一id，最常用 -->
+	<!-- 这个唯一id是hibernate内部生成的字符串 -->
+	<generator class="uuid"></generator>
+</id>
+
+还有一些生成策略native sequence(序列，oracle用的较多，由oracle内部生成)
+
+
+状态：
+Person person = new Person();
+person.setName("aaa");
+session.save(person); // 将内存中的person对象存入hibernate中
+transaction.commit(); // 和数据库进行交互
+session.close();	  // 断开与数据库的连接
+
+以下两步
+Person person = new Person();
+person.setName("aaa");
+的对象的状态称为临时状态
+
+接下来两步
+session.save(person);
+transaction.commit();
+的对象的状态称为持久化状态
+
+一个持久化状态的对象在数据库中不一定有对应的值
+
+最后一步，对象的状态称为脱管状态（脱离了hibernate的管理），也叫游离状态
+
+public void testUpdate(){
+	SessionFactory sessionFactory = HibernateUtils.sessionFactory;
+	Session session = sessionFactory.openSession();
+	Transaction transaction = session.beginTransaction();
+	Person person = (Person)session.get(Person.class, 1L);
+	person.setDescription("asdf");
+	session.update(person); //update方法就是把一个对象的状态变成持久化状态，而setDescription方法已经使person对象变成持久化状态了，因此这句话写不写都可以
+	transaction.commit();
+	session.close();
+}
+
+类似的，save方法也可以把一个对象从临时状态转换成持久化状态
+
+get方法，从数据库中根据主键提取出一个对象，该对象就是一个持久化态的对象
+
+session.evict(person); // evict将持久化状态对象变成脱管状态
+
+session.update(person); // update将脱管状态对象再变成持久化状态
+
+session.clear(); // clear将hibernate里面所有的对象都变成脱管状态的对象
+
+调用持久化类的set方法设置属性时，如果设置的属性值和原来是一样的，将不执行update
+调用get方法时会从数据库中克隆了两份到hibernate内存中，一份就是持久化对象，另一份是副本，副本中的数据要和数据库中的数据保持一致
+持久化对象执行update操作时会去和副本对象对照，如果和副本一模一样，将不执行update
+
+重点：flush方法
+// 创建一个对象，进行save操作
+Person person = new Person();
+person.setName("aaa");
+person.setDescription("bbb");
+session.save(person);
+
+// 把pid为1的对象提取出来，修改其属性
+Person person2 = (Person)session.get(Person.class, 1L);
+person2.setDescription("55");
+
+// 把pid为2的对象提取出来，什么都不做
+Person person3 = (Person)session.get(Person.class, 2L);
+
+// 在commit之前还做了一个操作：session.flush();这句会把上面生成的增删改的sql都提交
+// 如果commit之前的代码有session.flush();则事务提交时不再flush
+// 反之则必须flush
+// 在hibernate内部会去检查所有的持久化对象，如果持久化对象是由临时状态转化过来的情况下发出insert语句
+// 如果持久化对象是由get方法等方法得到的，再查看下它的副本，如果跟副本对照一样，什么都不做，如果有区别，则发出update语句
+transaction.commit();
+session.close();
+
+一级缓存=================================
+较流行的缓存：oscache、ehcache、memory cache、redis、hbase
+近几年redis和hbase用的较多
+
+oscache、ehcache适合小型应用
+memory cache、redis、hbase适合分布式的场合
+
+缓存就是把一些数据放在内存中，到某个时间点再取出来
+hibernate一级缓存又叫session级别缓存，一级缓存的生命周期和session的生命周期保持一致
+位置：SessionImpl中private transient StatefulPersistenceContext persistenceContext;中private Map entitiesByKey; 这个Map结构的entitiesByKey就是一级缓存
+
+如果一个对象是持久化状态的对象，这个对象就在一级缓存中
+
+
+SessionFactory sessionFactory = HibernateUtils.sessionFactory;
+Session session = sessionFactory.openSession();
+Person p1 = (Person)session.get(Person.class, 1L); // 发出了sql语句
+Person p2 = (Person)session.get(Person.class, 1L); // 没有重复发出sql语句
+session.close();
+结论：get可以把对象放入一级缓存中，也可以把对象从一级缓存中取出来
+
+
+SessionFactory sessionFactory = HibernateUtils.sessionFactory;
+Session session = sessionFactory.openSession();
+Transaction transaction = session.beginTransaction();
+Person person = new Person();
+person.setName("aaa");
+session.save(person);
+System.out.println(session.getStatistics().getEntityCount()); // 获取session数量
+transaction.commit();
+session.close();
+结论：session.getStatistics().getEntityCount()结果为1，证明save可以把对象放入一级缓存中
+
+
+SessionFactory sessionFactory = HibernateUtils.sessionFactory;
+Session session = sessionFactory.openSession();
+Person p1 = (Person)session.get(Person.class, 1L);
+session.evict(person);
+System.out.println(session.getStatistics().getEntityCount());
+session.close();
+结论：session.getStatistics().getEntityCount()得到0，evict把person对象从session缓存中清空
+
+
+如果在evict之后又调用了update方法，则session.getStatistics().getEntityCount()得到1，证明update方法可以把对象加入session缓存
+
+
+clear方法同理会清空一级缓存中的数据，不再赘述
+
+调用close之后，一级缓存的生命周期就结束了
+
+Classes classes = (Classes)session.get(Classes.class, 3L);
+Set<Student> students = classes.getStudents();
+// 接下来如果修改students的属性，修改的是一级缓存中的students，而不是数据库中的对象
+// 只有session.flush()时才和数据库进行交互，flush会检测一级缓存中对象的状态，如果发生变化则更新缓存
+
+注：session和session缓存不是一回事
+
+openSession会打开一个新的连接（新的connection对象），这样做是很不好的，例如在提交订单时，需要生成订单、减库存、支付等等操作，每个操作都很复杂都在独立的系统中，那么在每个系统中就必须openSession一次，这样就打开了好多个Connection
+而getCurrentSession充分利用了ThreadLocal将连接数变为1个，因此通常会用getCurrentSession()
+HibernateUtils sessionFactory.getCurrentSession(); //getCurrentSession从当前线程中把<SessionFactory, Session>提取出来，如果提取不成功，则调用openSession方法创建一个新的session，创建一个Map<SessionFactory, Session>，把map放入当前线程中，如果提取成功，则从当前线程中把session提取出来
+
+Map<SessionFactory, Session> 因为一个数据库中hibernate的操作sessionFactory只有一个，所以map中存放的session肯定只有一个
+
+在一个线程中共享数据时放到ThreadLocal中是很重要的思想
+
+而想要使用getCurrentSession则需要在hibernate.cfg.xml中作配置
+<property name="current_session_context_class">thread</property>
+
+如果用该方法（getCurrentSession）产生session，则crud必须在事务的环境下运行
+
+Session session = HibernateUtils.sessionFactory.getCurrentSession();
+Transaction transaction = session.beginTransaction();
+Person person = (Person)session.get(Person.class, 1L);
+transaction.commit(); // 当事务提交的时候，session自动关闭，无需session.close();这样设计的原因是把事务和session绑定在了一起，但是这样做也有缺点，例如事务提交后想再把数据提取出来就不能做了，因此Spring在整合hibernate时将这个机制去掉了
+
+
+一对多
+Classes.hbm.xml
+<hibernate-mapping>
+	<class name="com.itheima12.hibernate.domain.Classes">
+		<id name="cid" length="5">
+			<generator class="increment"></generator>
+		</id>
+		<property name="description" length="50"></property>
+		<property name="name" length="20"></property>
+		<set name="students">
+			<!-- 外键：告诉hibernate通过cid就可以建立Classes类与Student类的关联 -->
+			<key>
+				<column name="cid"></column>
+			</key>
+			<!-- 告诉hibernate Classes类students属性中存储的是哪个类的实例化对象 -->
+			<one-to-many class="com.itheima12.hibernate.domain.Student"></one-to-many>
+		</set>
+	</class>
+</hibernate-mapping>
+
+
+Classes classes = (Classes)session.get(Classes.class, 1L);
+Set<Student> students = classes.getStudents();
+
+班级学生操作案例：
+保存班级（与一对多没关系）：
+Session session = sessionFactory.getCurrentSession();
+Transaction transaction = session.beginTransaction();
+Classes classes = new Classes();
+classes.setName("javaee+hadoop");
+classes.setDescription("aaa");
+transaction.commit();
+
+
+保存学生
+Session session = sessionFactory.getCurrentSession();
+Transaction transaction = session.beginTransaction();
+Student student = new Student();
+student.setName("班长");
+student.setDescription("带头大哥");
+session.save(student);
+transaction.commit();
+
+保存学生和班级
+Session session = sessionFactory.getCurrentSession();
+Transaction transaction = session.beginTransaction();
+Classes classes = new Classes();
+classes.setName("javaee+hadoop2");
+classes.setDescription("aaa");
+
+Student student = new Student();
+student.setName("班长2");
+student.setDescription("带头大哥2");
+
+session.save(classes);
+session.save(student);
+transaction.commit();
+
+级联操作：
+cascade 级联操作
+	null	默认值
+	save-update	
+		操作Classes对象的时候针对Student进行保存或更新的操作
+		或在更新Classes对象的时候针对Student进行保存或更新的操作
+	all
+	delete
+	
+inverse 关系操作
+	default	classes维护classes与student之间的关系
+	true	classes不维护classes与student之间的关系
+	false	classes维护classes与student之间的关系，同default
+	
+
+设置inverse之后，将发出更新student外键的sql，即inverse是更新外键的关键
+
+inverse和cascade没有必然关系
+cascade操作的是一般属性（student对象的id称为标识符属性，name和description称为一般属性，cid称为关联对象属性），指的是对象与对象的操作
+inverse指的是关系操作，针对的就是外键
+<set name="students" cascade="save-update">
+	<!-- 外键：告诉hibernate通过cid就可以建立Classes类与Student类的关联 -->
+	<key>
+		<column name="cid"></column>
+	</key>
+	<!-- 告诉hibernate Classes类students属性中存储的是哪个类的实例化对象 -->
+	<one-to-many class="com.itheima12.hibernate.domain.Student"></one-to-many>
+</set>
+
+
+级联保存学生：
+Session session = sessionFactory.getCurrentSession();
+Transaction transaction = session.beginTransaction();
+Classes classes = new Classes();
+classes.setName("javaee+hadoop2");
+classes.setDescription("aaa");
+
+Student student = new Student();
+student.setName("班长2");
+student.setDescription("带头大哥2");
+
+// 建立classes与students之间的关联
+Set<Student> students = new HashSet<Student>();
+students.add(student);
+classes.setStudents(students);
+
+// 在save classes的过程中同时把students也save了
+// hibernate对students的保存就是隐式保存
+session.save(classes);
+transaction.commit();
+
+
+更新班级的时候级联更新学生
+// session.flush的时候
+// 1、检查一级缓存中的所有持久化状态的对象，判断发出insert语句或者update语句
+// 2、检查所有的持久化对象的关联对象，如果关联对象是由临时状态转化过来的则对关联对象发出insert语句，如果关联对象是从数据库中提取出来的，则对照副本决定是否发出update语句
+public void testUpdateClasses_Cascade_Update_Students(){
+	Session session = sessionFactory.getCurrentSession();
+	Transaction transaction = session.beginTransaction();
+	Classes classes = (Classes)session.get(Classes.class, 2L);
+	// students是持久化对象的关联对象
+	Set<Student> students = classes.getStudents();
+	// 把每一个students对象（关联对象）也放入到了一级缓存中
+	for(Student student:students){
+		student.setDescription("aaa");
+	}
+	transaction.commit();
+}
+
+
+更新班级的时候添加学生
+public void testUpdateClasses_Cascade_Update_Students(){
+	Session session = sessionFactory.getCurrentSession();
+	Transaction transaction = session.beginTransaction();
+	Classes classes = (Classes)session.get(Classes.class, 2L);
+	Student student = new Student();
+	student.setName("mv1");
+	student.setDescription("xxxx");
+	
+	// 建立班级与学生的关联
+	classes.getStudents().add(student);
+	
+	transaction.commit();
+}
+
+学生从cid为1的班级转到cid为2的班级
+Session session = sessionFactory.getCurrentSession();
+Transaction transaction = session.beginTransaction();
+Classes classes = (Classes)session.get(Classes.class, 1L);
+Classes classes = (Classes)session.get(Classes.class, 2L);
+Student student = (Student)session.get(Student.class, 1L);
+// 解除classes1和student之间的关系
+classes1.getStudents().remove(student);
+// 添加classes2和student之间的关系
+classes2.getStudents().add(student);
+transaction.commit();
+
+以上过程student在库中的记录会经历从1到null，再到2的过程
+
+事实上无需解除旧关系，只需要添加新的关系:
+Session session = sessionFactory.getCurrentSession();
+Transaction transaction = session.beginTransaction();
+
+Classes classes = (Classes)session.get(Classes.class, 2L); // 查询语句1条
+Student student = (Student)session.get(Student.class, 1L); // 查询语句1条
+
+classes2.getStudents().add(student);// update语句1条
+transaction.commit();
+
+
+解除一个班级中所有学生和该班级的关系
+Session session = sessionFactory.getCurrentSession();
+Transaction transaction = session.beginTransaction();
+
+// 解除cid为2的班级和所有学生的关系
+Classes classes2 = (Classes)session.get(Classes.class, 2L);
+// 以下写法不好，会一行一行解除关系
+// classes2.getStudents().removeAll(classes.getStudents());
+// 一条sql，update Student set cid=null where cid=2
+classes2.setStudents(null);
+transaction.commit();
+
+
+解除一个班级中所有学生和该班级的关系，并建立该班级与一些学生之间的关系
+权限管理经常用到
+public void testReleaseAll_BuildSome{
+	Session session = sessionFactory.getCurrentSession();
+	Transaction transaction = session.beginTransaction();
+	Classes classes = (Classes)session.get(Classes.class, 2L);
+	classes.setStudents(null);
+	
+	Student student1 = new Student();
+	student1.setName("xxx");
+	
+	Student student2 = new Student();
+	student1.setName("eee");
+	
+	Set<Student> students = new HashSet<Student>();
+	students.add(student1);
+	students.add(student2);
+	classes.setStudents(students);
+	
+	transaction.commit();
+}
+
+在一的一方维护关系的时候，总会发出update语句，这些update语句就是为了更新外键
+
+删除班级
+方式1：在删除班级之前解除班级和学生之间关系，学生记录还在
+Session session = sessionFactory.getCurrentSession();
+Transaction transaction = session.beginTransaction();
+Classes classes = (Classes)session.get(Classes.class, 2L);
+session.delete(classes);
+transaction.commit();
+
+方式2：级联删除，学生记录被级联删除，在Classes.hbm.xml设置cascade为all
+Session session = sessionFactory.getCurrentSession();
+Transaction transaction = session.beginTransaction();
+Classes classes = (Classes)session.get(Classes.class, 2L);
+session.delete(classes);
+transaction.commit();
+
+
+删除学生但该学生必须从班级中提取出来
+Session session = sessionFactory.getCurrentSession();
+Transaction transaction = session.beginTransaction();
+Classes classes = (Classes)session.get(Classes.class, 2L);
+// 在Classes.hbm.xml中，classes针对student是关联的，而程序中的student对象是从classes中提取出来的关联对象，所以不能删除，必须要通过classes.setStudents(null);解除关系
+Set<Student> students = classes.getStudents();
+classes.setStudents(null);
+for(Student student:students){
+	session.delete(student);
+}
+transaction.commit();
+
+==============================================
+一对多双向关联（Classes类中有学生集合属性，Student类中有所属班级对象属性）
+Student.hbm.xml
+<hibernate-mapping>
+	<class name="com.itheima12.hibernate.domain.Student">
+		<id name="sid" length="5">
+			<generator class="increment"></generator>
+		</id>
+		<property name="description" length="50"></property>
+		<property name="name" length="20"></property>
+		<!-- 外键： -->
+		<many-to-one name="classes" column="cid"  class="com.itheima12.hibernate.domain.Classes" cascade="save-update"></many-to-one>
+	</class>
+</hibernate-mapping>
+
+保存学生时级联保存班级
+public void testSaveStudent_Cascade_Save_Classes() {
+	Session session = sessionFactory.openSession();
+	Transaction transaction = session.beginTransaction();
+	Student student = new Student();
+	student.setName("asdf");
+	
+	Classes classes = new Classes();
+	student.setName(classes);
+	
+	// 这里生成的sql语句是
+	// insert into
+	// 	Student
+	// 	(description, name, cid, sid)
+	// values
+	// 	(?, ?, ?, ?)
+	// 需要注意：cid外键直接插入进去了，在前面一对多单向关联的时候，是先保存一次基本属性（insert语句），再保存一次关联属性（外键）（update语句）
+	session.save(student);
+	transaction.commit();
+	session.close();
+}
+
+学生转班
+public void testTransform() {
+	// 将sid为11的学生从cid为2的班级转到cid为1的班级
+	Session session = sessionFactory.openSession();
+	Transaction transaction = session.beginTransaction();
+	Student student = (Student)session.get(Student.class, 11L);
+	Classes classes = (Classes)session.get(Classes.class, 1L);
+	// 建立关系
+	student.setClasses(classes);
+	transaction.commit();
+	session.close();
+}
+
+将学生从班级中移除
+public void testRemoveFromClasses() {
+	Session session = sessionFactory.openSession();
+	Transaction transaction = session.beginTransaction();
+	Student student = (Student)session.get(Student.class, 11L);
+	// 注意这里生成的sql语句是
+	// update Student
+	// set(description=?, name=?, cid=?)
+	// where sid=?
+	// 可以发现所有的属性全都改变了，而不单单改一个外键
+	student.setClasses(null);
+	transaction.commit();
+	session.close();
+}
+
+一对多的双向
+当多的一方维护关系时，不会发出更新关系的update语句，而一的一方维护关系时，需要发出维护关系的update语句，所以在这里，一般情况下多的一方维护关系效率较高
+
+
+多对多的双向关联的表的创建，案例：学生和课程
+多对多描述的是对象与集合的关系
+Student.hbm.xml
+<hibernate-mapping>
+	<class name="com.itheima12.hibernate.domain.Student">
+		<id name="sid" length="5">
+			<generator class="increment"></generator>
+		</id>
+		<property name="description" length="50"></property>
+		<property name="name" length="20"></property>
+		<!-- table：第三张表 -->
+		<set name="courses" table="student_course">
+			<!-- 外键 -->
+			<key>
+				<column name="sid"></column>
+			</key>
+			<!-- column：也是外键 -->
+			<many-to-many class="com.itheima12.hibernate.domain.Course" column="cid"></many-to-many>
+		</set>
+	</class>
+</hibernate-mapping>
+
+
+Course.hbm.xml
+<hibernate-mapping>
+	<class name="com.itheima12.hibernate.domain.Student">
+		<id name="cid" length="5">
+			<generator class="increment"></generator>
+		</id>
+		<property name="description" length="50"></property>
+		<property name="name" length="20"></property>
+		<!-- table：第三张表 -->
+		<set name="students" table="student_course">
+			<!-- 外键 -->
+			<key>
+				<column name="cid"></column>
+			</key>
+			<!-- column：也是外键 -->
+			<many-to-many class="com.itheima12.hibernate.domain.Student" column="sid"></many-to-many>
+		</set>
+	</class>
+</hibernate-mapping>
 
 
 
@@ -1283,6 +2362,5 @@ primary key(order_id,product_id) 联合主键，两列的值加在一起使用
 
 
 
-
-
-
+二级缓存适用场合：
+公开 数据基本不变 保密性不强

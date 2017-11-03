@@ -1383,16 +1383,303 @@ p pipe 管道
 
 调用pipe函数创建管道的同时就会把管道的两端打开
 
+#include <stdio.h>
+#include <unistd.h>
+int main(){
+	int fd[2];
+	int ret = pipe(fd);
+	
+	if (ret == -1) {
+		perror("pipe error");
+		exit(1);
+	}
+	
+	pid = fork();
+	if (pid == -1) {
+		perror("pipe error");
+		exit(1);
+	} else if (pid == 0) { // 子进程 读数据 关闭写端
+		close(fd[1]);
+		char buf[1024];
+		ret = read(fd[0], buf, sizeof(buf));
+		if (ret == 0) {
+			printf("---------");
+		}
+		write(STDOUT_FILENO, buf, ret);
+	} else { // 父进程 写数据 
+		close(fd[0]);
+		write(fd[1], "hello pipe", strlen(hello pipe));
+	}
+	
+	return 0;
+}
+
+管道是单向的，而且只能是有血缘关系的进程之间进行通信
+
+FIFO=========================
+两个进程之间通信时需要使用同一个目录下的fifo，fifo通信可以有多个读端、多个写端
+
+共享存储映射=======================
+mmap函数，参数和返回值比较复杂
+之前我们只能用fopen fread fwrite等访问磁盘文件，目前我们可以借助共享内存中的指针访问磁盘文件
+
+共享存储区实际上就是进程在运行时产生的0-4G虚拟内存空间中的内核区的一块内存，该内存对应磁盘上某个文件的映射
+mmap的第一个参数addr就是这块内存的地址，对于现代的操作系统，我们无需指定该地址，只需要传入NULL即可
+
+mmap的参数
+	void* mmap(void *addr, size_t length, int prot, int flags, int fd, int off_toffset);
+	addr: 建立映射区的首地址，由Linux内核指定。使用时直接传递NULL
+	length: 创建映射区的大小
+	prot: 映射区的权限PROT_READ PROT_WRITE PROT_READ|PROT_WRITE
+	flags: 标志位参数（常用于设定更新物理区域、设置共享、创建匿名映射区）
+		MAP_SHARED：会将映射区所做的操作反映到物理设备（磁盘）上
+		MAP_PRIVATE：映射区所做的修改不会反映到物理设备
+	fd: 用来建立映射区的文件描述符
+	offset: 映射文件的偏移(4k的整数倍)
+
+由于不确定共享存储区将来存储什么类型的数据，因此addr是一个泛型指针（即void类型指针）
+
+mmap执行成功之后返回创建的映射区的首地址，执行失败返回MAP_FAILED宏
+
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+
+int main(){
+	int len, ret;
+	char *p = NULL;
+	// 第3个参数表示创建出的文件在所有者 所属组 其他人的权限
+	int fd = open("mytest.txt", O_CREAT|O_RDWR, 0644);
+	if (fd < 0) {
+		perror("open error");
+		exit(1);
+	}
+	ftruncate(fd, 4);
+	if (len == -1) {
+		perror("ftruncate error");
+		exit(1);
+	}
+	// 第二个参数不可以是0，也就是说create出的空文件不可以有映射区
+	// 创建映射区的权限要小于等于打开文件的权限
+	// 映射区创建的过程中隐含着对文件的一次读操作
+	// 最后一个参数必须是4K的整数倍，即4096 8192等，因为映射区是mmu创建的，mmu创建的基本单位就是4K
+	// 文件映射区一旦创建成功，文件描述符就没有用了
+	p = mmap(NULL, 4, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+	if (p == MAP_FAILED) {
+		perror("mmap error");
+		exit(1);
+	}
+	strcpy(p, "abc"); // 写数据
+	// 释放共享存储区
+	ret = munmap(p, 4);
+	if (ret == -1) {
+		perror("munmap error");
+		exit(1);
+	}
+	close(fd);
+}
+
+父子进程间通信======================================
+int var = 100;
+int main(){
+	int *p;
+	pid_t pid;
+	int fd;
+	fd = open("temp", O_RDWR|O_CREAT|O_TRUNC, 0644);
+	if (fd < 0) {
+		perror("open error");
+		exit(1);
+	}
+	unlink(temp); // 删除临时文件目录项，删除目录项的言外之意就是使这些临时文件具有被释放的条件，但是并没有真正被释放，文件被释放的时机是在所有占用该文件的进程都被关闭的时候
+	// 对于一个.c文件，在磁盘上存储的内容有两部分，一部分是inode部分，包括文件的相关属性，例如文件存储的指针地址、文件大小、权限、类型、所有者，通过inode可以找到文件在磁盘上数据块的地址，注意文件名并没有保存在inode中，文件名被保存在了一个叫做dentry(directive entry中文翻译为目录项)的位置，dentry里还保存了inode的编号，通过该编号可以找到该文件的inode的一系列属性，每创建一个硬链接，就创建了一个dentry，这3个硬链接对应一个inode编号
+	ftruncate(fd, 4);
+	// 参数4如果是MAP_SHARED代表父子进程共享一块共享存储区，MAP_PRIVATE代表父子进程各自独享一块共享存储区
+	p = (int *)mmap(NULL, 4, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+	if (p == MAP_FAILED) {
+		perror("mmap error");
+		exit(1);
+	}
+	close(fd);
+	
+	pid = fork();
+	if (pid == 0) {
+		*p = 2000;
+		var = 1000;
+		printf("child *p = %d, var = %d\n", *p, var); // 2000 1000
+	} else {
+		sleep(1);
+		// 父子进程之间共享的只有打开的文件和mmap建立的映射区，0-3G地址空间部分都是独享的
+		// 如果将mmap第4个参数赋MAP_PRIVATE的话，这里的*p打印出来的就是0
+		printf("parent *p = %d, var = %d\n", *p, var); // 2000 100
+		wait(NULL);
+		
+		int ret = munmap(p, 4);
+		if (ret == -1) {
+			perror("munmap error");
+			exit(1);
+		}
+	}
+}
+
+上面案例中temp这个文件比较鸡肋，因为它仅仅是为了创建一个映射区，这样一来这个文件就比较多余，有一种方法可以不通过创建这样一个文件来创建映射区：匿名映射
+使用方法很简单，只要把宏MAP_ANONYMOUS(或MAP_ANON)位或到第4个参数后面，第5个参数变为-1
+p = (int *)mmap(NULL, 4, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANON, -1, 0);
+注意：类Unix操作系统或Unix操作系统下没有MAP_ANON这个宏，类Unix操作系统或Unix操作系统需要通过/dev/zero和/dev/null创建匿名映射区
+fd = open("/dev/zero", O_RDWR);
+p = mmap(NULL, size, PROT_READ|PROT_WRITE, MMAP_SHARED, fd, 0);
+这种方法在Linux下也可以使用
+
+// 非血缘关系进程间通过mmap通信
+int main(int argc, char *argv[]){
+	int fd;
+	struct STU student;
+	struct STU *mm;
+	
+	if (argc < 2) {
+		printf("./a.out file_shared\n");
+		exit(-1);
+	}
+	fd = open(argv[1], O_RDONLY);
+	if (fd == -1) {
+		// sys_err是自己封装的一个错误提示方法
+		sys_err("open error");
+	}
+	// 第3个参数是PROT_READ，代表该进程是读的进程
+	mm = mmap(NULL, sizeof(student), PROT_READ, MAP_SHARED, fd, 0);
+	if (mm == MAP_FAILED) {
+		sys_err("mmap error");
+	}
+	
+	close(fd);
+	
+	while(1){
+		printf("id=%d\tname=%s\t%c\n", mm->id, mm->name, mm->sex);
+		sleep(2);
+	}
+	munmap(mm, sizeof(student));
+	return 0;
+}
 
 
+int main(int argc, char *argv[]){
+	int fd;
+	struct STU student = {10, "xiaoming", 'm'};
+	char *mm;
+	
+	if (argc < 2) {
+		printf("./a.out file_shared\n");
+		exit(-1);
+	}
+	fd = open(argv[1], O_RDWR|O_CREAT, 0644);
+	ftruncate(fd, sizeof(student));
+	
+	// 第3个参数是PROT_READ|PROT_WRITE，代表该进程是写的进程
+	mm = mmap(NULL, sizeof(student), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+	if (mm == MAP_FAILED) {
+		sys_err("mmap error");
+	}
+	
+	close(fd);
+	
+	while(1){
+		memcpy(mm, &student, sizeof(student));
+		student.id++;
+		sleep(1);
+	}
+	munmap(mm, sizeof(student));
+	return 0;
+}
 
+strace ./test2 追踪test2可执行文件调用的系统调用有哪些
 
+多进程拷贝
+例如有5个进程拷贝dict.txt文件，需要将dict.txt划分为5份
+1、指定创建子进程的个数
+2、打开源文件
+3、打开目的文件，不存在则创建
+4、获取文件大小
+5、根据文件大小拓展目标文件
+6、为源文件创建映射
+7、为目标文件创建映射
+8、求出每个子进程该拷贝的字节数
+9、创建N个子进程
+10、子进程完成分块拷贝（注意最后一个子进程）
+11、释放映射区
 
+聊天室
+客户端通过公共FIFO给服务器发送数据，服务器通过给各个客户端的专有FIFO给客户端发送响应
+因为FIFO是单向的，因此客户端和服务器通信肯定不能用一个FIFO，再者，如果共用了一个FIFO之后，服务器向客户端发数据的时候如果正好有客户端向服务器端写数据，就会阻塞
+每个客户端登录就会在登录列表中添加记录，登录列表由于增删操作多，因此比较适合用链表这种结构
+客户端实现思路：
+1、获取自己的pid和name，填充struct s_msg
+2、非阻塞属性创建私有FIFO
+3、打开服务器公共的FIFO，把自己的信息向服务器注册
+4、非阻塞读私有FIFO
+	read返回-1，继续轮寻
+	read返回>0，协议包解析
+		read为1，聊天信息解析，打印到输出端聊天信息
+		read为2，服务器更新在线列表信息，打印到输出端
+5、设置标准输入为非阻塞属性，读标准输入
+	read返回-1，继续轮寻
+	read返回>1，字符串解析，填充struct c_msg
+	向服务器公共FIFO写msg
+6、轮寻
 
+服务器端实现思路：
+1、打开公共FIFO，阻塞等待读
+2、读到内存字符串解析
+3、判断协议号num
+	num为1：用户注册
+		非阻塞写打开新用户创建的私有FIFO
+		增加在线列表节点
+	num为2：用户聊天
+		取出dst
+		中转数据给客户
+	num为3：用户退出
+		将用户从在线列表中摘除
 
+信号======================================
+信号基本属性 4要素
+产生信号的5种方式
+kill alarm setitimer(alarm的强化版)
 
+信号集操作函数
+信号屏蔽字 未决信号集
 
+信号的捕捉
+如何注册信号捕捉函数 sigaction 参数很复杂 重点
 
+信号的特性：1、简单 2、不能携带大量信息 3、满足某个特定条件才发送
+
+Unix早期版本提供了信号机制，但不可靠，信号可能丢失。Berkeley和AT&T都对信号模型做了更改，增加了可靠信号机制。但彼此不兼容。POSIX.1对可靠信号例程进行了标准化
+
+信号本质上是借助软件实现的中断，通过软件实现的本质就是一个函数的调用，可能会有延时，但是延时是对CPU来说的，对于用户来讲察觉不到
+
+与信号相关的事件和状态
+产生信号：
+1、按键产生，如：ctrl+c ctrl+x
+2、系统调用产生，如：kill
+3、软件条件产生，如定时器alarm
+4、硬件异常产生，如非法访问内存（段错误）、除0（浮点数例外）、内存对齐出错（总线错误）
+5、命令产生，如kill
+
+递达：递送并且到达状态
+
+信号从产生，到递送，到抵达是瞬时的，但是信号会由于某种原因阻塞或屏蔽，信号就变为阻塞态，阻塞信号集或信号屏蔽字用来描述信号的阻塞态
+
+没有被处理掉的信号被描述为未决信号集，未决信号集也是信号产生到抵达的过程中出现的
+
+PCB(在进程的内核部分)中存储有未决信号集和阻塞信号集(信号屏蔽字)，二者都是集合结构(无重复、无序)，集合中的key代表进程地址，value有两个值：0或1，代表状态
+
+产生某个信号时，该信号对应的value会瞬间由0变为1，信号抵达之后由1变为0，整个过程非常快，快到时间可以忽略不计
+
+如果产生信号之后由于某种原因未抵达，上面的瞬时过程就会中断
+
+信号4要素：编号 名称 事件 默认处理动作
+kill -l可以看到Linux中支持的所有信号
 
 
 

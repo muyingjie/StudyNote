@@ -1427,7 +1427,7 @@ ud.find();
 //	InvocationHandler h
 //	)
 MyInvocationHandler handler = new MyInvocationHandler(ud);
-IUserDao proxy = (IUserDao)Proxy.newProxyInstance(ud.getClass().getClassLoader(),ud.getClass().getInterfaces(),handler);
+UserDao proxy = (UserDao)Proxy.newProxyInstance(ud.getClass().getClassLoader(),ud.getClass().getInterfaces(),handler);
 //下列方法在调用的时候就会加上权限校验和日志记录
 proxy.add();
 proxy.delete();

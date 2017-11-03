@@ -516,7 +516,7 @@ transition过渡
 
 transition:1s 2s width;//延迟2s执行
 
-
+// 如果在transitionend的时候继续改变相同的样式，将会继续触发transitionend，循环往复
 //解决transitionend的bug
 o_box.onclick=function(){
 	this.style.width=this.offsetWidth+100+"px";
@@ -737,7 +737,7 @@ setInterval(function(){
 },30);
 
 
-3d
+3d==================================================
 <div class="box">
 	<div class="div"></div>
 </div>
@@ -745,7 +745,7 @@ setInterval(function(){
 .div{ transition:1s; -webkit-transform-style:preserve-3d; -webkit-perspective:800px;}
 .box:hover .div{ -webkit-transform:rotateX(180deg);}
 
-立方体盒子
+立方体盒子==================================
 
 <div class="wrap">
 	<div class="box">
