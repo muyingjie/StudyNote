@@ -1,4 +1,5 @@
 ::https://wenku.baidu.com/view/371957c06137ee06eff91819.html
+::http://blog.csdn.net/lanbing510/article/details/7461073
 ::bat命令执行完之后不仅打印出执行结果，默认还会把执行的命令显示一遍
 ::@符号的作用就是不显示执行的命令
 ::echo off相当于在每条命令前加一个@符号，实际上echo后面跟空格加字符串就相当于输出该字符串，而echo后面加off代表关闭输出
@@ -23,3 +24,5 @@ goto exit
 echo 命令执行失败
 goto exit
 :exit
+
+::errorlevel不仅代表错误码，还代表指令执行的返回码
