@@ -27,4 +27,26 @@ echo 命令执行失败
 goto exit
 :exit
 
-::errorlevel不仅代表错误码，还代表指令执行的返回码
+::errorlevel不仅代表错误码，还代表指令执行的返回码，默认值为0，一般命令执行出错会设 errorlevel 为1
+
+ECHO @ECHO OFF>AUTOEXEC.BAT 建立自动批处理文件
+ECHO C:\CPAV\BOOTSAFE>>AUTOEXEC.BAT 向自动批处理文件中追加内容
+
+PAUSE：停止系统命令的执行并显示请按任意键继续. . .
+
+find 在文件中搜索字符串
+FIND [/V] [/C] [/N] [/I] [/OFF[LINE]] "string" [[drive:][path]filename[ ...]]
+  /V        显示所有未包含指定字符串的行。
+  /C        仅显示包含字符串的行数。
+  /N        显示行号。
+  /I        搜索字符串时忽略大小写。
+  /OFF[LINE] 不要跳过具有脱机属性集的文件。
+  "string"  指定要搜索的文字串，
+  [drive:][path]filename 指定要搜索的文件。
+
+Find常和type命令结合使用
+Type [drive:][path]filename | find "string" [>tmpfile] #挑选包含string的行
+Type [drive:][path]filename | find /v "string"   #剔除文件中包含string的行
+Type [drive:][path]filename | find /c   #显示文件行数
+
+例：type test.txt|find "111" 
