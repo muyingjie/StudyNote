@@ -50,3 +50,39 @@ Type [drive:][path]filename | find /v "string"   #剔除文件中包含string的行
 Type [drive:][path]filename | find /c   #显示文件行数
 
 例：type test.txt|find "111" 
+
+
+
+start 调用外部程序并任其在新窗口自行运行
+例：start explorer d:\
+
+
+assoc 和 ftype
+assoc 获取或设置'文件扩展名'关联，关联到'文件类型'
+ftype 获取或设置'文件类型'关联，关联到'执行程序和参数'
+
+当你双击一个.txt文件时，windows并不是根据.txt直接判断用 notepad.exe 打开
+而是先调用assoc .txt找到其文件类型为txtfile
+再调用 txtfile 关联的命令行 txtfile=%SystemRoot%\system32\NOTEPAD.EXE %1
+可以在"文件夹选项"→"文件类型"里修改这2种关联
+
+ftype           #显示所有'文件类型'关联
+ftype exefile   #显示exefile类型关联的命令行，结果显示 exefile="%1" %*
+
+
+assoc .txt=Word.Document.8 设置.txt为word类型的文档，可以看到.txt文件的图标都变了
+assoc .txt=txtfile 恢复.txt的正确关联
+
+CALL命令可以在批处理执行过程中调用另一个批处理，当另一个批处理执行完后，再继续执行原来的批处理
+
+CALL [drive:][path]filename [batch-parameters]
+调用的其它批处理程序。filename 参数必须具有 .bat 或 .cmd 扩展名。
+
+CALL :label arguments
+调用本文件内命令段，相当于子程序。被调用的命令段以标签:label开头
+以命令goto :eof结尾。
+
+
+
+
+
