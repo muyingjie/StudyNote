@@ -112,6 +112,7 @@ TCP/IP详解卷II
 https://segmentfault.com/a/1190000004322487 你真的会使用XMLHttpRequest吗？
 
 
+
 搭建react+redux+ssr项目结构，用react开发电商后台系统，主要包括对webpack进行个性化配置，组件的封装（逻辑组件和傻瓜组件的拆分），state状态树设计，actionType的抽象，reducer函数的编写
 项目关键点：
 1、利用react-router路由管理整个项目的菜单，并实现按需加载
@@ -122,3 +123,4 @@ https://segmentfault.com/a/1190000004322487 你真的会使用XMLHttpRequest吗？
 4、将nodejs服务器作为路由，把收集来的请求转发到PHP服务器中处理，即将nodejs作为中间层
 5、session同步问题
 6、对于react的内部原理需要有足够的理解
+
