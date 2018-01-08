@@ -62,6 +62,30 @@ static class Closure {
 
 当封装一个通用型较强的函数时如果需要传参，那么尽量写成{paramName: paramValue}的形式，在函数内部通过var paramName = obj.paramName的形式将其保存为局部变量再处理，绝对避免直接将paramValue作为参数，除非有十足的把握，将来只需要传这一个参数。
 
+JavaScript模块化
+1、CMD规范：代表：nodejs
+const moduleA = require("./moduleB");
+
+module.exports = {
+	getProducts,
+	getProductById
+};
+
+2、AMD规范：代表：seajs
+define("moduleName", ["dep"], function(dep) {
+	module.exports = {
+		getProducts,
+		getProductById
+	};
+});
+require(["moduleA"], function(moduleA) {
+});
+
+3、ES6模块化
+import React from "react";
+
+export function hello() {};
+
 
 2017的主要任务：汇编语言 操作系统 计算机网络
 为什么学习操作系统、计算机网络？
@@ -86,3 +110,15 @@ TCP/IP详解卷II
 操作系统设计与实现
 
 https://segmentfault.com/a/1190000004322487 你真的会使用XMLHttpRequest吗？
+
+
+搭建react+redux+ssr项目结构，用react开发电商后台系统，主要包括对webpack进行个性化配置，组件的封装（逻辑组件和傻瓜组件的拆分），state状态树设计，actionType的抽象，reducer函数的编写
+项目关键点：
+1、利用react-router路由管理整个项目的菜单，并实现按需加载
+2、引入redux增强器，在每次按需加载页面时动态改变store上的state
+3、服务端渲染时需要babel-register用于解析ES6语法，并且增加配置忽略css文件
+服务器端渲染时缩水数据的生成要保证同客户端初始化后的store对象相同
+服务器端渲染时项目启动文件实现热加载配置
+4、将nodejs服务器作为路由，把收集来的请求转发到PHP服务器中处理，即将nodejs作为中间层
+5、session同步问题
+6、对于react的内部原理需要有足够的理解
