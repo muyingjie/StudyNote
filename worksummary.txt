@@ -12,6 +12,27 @@
 12、微信小程序客户端支付由于没有数据传递没有请求，纯客户端在交互，所以没有安全问题
 13、列表左侧选中与不选中，数据异常时如何处理，4种情况：始终可以选中、始终不能选中、选中、非选中
 
+让元素排成一排的方法
+1、float 注意清浮动
+2、inline-block 元素之间有换行时会有小间隙，垂直居中的问题
+注：
+	移动端布局，左侧固定宽，右侧根据屏幕宽度自适应，常用calc(100% - 左侧宽度)
+	将元素平均分配于每一行
+
+让一个元素消失的方法
+1、visibility: hidden;
+2、display: block;
+3、position: absolute; left: 10000px;
+4、定义很大的margin
+案例：
+	站长统计不希望显示在页面中可以用上面的方式
+
+画三角形
+border: 10px solid #000;
+border-left-color: #fff;
+border-right-color: #fff;
+border-bottom-color: #fff;
+
 
 面向对象的理解：
 利用表单校验类做类比
