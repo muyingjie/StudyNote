@@ -34,6 +34,16 @@ border-right-color: #fff;
 border-bottom-color: #fff;
 
 
+元素垂直居中：
+1、position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+2、给父级加css，单行居中：display: flex; justify-content: center; align-items: center; height: 200px; 注意父级要定高
+3、给父级加css，多行居中：display: flex; justify-content: center; align-items: center; flex-wrap: wrap/wrap-reverse;
+主要样式：
+flex-direction 排列的方向
+justify-content 项目的对齐方式 flex-start flex-end center
+align-items 轴的位置 flex-start flex-end center
+
+
 面向对象的理解：
 利用表单校验类做类比
 继承要从ES3 ES5 ES6依次说明
@@ -164,7 +174,8 @@ https://segmentfault.com/a/1190000004322487 你真的会使用XMLHttpRequest吗？
 3、服务端渲染时需要babel-register用于解析ES6语法，并且增加配置忽略css文件
 服务器端渲染时缩水数据的生成要保证同客户端初始化后的store对象相同
 服务器端渲染时项目启动文件实现热加载配置
-4、将nodejs服务器作为路由，把收集来的请求转发到PHP服务器中处理，即将nodejs作为中间层
-5、session同步问题
-6、对于react的内部原理需要有足够的理解
+4、建立nodejs(基于express框架)中间层，通过创建TCP客户端的方式建立与API服务器之间的链接
+5、通过workerman框架创建TCP服务器接收由nodejs发来的请求并做相应的业务逻辑处理及数据库操作
+6、session同步问题
+7、对于react的内部原理需要有足够的理解
 
