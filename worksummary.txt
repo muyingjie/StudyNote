@@ -66,6 +66,24 @@ static class Closure {
 }
 
 
+关于CDN：
+CDN加速原理：
+1、内容缓存（缓存到内存或本地文件）
+通常会用漏斗服务squid对用户请求做一遍过滤，通过查看本地是否有缓存，如果有则直接返回给用户，如果没有则根据后台配置去源站将数据抓取过来，把抓过来的数据做缓存，把该数据返回给用户，这样就分担了源站的负担，让页面访问的速度变快
+CDN服务商在全国近百个城市都布有CDN节点，每个服务商有约200、300个，例如展讯、蓝汛、世纪互联，以及云服务（百度云、阿里云），还有新秀迅雷星域，迅雷星域属于流量共享模式，和传统CDN模式不太一样
+2、多线路支持 国情：南电信北联通
+同时支持电信、网通、联通等多种线路
+不同于双线机房的双线接入
+目的：减少跨网访问
+
+适用CDN的范围：静态和更新频率低的内容、数据流量大的网站
+
+使用CDN的带宽价格更便宜
+
+CDN的具体使用
+
+
+
 浏览器请求过程的理解：
 1、DNS域名解析
 	先从本地hosts中寻找有没有该域名对应的IP，没找到的话再通过本地DNS服务器、ISP的DNS服务器、一二三级以及根域名服务器最终找到IP地址
@@ -116,30 +134,6 @@ static class Closure {
 
 当封装一个通用型较强的函数时如果需要传参，那么尽量写成{paramName: paramValue}的形式，在函数内部通过var paramName = obj.paramName的形式将其保存为局部变量再处理，绝对避免直接将paramValue作为参数，除非有十足的把握，将来只需要传这一个参数。
 
-JavaScript模块化
-1、CMD规范：代表：nodejs
-const moduleA = require("./moduleB");
-
-module.exports = {
-	getProducts,
-	getProductById
-};
-
-2、AMD规范：代表：seajs
-define("moduleName", ["dep"], function(dep) {
-	module.exports = {
-		getProducts,
-		getProductById
-	};
-});
-require(["moduleA"], function(moduleA) {
-});
-
-3、ES6模块化
-import React from "react";
-
-export function hello() {};
-
 
 2017的主要任务：汇编语言 操作系统 计算机网络
 为什么学习操作系统、计算机网络？
@@ -167,6 +161,7 @@ https://segmentfault.com/a/1190000004322487 你真的会使用XMLHttpRequest吗？
 
 
 
+
 搭建react+redux+ssr项目结构，用react开发电商后台系统，主要包括对webpack进行个性化配置，组件的封装（逻辑组件和傻瓜组件的拆分），state状态树设计，actionType的抽象，reducer函数的编写
 项目关键点：
 1、利用react-router路由管理整个项目的菜单，并实现按需加载
@@ -178,4 +173,8 @@ https://segmentfault.com/a/1190000004322487 你真的会使用XMLHttpRequest吗？
 5、通过workerman框架创建TCP服务器接收由nodejs发来的请求并做相应的业务逻辑处理及数据库操作
 6、session同步问题
 7、对于react的内部原理需要有足够的理解
+
+=======
+If Modified Since和Last Modified请求头
+keep-alive请求头
 
