@@ -181,3 +181,6 @@ If Modified Since和Last Modified请求头
 keep-alive请求头
 
 JavaScript中的运算符'+'实际上是一种运算符重载，类似C++中的cout << "hello,world" << endl;
+
+高内聚、低耦合的案例：
+node服务器中创建过滤器对接受来的请求做不同的处理，其中对于API请求，需建立连接然后创建TCP客户端和服务端通信，此时需封装一个建立TCP请求的方法createSocketClient，将请求的路径和参数作为该方法的参数，但是response对象则无需作为参数传入，因为通过调用response的send方法返回给浏览器数据是过滤器应该做的事情而不是createSocketClient该做的事，此时就需要在createSocketClient内部返回Promise对象，过滤器中注册监听函数，在监听函数中调用response.send();
