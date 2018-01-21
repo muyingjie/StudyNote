@@ -34,6 +34,16 @@ border-right-color: #fff;
 border-bottom-color: #fff;
 
 
+元素垂直居中：
+1、position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+2、给父级加css，单行居中：display: flex; justify-content: center; align-items: center; height: 200px; 注意父级要定高
+3、给父级加css，多行居中：display: flex; justify-content: center; align-items: center; flex-wrap: wrap/wrap-reverse;
+主要样式：
+flex-direction 排列的方向
+justify-content 项目的对齐方式 flex-start flex-end center
+align-items 轴的位置 flex-start flex-end center
+
+
 面向对象的理解：
 利用表单校验类做类比
 继承要从ES3 ES5 ES6依次说明
@@ -92,6 +102,8 @@ CDN的具体使用
 	5) 在TCP层，源端口号，也就是客户端应用程序的端口号通常是随机端口号，目的端口号，也就是服务器中监听的端口号通常是知名端口号（例如http服务器通常监听80端口）
 	6) 当服务器访问量较大时，通常采用集群来降低压力，一旦集群则涉及到如何向这么多服务器转发，通常在这一块做的比较好的有nginx，这也是一款服务器应用程序，可专门用于并发量很大的场合做转发，配置相关的转发策略就可以在负载均衡中发挥作用
 	7) 在数据访问量超大时，即使有反向代理，各个服务器依然很忙碌，则需根据其自身特点进行相对应的优化，例如对于应用服务器(CPU运算密集型)采用合理的算法尽量减少CPU运算次数，对于数据库服务器(IO访问密集型)优化sql、读写分离、NoSQL架构等等，对于Redis服务器(内存运算密集型)好像用storm等，此外还有文件服务器，文件服务器再细分的话还有日志服务器、图片服务器等等。在应用服务器中大约有两种套路，一种就是以nodejs为代表的单线程机制，即将所有的资源集中在一件事上，另一种是以Java等为代表的多线程机制，即给每个请求单开一小部分资源使并行执行，此处不知道理解的是否有误
+	8) websocket
+	9) https
 	
 3、浏览器从响应报文中得到内容之后的处理
 	文件上传的原理？
@@ -150,5 +162,25 @@ TCP/IP详解卷II
 https://segmentfault.com/a/1190000004322487 你真的会使用XMLHttpRequest吗？
 
 
+
+
+搭建react+redux+ssr项目结构，用react开发电商后台系统，主要包括对webpack进行个性化配置，组件的封装（逻辑组件和傻瓜组件的拆分），state状态树设计，actionType的抽象，reducer函数的编写
+项目关键点：
+1、利用react-router路由管理整个项目的菜单，并实现按需加载
+2、引入redux增强器，在每次按需加载页面时动态改变store上的state
+3、服务端渲染时需要babel-register用于解析ES6语法，并且增加配置忽略css文件
+服务器端渲染时缩水数据的生成要保证同客户端初始化后的store对象相同
+服务器端渲染时项目启动文件实现热加载配置
+4、建立nodejs(基于express框架)中间层，通过创建TCP客户端的方式建立与API服务器之间的链接
+5、通过workerman框架创建TCP服务器接收由nodejs发来的请求并做相应的业务逻辑处理及数据库操作
+6、session同步问题
+7、对于react的内部原理需要有足够的理解
+
+=======
 If Modified Since和Last Modified请求头
 keep-alive请求头
+
+JavaScript中的运算符'+'实际上是一种运算符重载，类似C++中的cout << "hello,world" << endl;
+
+高内聚、低耦合的案例：
+node服务器中创建过滤器对接受来的请求做不同的处理，其中对于API请求，需建立连接然后创建TCP客户端和服务端通信，此时需封装一个建立TCP请求的方法createSocketClient，将请求的路径和参数作为该方法的参数，但是response对象则无需作为参数传入，因为通过调用response的send方法返回给浏览器数据是过滤器应该做的事情而不是createSocketClient该做的事，此时就需要在createSocketClient内部返回Promise对象，过滤器中注册监听函数，在监听函数中调用response.send();
