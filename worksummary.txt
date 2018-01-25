@@ -203,3 +203,19 @@ JavaScript中的运算符'+'实际上是一种运算符重载，类似C++中的cout << "hello,world" 
 
 高内聚、低耦合的案例：
 node服务器中创建过滤器对接受来的请求做不同的处理，其中对于API请求，需建立连接然后创建TCP客户端和服务端通信，此时需封装一个建立TCP请求的方法createSocketClient，将请求的路径和参数作为该方法的参数，但是response对象则无需作为参数传入，因为通过调用response的send方法返回给浏览器数据是过滤器应该做的事情而不是createSocketClient该做的事，此时就需要在createSocketClient内部返回Promise对象，过滤器中注册监听函数，在监听函数中调用response.send();
+
+
+TP框架中命名空间：
+// 这是系统的规范要求，表示当前类是Home模块下的控制器类，命名空间和实际的控制器文件所在的路径是一致的
+// 命名空间定义必须写在所有的PHP代码之前声明，否则会出错
+namespace Home\Controller;
+// 表示引入 Think\Controller 命名空间便于直接使用
+use Think\Controller;
+// 下面的类定义等同于class IndexController extends \Think\Controller;
+class IndexController extends Controller {
+    public function index(){
+        echo 'hello,world!';
+    }
+}
+
+C方法获取配置 config
