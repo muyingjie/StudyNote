@@ -66,6 +66,25 @@ static class Closure {
 }
 
 
+原型链的理解：
+function Animal() {
+	this.a = 1; // 类似Java中的实例成员
+}
+Animal.prototype.b = 1; // 类似Java中的静态成员
+Animal.prototype.changeA = function() {
+	
+};
+
+class Animal {
+	private int a = 1; // 实例成员
+	public static int b = 1; // 功能类似于挂载原型对象上的成员，Java中可以通过访问修饰符控制外部及其子类能否访问该成员
+	int c = 1; // 定义在了类下面，即使没有写访问修饰符，也有默认访问修饰符，也是类的成员变量
+	public int getNumber() {
+		
+	}
+}
+
+
 关于CDN：
 CDN加速原理：
 1、内容缓存（缓存到内存或本地文件）
