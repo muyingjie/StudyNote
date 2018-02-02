@@ -180,7 +180,87 @@ TCP/IP详解卷II
 
 https://segmentfault.com/a/1190000004322487 你真的会使用XMLHttpRequest吗？
 
+<body>
+    <div id="article" class="a1">
+        <p>文章内容</p>
+        <p>文章内容</p>
+        <p>文章内容</p>
+        <p>文章内容</p>
+        <p>文章内容</p>
+    </div>
+    <ul class="comment-list">
+        <li class="item">
+            <span>评论内容</span>
+        </li>
+        <li class="item">
+            <span>评论内容</span>
+        </li>
+        <li class="item">
+            <span>评论内容</span>
+        </li>
+    </ul>
+    <ul class="pageCode">
+        <li class="item"><a href="/article/566844.html"></a></li>
+        <li class="item"><a href="/article/566844.html?comment_page=2"></a></li>
+        <li class="item"><a href="/article/566844.html?comment_page=3"></a></li>
+    </ul>
+    <input type="text" id="text1" class="t1" value="err" />
+    <input type="checkbox" checked="checked" id="check1" bbb="ggg" />
+</body>
+<script>
+    var oTxt1 = document.getElementById("text1");
+    var oCh1 = document.getElementById("check1");
 
+    console.log(oTxt1.getAttribute("type"));
+    console.log(oTxt1.type);
+
+    console.log(oTxt1.getAttribute("id"));
+    console.log(oTxt1.id);
+
+    console.log(oTxt1.getAttribute("class"));
+    console.log(oTxt1.className);
+
+    console.log(oTxt1.getAttribute("value"));
+    console.log(oTxt1.value);
+
+    // ========================
+
+    console.log(oCh1.getAttribute("checked"));
+    console.log(oCh1.checked);
+
+    console.log(oCh1.getAttribute("value"));
+    console.log(oCh1.value);
+
+    oCh1.setAttribute("aaa", "str");
+    console.log(oCh1.getAttribute("aaa"));
+    console.log(oCh1.aaa);
+
+    oCh1.setAttribute("ccc", 123);
+    console.log(oCh1.getAttribute("ccc"));
+    console.log(oCh1.ccc);
+
+    console.log(oCh1.getAttribute("bbb"));
+    console.log(oCh1.bbb);
+
+    // 试图用setAttribute的方式修改标签里面设置的属性
+    // oCh1.setAttribute("bbb", "sss");
+    // console.log("试图用setAttribute的方式修改标签里面设置的属性", oCh1.getAttribute("bbb"));
+    // console.log(oCh1.bbb);
+
+    // 试图用.的方式修改标签里面设置的属性
+    oCh1.bbb = "ooo";
+    // 结论是无法通过.的方式修改标签里面设置的属性
+    console.log("试图用.的方式修改标签里面设置的属性", oCh1.getAttribute("bbb"));
+    console.log(oCh1.bbb);
+
+    oCh1.setAttribute("ddd", {a: {b: 1}});
+    console.log(oCh1.getAttribute("ddd"));
+    console.log(oCh1.ddd);
+
+    oCh1.eee = {c: {d: 2}};
+    console.log(oCh1.getAttribute("eee"));
+    console.log(oCh1.eee);
+</script>
 
 
 搭建react+redux+ssr项目结构，用react开发电商后台系统，主要包括对webpack进行个性化配置，组件的封装（逻辑组件和傻瓜组件的拆分），state状态树设计，actionType的抽象，reducer函数的编写
