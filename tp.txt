@@ -1,0 +1,256 @@
+自己定义的函数库叫function.php
+框架自带的函数库叫functions.php
+
+一级配置：系统级配置	ThinkPHP/Conf/convention.php
+二级配置：应用级配置	Application/Common/Conf/config.php
+三级配置：分组级配置	Application/Home/Conf/config.php
+
+在Apache配置文件中有options+indexes，默认展示站点目录，如果在站点目录中不存在，会展示目录结构，但是有了目录安全文件之后就不会展示结构了
+
+URL_MODEL配置路由形式，但是并不影响我们在地址栏中直接输入其他形式路由的访问，影响内部U方法生成URL的策略
+
+U("index") // 返回当前控制器下index方法的url，会自动加上.html扩展名
+/index.php/Admin/Test/index.html
+
+U("GoodsCategory/index") // 返回GoodsCategory控制器下的index方法的url
+
+U("Goods/GoodsCategory/index") // 返回Goods分组下GoodsCategory控制器下的index方法的url
+
+U("GoodsCategory/index", array('id' => 100))
+/index.php/GoodsCategory/index/id/100.html
+
+Controller中系统跳转方法：
+成功
+$this -> success([跳转提示], 跳转地址, 等待时间);
+失败
+$this -> error([跳转提示], 跳转地址, 等待时间);
+例：$this -> success('操作成功', U("index"), 10);
+
+
+自带模板常量
+__MODULE__		/index.php/Goods
+__CONTROLLER__	/index.php/Goods/GoodsCategory
+__ACTION__		/index.php/Goods/GoodsCategory/index
+__PUBLIC__		/Public 站点根目录下Public目录路由
+__SELF__		/index.php/Goods/GoodsCategory/index/id/100
+
+display和fetch方法类似
+$this -> display(); //展示模板
+$str = $this -> fetch(); //获取模板
+dump($str); // dump是tp封装的输出较友好的打印方法
+
+底层实现：
+display：替换模板中常量/变量 -> 获取模板内容 -> 输出模板内容
+fetch：替换模板中常量/变量 -> 获取模板内容
+
+display内部调用了fetch
+
+入口文件中通常会加上一个header头，声明字符集
+header("Content-Type:text/html;charset=utf-8");
+
+视图中使用函数：
+{$变量|函数名1|函数名2=参数1,参数2...}
+
+例如：
+{$time|date='Y-m-d H:i:s',$time} 
+参数$time也可以写成###，###表示$time变量自身
+{$time|date='Y-m-d H:i:s',###}
+
+注：
+当需要使用的函数只有一个参数且参数是变量自身的时候###可以省略不写
+当需要使用的函数有多个参数但是第一个参数是变量自身的时候也可以省略不写
+
+{$time|default=0} default是tp封装的一个函数，表示如果$time没有定义或变量为空的时候，默认为0
+
+之所以有数据库表前缀，是因为历史原因，早年间只有虚拟主机而没有云服务器，因此只能在一个数据库上开发，这样不同的项目之间就用前缀区分
+
+数据库的配置一般放在应用级配置中，即Application/Common/Conf/config.php
+
+模型的创建：
+命名规范：模型名（要求是不带前缀的表名，首字母大写）+ Model.class.php
+
+如：
+DeptModel.class.php
+<?php
+namespace Admin\Dept;
+use Think\Model;
+class DeptModel extends Model {
+	
+}
+
+
+DeptController.class.php
+<?php
+namespace Admin\Controller;
+use Think\Controller;
+class DeptController extends Controller {
+	public function instantiate() {
+		// 当遇到一个未定义的类时回去当前命名空间即Dept\Controller下找DeptModel，但是明显找不到
+		// $obj = new DeptModel();
+		// 可以写成
+		// $obj = new \Admin\Dept\DeptModel();
+		// 可以通过D方法实例化
+		// $obj = D(['模型名']); 表达的含义：实例化我们自己创建的模型（分组/Model目录中）
+		// 如果传递了模型名，则实例化指定的模型，如果没有指定或者模型名不存在，则直接实例化父类模型
+		// 可以通过M方法实例化
+		// $obj = M(['不带前缀的表名']); 表达的含义：直接实例化父类模型（Think目录下的Model.class.php）
+		// 如果指定了表名，则实例化父类模型的时候关联指定的表；如果没有指定表名，如果没有指定表名（没传参），则不关联表，一般用来执行原生的SQL语句（M() -> query(原生的SQL语句)）
+		$model = D('Dept');
+		
+	}
+	// CURD操作
+	// 添加一条记录
+	// $model -> add(一维数组);
+	// 一维数组要求必须是键值数组（即关联数组），键必须和数据库表字段名匹配，如果不匹配则在增加的时候会被tp过滤掉
+	
+	// 添加多条记录
+	// $model -> addAll(二维数组);
+	// 二维数组的第一维是索引数组，第二维是关联数组，每个子数组里面各个字段的顺序必须一致
+	
+	// 往部门表中使用add方法添加一条记录
+	public function add() {
+		// 使用父类模型，传入表名
+		$model = M("Dept");
+		$data = array(
+			'name' => '人事部',
+			'pid'  => 0,
+			'sort' => 1,
+			'remark'=> '人事部门'
+		);
+		$res = $model -> add($data);
+		dump($res); // string(1) "1" 返回新增记录的主键id，不是影响的行数
+		
+	}
+	
+	// 修改一条记录
+	// $model -> save(一维关联数组); 一维关联数组必须要有主键信息，原生SQL中没有主键信息的话相当于批量修改，但tp中为了误操作，不允许批量修改
+	
+	public function save() {
+		$model = M("Dept");
+		$data = array(
+			'id' => 2,
+			'sort' => 5,
+			'remark' => 'xxx'
+		);
+		$res = $model -> save($data);
+		// 返回布尔类型值，如果没有指定主键信息则返回false
+		// 返回false代表SQL没有执行，并不是执行失败
+		// 正常执行返回受到影响的行数
+	}
+	
+	// 查询
+	// find和select
+	// $model -> select();
+	// $model -> select(id);
+	// $model -> select("id1,id2,id3"); // 查询指定id集合的信息，等价于mysql中的in语句
+	
+	// $model -> find(); // 查询第一条记录，相当于limit 1
+	// $model -> find(id); // 查询指定id的记录，功能同select(id)
+	
+	// select返回二维数组，即使查询一条记录，返回也是二维数组
+	// find返回一维数组，因为find只查一条记录
+	
+	public function select() {
+		$model = M('Dept');
+		$data = $model -> select();
+		
+		$data1 = $model -> find();
+	}
+	
+	// 删除操作
+	// $model -> delete(); 不能使用，删除方法必须要有条件
+	// $model -> delete(id);
+	// $model -> delete("id1,id2,id3");
+	// 删除分为物理删除和逻辑删除，本质是修改操作，在数据库表中定义一个状态字段
+	// 绝大多数情况都是逻辑删除
+	public function del() {
+		$model = M('Dept');
+		$result = $model -> delete(1);
+		// 如果返回false，代表SQL没有执行而不是执行失败了
+		// 正常情况下返回影响的行数
+		$result = $model -> delete('1,13');
+	}
+}
+
+tp提供的调试工具：
+1、跟踪信息：就是查询/展示系统的执行相关状况，tp中默认关闭了跟踪信息，可以通过
+SHOW_PAGE_TRACE
+配置项开启
+
+SHOW_PAGE_TRACE配置项不在系统配置项中
+
+通常将其加到应用配置项中：SHOW_PAGE_TRACE => true
+
+生产模式下系统函数库文件functions.php、系统配置文件、应用配置文件没有被加载，但多加载了一个common~runtime.php配置文件（没有被加载的配置项都放在了这个文件里），因此在生产环境中如果改了这三个文件的话需要删除common~runtime.php，再自动生成
+
+sql调试
+$model -> getLastSql(); // 获取当前模型中最后一条成功执行的SQL语句
+public function test17() {
+	$model = M('Dept');
+	$data = $model -> select();
+	echo $model -> getLastSql(); // _sql和getLastSql使用方法和功能一样
+}
+
+测试一段代码的执行时间，可以用G方法
+public function test18() {
+	G('start');
+	for ($i = 0; i < 10000; $i++) {
+	}
+	G('stop');
+	echo G('start', 'stop', 4); // 精确到4位小数，单位是秒
+}
+
+AR模式即Active Record模式，是一个对象关系映射（ORM）技术，每个AR类代表一张数据表（或视图），数据表（或视图）的字段在AR类中体现为类的属性，一个AR实例表示表中的一行
+AR类      ---表
+AR类的属性---表字段
+AR类的实例---表记录
+
+AR模式的CURD操作：
+// 实例化模型
+$model = M(关联的表);
+// 字段映射到属性
+$model -> 属性/表中字段 = 字段值
+$model -> 属性/表中字段 = 字段值
+// AR实例（操作）映射到表中记录
+$model -> CURD操作 没有参数
+
+public function test19(){
+	// 类映射表
+	$model = M('Dept');
+	// 属性映射字段
+	// 注意：Model父类其实没有name，pid，sort等属性
+	// 当设置一个不存在的属性时，会执行__set方法，从源码中可以看到Model父类中重写了__set：
+	// public function __set($name, $value) {
+	// 	$this -> data[$name] = $value;
+	// }
+	// 从这个实现中可以看到这些属性都放到了data属性上，data是一个关联数组
+	$model -> name = '技术部';
+	$model -> pid  = '0';
+	$model -> sort = '10';
+	$model -> remark = '技术部门';
+	// 实例映射记录
+	// 在Model父类的add方法中，可以看到：
+	public function add($data = '', $options = array(), $replace = false) {
+		if (empty($data)) {
+			if (!empty($this -> data)) {
+				$data = $this -> data;
+				// 由于接下来还会重复使用该对象添加，故此处需要清空data属性
+				$this -> data = array();
+			} else {
+				$this -> error = L('_DATA_TYPE_INVALID_');
+				return false;
+			}
+		}
+	}
+	$result = $model -> add();
+	dump($result); // 返回新增记录的主键id
+}
+
+
+
+
+
+
+
+
+
