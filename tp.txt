@@ -19,6 +19,13 @@ U("Goods/GoodsCategory/index") // ·µ»ØGoods·Ö×éÏÂGoodsCategory¿ØÖÆÆ÷ÏÂµÄindex·½·
 U("GoodsCategory/index", array('id' => 100))
 /index.php/GoodsCategory/index/id/100.html
 
+ÃüÃû¿Õ¼ä³öÏÖÔÚPHP5.3Ö®ºó
+ÃüÃû¿Õ¼äµÄÉùÃ÷±¾ÉíÃ»ÓĞÒªÇó¸úÄ¿Â¼ÓĞ¹Ø£¬µ«ÔÚtpÖĞÒªÇó±ØĞë¸úÄ¿Â¼ÃûÏà¹Ø
+// ÏÂÃæµÄ´úÂë´ú±íHomeÄ£¿éÏÂµÄËùÓĞ¿ØÖÆÆ÷¶¼·ÅÔÚHome/ControllerÖĞ
+namespace Home/Controller;
+// ÏÂÃæµÄThink¾ÍÊÇÖ¸ÏòThinkÄ¿Â¼
+use Think/Controller;
+
 ControllerÖĞÏµÍ³Ìø×ª·½·¨£º
 ³É¹¦
 $this -> success([Ìø×ªÌáÊ¾], Ìø×ªµØÖ·, µÈ´ıÊ±¼ä);
@@ -228,29 +235,216 @@ public function test19(){
 	$model -> pid  = '0';
 	$model -> sort = '10';
 	$model -> remark = '¼¼Êõ²¿ÃÅ';
-	// ÊµÀıÓ³Éä¼ÇÂ¼
-	// ÔÚModel¸¸ÀàµÄadd·½·¨ÖĞ£¬¿ÉÒÔ¿´µ½£º
-	public function add($data = '', $options = array(), $replace = false) {
-		if (empty($data)) {
-			if (!empty($this -> data)) {
-				$data = $this -> data;
-				// ÓÉÓÚ½ÓÏÂÀ´»¹»áÖØ¸´Ê¹ÓÃ¸Ã¶ÔÏóÌí¼Ó£¬¹Ê´Ë´¦ĞèÒªÇå¿ÕdataÊôĞÔ
-				$this -> data = array();
-			} else {
-				$this -> error = L('_DATA_TYPE_INVALID_');
-				return false;
-			}
-		}
-	}
+	
 	$result = $model -> add();
 	dump($result); // ·µ»ØĞÂÔö¼ÇÂ¼µÄÖ÷¼üid
 }
 
+// ÊµÏÖÔ­Àí£º
+// ÊµÀıÓ³Éä¼ÇÂ¼
+// ÔÚModel¸¸ÀàµÄadd·½·¨ÖĞ£¬¿ÉÒÔ¿´µ½£º
+public function add($data = '', $options = array(), $replace = false) {
+	if (empty($data)) {
+		if (!empty($this -> data)) {
+			$data = $this -> data;
+			// ÓÉÓÚ½ÓÏÂÀ´»¹»áÖØ¸´Ê¹ÓÃ¸Ã¶ÔÏóÌí¼Ó£¬¹Ê´Ë´¦ĞèÒªÇå¿ÕdataÊôĞÔ
+			$this -> data = array();
+		} else {
+			$this -> error = L('_DATA_TYPE_INVALID_');
+			return false;
+		}
+	}
+}
+
+// ĞŞ¸Ä²Ù×÷
+public function test20() {
+	$model = M('Dept');
+	// Ö¸¶¨ĞŞ¸ÄµÄid
+	$model -> id = '2';
+	// ½«ÊôĞÔĞŞ¸Ä
+	$model -> name = 'bbb';
+	
+	$result = $model -> save($model -> id);
+	dump($result); // Õı³£Çé¿öÏÂ·µ»ØÓ°ÏìµÄĞĞÊı
+}
+
+// ARÄ£Ê½Ã»ÓĞ²éÑ¯²Ù×÷
+
+// É¾³ıÊ±±ØĞëÖ¸¶¨Ö÷¼üĞÅÏ¢
+public function test21() {
+	$model = M('Dept');
+	$model -> id = '2,15';
+	$result = $model -> delete($model -> id);
+	dump($result); // Õı³£Çé¿öÏÂ·µ»ØÓ°ÏìµÄĞĞÊı
+}
+
+¶ÔÓÚĞŞ¸ÄºÍÉ¾³ı·½·¨£¬Èç¹ûÔÚÖ®Ç°ÓĞ×ö¹ı²éÑ¯Óï¾ä£¬ÔòºóÃæÈç¹ûÃ»ÓĞÖ¸¶¨Ö÷¼ü£¬»á²Ù×÷µ±Ç°²éÑ¯µ½µÄ¼ÇÂ¼£¬¿ÉÒÔÀí½âÎªµ±Ç°²éÑ¯µ½µÄ¼ÇÂ¼±»»º´æÆğÀ´×÷ÎªÁËµ±Ç°ÕıÔÚ²Ù×÷µÄ¼ÇÂ¼
+
+tpÖĞµÄ¸¨Öú·½·¨
+Ô­ÉúSQLÖĞ³ıÁËÎÒÃÇÄ¿Ç°ËùÊ¹ÓÃµÄ»ù±¾²Ù×÷Ö®ºó£¬»¹ÓĞÀàËÆÓÚgroup¡¢where¡¢order¡¢limitµÈµÈÕâÑùµÄ×Ó¾ä£¬tpÖĞ·â×°ÁËÏàÓ¦µÄ×Ó¾ä·½·¨
+where
+limit
+field
+order
+group
+
+$model -> where(Ìõ¼ş±í´ïÊ½); // ÔÚtpÖĞÌõ¼ş±í´ïÊ½Ö§³Ö×Ö·û´®ĞÎÊ½£¬Ò²Ö§³ÖÊı×éĞÎÊ½
+$model -> where('id = 1');
+$model -> where(array('id' => 1));
+
+public function test23() {
+	$model = M('Dept');
+	$model -> where('id > 20'); // »áÉèÖÃ$modelÊµÀı»¯¶ÔÏóµÄoptionsÊôĞÔÎª'id > 20'
+	$data = $model -> select(); // ´Ó$modelÖĞÈ¡³öoptionsÊôĞÔ£¬ÔÙ¹¹³ÉSQLÓï¾ä×ö²éÑ¯
+	dump($data);
+}
+
+Í¨whereÒ»Ñù£¬havingÒ²ÓÃÀ´ÏŞÖÆ²éÑ¯½á¹û£¬¶øwhereÏŞÖÆµÄÌõ¼şÖĞµÄ×Ö¶Î±ØĞëÊÇÊı¾İ±íÖĞ´æÔÚµÄ×Ö¶Î£¬havingÒªÇóÌõ¼şÖĞµÄ×Ö¶Î±ØĞëÊÇ½á¹û¼¯ÖĞ´æÔÚµÄ
+
+$model -> limit(n); // ±íÊ¾Êä³ö±íÖĞÇ°nĞĞ
+$model -> limit(ÆğÊ¼Î»ÖÃ,Æ«ÒÆÁ¿/³¤¶È); // ±íÊ¾´ÓÆğÊ¼Î»ÖÃ¿ªÊ¼£¬Íùºó²éÑ¯Ö¸¶¨³¤¶ÈµÄ¼ÇÂ¼Êı£¬ÔÚÊµ¼ÊÊ¹ÓÃµÄÊ±ºò¸Ã·½·¨»¹¿ÉÒÔĞ´³É$model -> limit('ÆğÊ¼Î»ÖÃ,Æ«ÒÆÁ¿');
+
+fieldÓÃÀ´ÏŞÖÆÊä³öµÄ×Ö¶Î
+$model -> field('×Ö¶Î1,×Ö¶Î2,×Ö¶Î3[as ±ğÃû],×Ö¶Î4...'); // Ò²¾ÍÊÇÔ­ÉúSQLÖĞselectÖ®ºóµ½fromÖ®Ç°µÄ²¿·Ö
+
+order·½·¨£¬°´ÕÕÖ¸¶¨µÄ×Ö¶Î½øĞĞÖ¸¶¨¹æÔòµÄÅÅĞò
+ÔÚÔ­ÉúµÄSQLÓï·¨ÖĞÊ¹ÓÃµÄ¹æÔòÊÇorder by ×Ö¶Î ÅÅĞò¹æÔò(ÉıĞòasc/½µĞòdesc)
+$model -> order('×Ö¶ÎÃû ÅÅĞò¹æÔò');
+public function test26() {
+	$model = M('Dept');
+	$model -> order('id desc');
+	$data = $model -> select();
+	dump($data);
+}
+
+group·½·¨£¬ÓÃÀ´×ö·Ö×é²éÑ¯
+$model -> group('×Ö¶ÎÃû');
+Àı£º²éÑ¯²¿ÃÅÃû³ÆºÍ³öÏÖµÄ´ÎÊı
+select name,count(*) as count from sp_dept group by name;
+public function test27() {
+	$model = M('Dept');
+	// fieldºÍgroupË³ĞòÎŞËùÎ½£¬×îºó»áÍ¨¹ı_parseOptionsÍ³Ò»´¦Àí
+	$model -> field('name,count(*) as count');
+	$model -> group('name');
+	$data = $model -> select();
+	dump($data);
+}
+
+orderºÍgroupÔÚ¸¸ÀàÄ£ĞÍÖĞÊÇ²»´æÔÚµÄ£¬µ÷ÓÃÒ»¸ö²»´æÔÚµÄ·½·¨Ê±»á×ßÄ§Êõ·½·¨__call£¬½øĞĞºóĞø´¦Àí
+
+Á¬¹á²Ù×÷£¨ÖØµã£©
+ÔÚÁ¬¹á²Ù×÷ÖĞ£¬¶Ôwhere limit order fieldµÄË³ĞòÃ»ÓĞÒªÇó£¬Ö»Òª·ûºÏÄ£ĞÍÔÚ×îÇ°Ãæ£¬CURDÔÚ×îºóÃæ¼´¿É
+
+public function test28() {
+	$model = M('Dept');
+	$model -> field('name, count(*) as count') -> group('name') -> select();
+}
+
+Í¨¹ı²é¿´fieldÔ´Âë·¢ÏÖ·µ»Ø$this£¬¼´µ±Ç°Ä£ĞÍµÄ¶ÔÏó£¬¹Ê¿ÉÒÔ×öÁ¬¹á²Ù×÷
+¶ø¾ßÌåµÄCURD·µ»ØµÄ²»ÊÇ$this£¬¶øÊÇ½á¹û»ò½á¹û¼¯£¬ËùÒÔÒª·Åµ½×îºó
+
+tpÖĞÌá¹©µÄ²éÑ¯·½·¨£º
+public function test29() {
+	$model = M('Dept');
+	$count = $model -> count();
+	dump($count); // ·µ»ØstringÀàĞÍ
+}
 
 
+public function test30() {
+	$model = M('Dept');
+	// maxÒª²éÑ¯Ö¸¶¨×Ö¶ÎÃûµÄ×î´óÖµ£¬¹ÊÒª´«Èë×Ö¶ÎÃû×÷Îª²ÎÊı
+	// »ñÈ¡×îĞÂ×¢²áµÄ»áÔ±µÄĞÅÏ¢Í¨³£»áÓÃmax·½·¨²éÑ¯id×î´óµÄ¼ÇÂ¼£¬ÒòÎª×îºó×¢²áµÄ¿Ï¶¨id×î´ó
+	$max = $model -> max('id');
+	dump($max); // ·µ»ØstringÀàĞÍ
+}
 
 
+min¡¢avg¡¢sum·½·¨Í¬Àí£¬²»ÔÙÏêÊö
+
+fetchSql
+Ö®Ç°½éÉÜµÄsqlµ÷ÊÔµÄÒ»¸ö·½·¨getLastSql»òÕß±ğÃû_sql()£¬Õâ¸ö·½·¨ÒªÇó×îºóÒ»ÌõÓï¾äÖ´ĞĞ³É¹¦²ÅÓĞ½á¹û£¬Ö»ÄÜµ÷ÊÔÂß¼­´íÎó£¬²»ÄÜµ÷ÊÔÓï·¨´íÎó
+$model -> where() -> limit() -> order() -> fetchSql(true) -> CURD²Ù×÷
+fetchSql·½·¨Ê¹ÓÃµÄÊ±ºò¿ÉÒÔÍêÈ«¿´×öÊÇÒ»¸ö¸¨Öú·½·¨£¬±ØĞë·ÅÔÚmodelÖ®ºó£¬ÔÚCURD²Ù×÷Ö®Ç°£¬fetchSqlÖ»ÄÜÔÚtp3.2.3Ö®ºóÊ¹ÓÃ
+
+Ê¹ÓÃfetchSqlÖ®ºóÔ­ÓĞµÄÁ¬¹á²Ù×÷²¢Ã»ÓĞÖ´ĞĞ£¬¶øÊÇÖ±½Ó½«Á¬¹á²Ù×÷µÄÓï·¨×é³ÉµÄsqlÓï¾ä·µ»Ø²¢´òÓ¡ÁË³öÀ´
 
 
+Ç°ÃæÍ¨¹ıARÄ£Ê½ÉèÖÃ¶ÔÏóÊôĞÔµÄ·½Ê½Ö»ÄÜÉèÖÃÒ»¸öÊôĞÔ¾ÍĞ´Ò»ĞĞ´úÂë£¬ËùÒÔÔÚtpÖĞÏµÍ³Ìá¹©ÁËÁíÍâÒ»ÖÖÅúÁ¿ÉèÖÃÊôĞÔµÄ·½·¨£º
+$model -> create();
+Èç¹û²»¸øcreate´«²Î£¬ÔòÄ¬ÈÏÊ¹ÓÃpost²ÎÊı
+create·µ»Ø´¦ÀíÍê³ÉµÄdataÊı¾İ
+
+public function add() {
+	$model = M('Dept');
+	// ´´½¨Êı¾İ¶ÔÏó£¬²»´«²ÎÊ±Ä¬ÈÏ½ÓÊÕpostÊı¾İ£¬Èç¹ûpost²ÎÊıÖĞµÄ×Ö¶ÎºÍÊı¾İ±íÖĞµÄ×Ö¶Î²»Æ¥Åä£¬Ôò´´½¨Êı¾İ¶ÔÏóµÄÊ±ºò»á±»¹ıÂËµô
+	$model -> create();
+	$result = $model -> add();
+	if ($result) {
+		$this -> success('Ìí¼Ó³É¹¦', U('showlist'), 3);
+	} else {
+		$this -> error('Ìí¼ÓÊ§°Ü');
+	}
+}
+
+×Ô¶¯ÑéÖ¤£ºÔÚÌá½»Êı¾İµÄÊ±ºòÏµÍ³»á°´ÕÕÖ¸¶¨µÄ¹æÔò½øĞĞÊı¾İµÄÓĞĞ§ĞÔ·ÖÎö
+ÔÚcreate·½·¨ÖĞÖ´ĞĞÁËautoValidation×Ô¶¯ÑéÖ¤µÄ´¦Àí£¬Èç¹ûĞèÒªÊ¹ÓÃ×Ô¶¯ÑéÖ¤£¬Ôò±ØĞëÊ¹ÓÃÊı¾İ¶ÔÏó´´½¨·½·¨½øĞĞ½ÓÊÕÊı¾İ
+
+ÔÚModel¸¸ÀàÖĞÓĞÒ»¸öÊôĞÔ£º
+protected $_validate = array();
+Òò´Ë¿ÉÒÔÔÚ×ÓÀàÖĞ×ö¸öĞÔ»¯ÅäÖÃ
+
+Õë¶Ô²¿ÃÅÌí¼Ó¹¦ÄÜÑéÖ¤×Ö¶ÎºÏ·¨ĞÔ
+namespace Admin\Dept;
+use Think\Model;
+class DeptModel extends Model{
+	protected $_validate = array(
+		// ²ÎÊı1£º×Ö¶ÎÃû
+		// ²ÎÊı2£ºĞ£Ñé¹æÔò(ÎÄµµÖĞÓĞ¶¨ÒåºÃµÄĞ£Ñé¹æÔò)
+		// ²ÎÊı3£ºÌáÊ¾ĞÅÏ¢
+		// ²ÎÊı4£º
+		// ²ÎÊı5£º¸½¼Ó¹æÔò
+		array('name', 'require', '²¿ÃÅÃû³Æ²»ÄÜÎª¿Õ'),
+		// ÓÉÓÚÃû³ÆÊÇ·ñ´æÔÚÕâÖÖÑéÖ¤ĞèÒª·ÃÎÊÊı¾İ¿â£¬Òò´ËµÚ¶ş¸ö²ÎÊıÃ»ÓĞÌî£¬¶øÔÚµÚ5¸ö²ÎÊıÖĞ´«ÈëÊÊµ±µÄÖµ×öÕâÖÖĞ£Ñé
+		array('name', '', '²¿ÃÅÃû³ÆÒÑ¾­´æÔÚ', 0, 'unique'),
+		array('sort', 'number', 'ÅÅĞò·½Ê½±ØĞëÊÇÊı×Ö'),
+		// ¶ÔÓÚ±È½Ï¸´ÔÓµÄÑéÖ¤»¹¿ÉÒÔÊ¹ÓÃº¯ÊıÀ´×ö¸½¼Ó¹æÔò£¨µÚ5¸ö²ÎÊı´«'function'£©£¬½«µÚ2¸ö²ÎÊı×÷Îªº¯ÊıÃû´«Èë
+		array('sort', 'is_numberic', 'ÅÅĞò·½Ê½±ØĞëÊÇÊı×Ö', 0, 'function')
+	);
+}
+
+×¢£ºÒòÎª¹æÔò¶¨Òåµ½ÁË×Ô¶¨ÒåÄ£ĞÍÖĞ£¬ËùÒÔÊµÀı»¯Ä£ĞÍÊ±±ØĞëÒªÊµÀı»¯×Ô¶¨ÒåÄ£ĞÍ
+
+ÔÚ¿ØÖÆÆ÷ÖĞ$res = $model -> create();µÃµ½µÄ½á¹ûÈç¹ûÊÇfalse£¬ÔòÑéÖ¤Ê§°Ü
+Í¨¹ı$model -> getError();¿ÉÒÔµÃµ½´íÎóĞÅÏ¢
+
+
+ÅúÁ¿ÑéÖ¤
+ĞèÒªÅäÖÃÒ»¸ö³ÉÔ±ÊôĞÔ£ºpatchValidateÉèÖÃ³Étrue£¬Ôò±íÊ¾¿ªÆôÅúÁ¿ÑéÖ¤
+class DeptModel extends Model{
+	// ¿ªÆôÅúÁ¿ÑéÖ¤Ö®ºóÔÚ¿ØÖÆÆ÷ÖĞÍ¨¹ı$model -> getError();µÃµ½µÄÊÇÒ»¸öÊı×é£¬·µ»ØËùÓĞµÄ´íÎóĞÅÏ¢
+	protected $patchValidate = true;
+	protected $_validate = array(
+		array('name', 'require', '²¿ÃÅÃû³Æ²»ÄÜÎª¿Õ'),
+		array('name', '', '²¿ÃÅÃû³ÆÒÑ¾­´æÔÚ', 0, 'unique'),
+		array('sort', 'number', 'ÅÅĞò·½Ê½±ØĞëÊÇÊı×Ö'),
+		array('sort', 'is_numberic', 'ÅÅĞò·½Ê½±ØĞëÊÇÊı×Ö', 0, 'function')
+	);
+}
+
+×Ö¶ÎÓ³Éä£º
+Ó¦ÓÃ³¡¾°£ºÄ¿Ç°±íµ¥ÖĞµÄnameÖµºÍÊı¾İ±íÖĞµÄ×Ö¶ÎÃû¶¼ÊÇÒ»ÑùµÄ£¬ÓĞĞ©ÈË¿ÉÄÜÍ¨¹ıµ±Ç°¹¦ÄÜºÍ±íµ¥µÄnameÖµ²Â²â³öÊı¾İ±íµÄÃû×ÖºÍ½á¹¹¡£ºóÆÚ¿ÉÄÜ»áÕÒµ½ÏµÍ³µÄÂ©¶´£¬¶ÔÏµÍ³½øĞĞ¹¥»÷
+Òò´Ë£¬ÎÒÃÇ¿ÉÒÔÊ¹ÓÃ×Ö¶ÎÓ³Éä£¬½«nameÖµËæ»úÖ¸¶¨£¬nameÖµ¾ÍºÍ±íµÄ×Ö¶Î²»Ò»ÖÂÁË£¬ÕâÑù¾Í²Â²â²»³ö±íµÄ½á¹¹ÁË¡£
+ÒòÎªÈç¹û×Ö¶ÎºÍÊı¾İ±íºêµÄ×Ö¶Î²»Æ¥Åä£¬ÔÚ²Ù×÷µÄÊ±ºò»á±»ÏµÍ³¹ıÂË£¬ËùÒÔĞèÒªÓĞÒ»¸ö¶ÔÕÕÁĞ±í£¬¸æÖªÏµÍ³£¬²»¶ÔÓ¦µÄnameÖµÊÇÊı¾İ±íÖĞµÄ×Ö¶Î
+×Ö¶ÎÓ³ÉäºÍ×Ô¶¯ÑéÖ¤Ò»Ñù£¬Ã»ÓĞÓï·¨£¬Ö»ÓĞ¹æÔò¶¨Òå
+	Í¨¹ı³ÉÔ±ÊôĞÔ$_mapÀ´¶¨Òå
+class DeptModel extends Model{
+	// keyÊÇ±íµ¥ÖĞµÄname ÖµÊÇÊı¾İ±íÖĞµÄ×Ö¶ÎÃû
+	protected $_map = array(
+		// ±íµ¥ÖĞnameÎªabcµÄÏî¶ÔÓ¦Êı¾İ±íÖĞname×Ö¶Î
+		'abc' => 'name'
+	);
+	// ×¢£ºÔÚControllerÖĞ
+}
 
 

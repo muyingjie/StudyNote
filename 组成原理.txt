@@ -1,0 +1,5 @@
+组成原理
+CPI：Cycles Per Instruction
+CPU执行时间 = ( CPU时钟周期数 / 程序 ) * 时钟周期
+			= ( CPU时钟周期数 / 程序 ) / 时钟频率
+			= 指令条数 / 程序 * CPI * 时钟周期
