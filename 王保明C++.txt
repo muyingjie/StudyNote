@@ -606,6 +606,7 @@ void copy_str2(char* from, char* to){
 }
 //再次优化
 void copy_str3(char* from, char* to){
+	// 对于循环的最后一次，*from指向d之后，表达式*to = *from的值不为0，故from、to再自增，此时*from会指向'\0'，再将'\0'赋值给*to，*to = *from的值为0，但是*to已经被赋值为0
 	while((*to = *from) != '\0'){
 		from++;
 		to++;
@@ -629,7 +630,7 @@ void copy_str6(char* from, char* to){
 	while(*to++ = *from++);
 }
 
-此时如果在main函数中想printf一下from字符串，发现打印不出来了，这是因为from已经指向'\0'了，因此打印不出来，应该在被调用函数中开两个变量把from和to缓冲一下
+此时如果在copy_str函数中想printf一下from字符串，发现打印不出来了，这是因为from已经指向'\0'了，因此打印不出来，应该在被调用函数中开两个变量把from和to缓冲一下
 void copy_str4(char* from, char* to){
 	char* tmpfrom = from;
 	char* tmpto = to;
