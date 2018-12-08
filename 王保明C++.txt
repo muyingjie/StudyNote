@@ -95,7 +95,7 @@ printf("%d",sizeof(a));//4
 struct Teacher{
 	char name[64];
 	int age;
-}Teacher;
+};
 void main(){
 	int a;
 	int b[10];
