@@ -1,0 +1,191 @@
+第三方模块：
+    bodyParser  解析post请求数据
+    cookies     读写cookie
+    swig        模板引擎
+    mongoose    操作mongodb数据
+    markdown    markdown语法解析生成模块
+
+项目目录分析
+    db      数据库存储目录
+    models  数据库模型文件目录
+    schemas 数据库结构文件目录
+    public  静态文件目录
+    views   模板文件目录
+    routers 路由文件目录
+    app.js  入口文件
+
+app.js
+    var express = require('express')
+    // 加载模板框架
+    var swig = require('swig')
+    // 创建http server
+    var app = express()
+    // param1：定义模板引擎的扩展名
+    // param2：模板渲染函数
+    app.engine('html', swig.renderFile)
+    // 设置模板存放的目录
+    app.set('views', './views')
+    // 注册所使用的模板引擎
+    // param1：始终都是字符串'view engine'
+    // param2：通过app.engine设置的第一个参数
+    app.set('view engine', 'html')
+    // 开发过程中取消模板缓存
+    swig.setDefaults({cache: false})
+
+    app.listen(8081)
+    // 通过app.get或app.post等方法可以把一个url路径和一个或多个函数进行绑定
+    // next用于执行下一个与当前路径匹配的函数
+    // 最终通过res.send(string)发送内容至客户端
+    app.get('/', function (req, res, next) {
+        // res.send('<h1>123</h1>')
+        // param1：模板文件，相对于views目录
+        // param2：传递给模板使用的数据
+        res.render('index')
+    })
+========================================================================
+    // 如果在模板中引用了main.css文件，则可以在服务端为该请求做对应的处理
+    app.get('/main.css', function (req, res, next) {
+        // 默认情况下发送给浏览器的是text/html格式的，我们需要设置特定响应头告诉浏览器发送的是css文件
+        res.setHeader('content-type', 'text/css')
+        res.send('body {background: red}')
+    })
+    // 如果对每个静态文件都做上面的处理，将会非常费力，所以express提供了静态文件托管的功能：
+    // 当用户访问的请求匹配/public时，就用后面的express.static(__dirname + '/public')处理
+    // 因此，前端模板中css的路径应携程/public/main.css
+    app.use('/public', express.static(__dirname + '/public'))
+
+    静态文件的处理可以放到基本配置加载完毕的后面，这样当匹配到该逻辑时就不必往后走匹配动态页面的逻辑了
+
+=========================================================================
+划分模块
+    根据功能进行划分
+        前台模块
+        后台管理模块
+        API模块
+    使用app.use()进行模块划分
+        app.use('/admin', require('./router/admin'))
+        app.use('/api', require('./router/api'))
+        app.use('/', require('./router/main'))
+
+admin.js
+var express = require('express')
+var router = express.Router()
+// 当访问/admin/user的时候就可以看到user被输出
+router.get('/user', function (req, res, next) {
+    res.send('user')
+})
+module.exports = router
+
+前台路由+模板
+main模块
+    /       首页
+    /view   内容页
+API模块
+    /
+    /register
+    /login
+    /comment
+    /comment/post
+admin模块
+    /
+    /user
+    /category
+    /category/add
+    /category/edit
+    /category/delete
+    /article
+    /article/add
+    /article/edit
+    /article/delete
+    /comment
+    /comment/delete
+
+功能模块开发顺序
+    用户
+    栏目
+    内容
+    评论
+
+编码顺序
+    通过Schema定义设计数据存储结构
+    功能逻辑
+    页面展示
+
+安装MongoDB服务，安装完之后需要指定MongoDB存放的数据的路径
+mongod --dbpath=xxx port=27018
+
+入口文件app.js中需要引入mongoose模块并初始化MongoDB的连接
+mongoose.connect('mongdb://localhost:27018/blog', function (err) {
+    if (err) {
+        console.log('db connect error')
+    } else {
+        console.log('db connect success')
+        app.listen(8081)
+    }
+})
+
+schemas中定义表结构
+schemas/user.js
+    var mongoose = require('mongoose')
+    module.exports = new mongoose.Schema({
+        username: String,
+        password: String
+    })
+
+models中定义模型
+models/User.js
+    var mongoose = require('mongoose')
+    var userSchema = require('../schemas/users')
+
+    module.exports = mongoose.model('User', userSchema)
+
+
+
+前台模块路由配置：routers/main
+var express = require('express')
+var router = express.Router()
+
+router.get('/', function (req, res, next) {
+    res.render('main/index')
+})
+module.exports = router
+
+====================================
+实现用户注册
+app.js中引入body-parser
+var bodyParser = require('body-parser')
+app.use(bodyParser.urlencoded({extended: true}))
+
+
+routers/api
+
+var express = require('express')
+var router = express.Router()
+var responseData;
+
+router.use( function (req, res, next) {
+    responseData = {
+        code: 0,
+        message: ''
+    }
+    next()
+})
+
+router.post('/user/register', function (req, res, next) {
+    var username = req.body.username
+    var password = req.body.password
+    var repassword = req.body.repassword
+    if (username === '') {
+        responseData.code = 1
+        responseData.message = '用户名不能为空'
+        res.json(responseData)
+        return
+    }
+    if (password === '') {
+        res.json(responseData)
+        return
+    }
+    responseData.message = 'success'
+    res.json(responseData)
+})
+module.exports = router

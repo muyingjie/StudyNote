@@ -94,12 +94,23 @@ package.json中scripts里面还可以配置webpack的配置文件：
 构建的时候如果执行npm run build，则运行webpack.config.js配置文件
 
 
+===============================================
+webpack实用性基础教程
+加载css时不仅需要使用css-loader，还需要加上style-loader，style-loader会将css以style标签的形式插入html结构中
+例如webpack做了如下配置之后
+module: {
+	rules: [
+		{
+			test: /\.css$/,
+			use: ['style-loader', 'css-loader']
+		}
+	]
+}
+代码中
+import './main.css'; 就会将main.css插入到html中
 
-
-
-
-
-
+css-loader会处理css文件中出现的url，自动引入里面要引入的模块
+file-loader：1、把资源移动到输出目录 2、返回最终引入资源的url
 
 
 
