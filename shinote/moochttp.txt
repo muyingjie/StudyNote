@@ -1,0 +1,108 @@
+HTTP1中有的数据是以字符串形式传输的，HTTP2中所有数据都是以二进制形式传输
+HTTP2中将头信息做了压缩
+HTTP1将HTML页面返回后浏览器需要解析其中的css、js、image资源，然后再重新发起新的请求，请求这些资源，HTTP2中服务器可以解析HTML资源，再将css、js、image同时发给浏览器
+
+设计三次握手的理由：防止服务器创建一些无用的连接
+
+例如：
+有两个服务端脚本：
+// 其中test.html中会发出向8887端口的请求（如下面一个脚本所示）
+http.createServer(function (request, response) {
+    const html = fs.readFileSync('test.html', 'utf8')
+    response.writeHead(200, {
+        'Content-Type': 'text/html'
+    })
+    response.end('123')
+}).listen(8888)
+
+http.createServer(function (request, response) {
+    // 服务器端可以通过响应头设置跨域时允许哪些域的请求：
+    response.writeHead(200, {
+        'Access-Control-Allow-Origin': '*'
+    })
+    response.end('123')
+}).listen(8887)
+
+注：如果注释掉'Access-Control-Allow-Origin': '*'，浏览器向127.0.0.1:8887发送请求时，实际上请求已经成功发出去，而且也成功收到返回值，但是浏览器发现响应头允许解析返回数据的域名中没有127.0.0.1:8887
+
+除了在服务端配置Access-Control-Allow-Origin响应头之外，还可以在客户端使用jsonp来进行跨域，即在link、script、image等标签中返回一段代码
+
+但是，监听8887端口的服务器设置'Access-Control-Allow-Origin': '*'之后除了8888端口可以访问该服务，其他域也可以访问该服务了，所以可以将'Access-Control-Allow-Origin': 'http://localhost:8888'
+
+跨域请求时，如果要请求的服务器端没有做特殊限制，对于发起的请求是有限制的：
+1、请求类型只允许是GET HEAD POST
+2、请求头也只能是某些请求头
+3、Content-Type请求头也必须是text/plain multipart/form-data application/x-www-form-urlencoded
+CORS预请求
+如果在8888端口发起如下请求：
+fetch('http://localhost:8887/', {
+  method: 'POST',
+  headers: {
+    'X-Test-Cors': '123'
+  }
+})
+跨域请求之前，浏览器会先发起一个OPTIONS的预请求，返回值会通过如下responseHeaders告诉浏览器允许的头、方法，Access-Control-Max-Age是允许以上面设置的Access-Control-Allow-Origin、Access-Control-Allow-Headers、Access-Control-Allow-Methods的最长时间
+'Access-Control-Allow-Origin': '*'
+'Access-Control-Allow-Headers': 'X-Test-Cors'
+'Access-Control-Allow-Methods': 'POST, PUT, DELETE'
+'Access-Control-Max-Age': '1000'
+
+Cache-Control可缓存性，可以设置的值有：
+public    HTTP经过的任何地方（客户端、各层代理服务器）都可以缓存
+private   只有发起请求的客户端可以缓存
+no-cache  任何节点都不可以缓存
+max-age到期
+s-maxage 代理服务器中生效
+max-stale 发起请求的一方主动带的头
+must-revalidate
+proxy-revalidate
+no-cache
+no-store
+no-transform
+
+在服务器端，响应头做如下设置后：
+response.writeHead(200, {
+  "Content-Type": 'text/javascript',
+  // 最大缓存时间为20s 设置的是客户端缓存
+  "Cache-Control": 'max-age=20'
+})
+response.end('console.log("script loaded")')
+
+后期Nginx代理会用到Cache-Control的其他值
+
+
+ETag 数据签名，通常和请求内容相关，其生成的hash值常作为其签名，常与If-Match、If-Not-Match配合使用
+
+Cookie 浏览器首次请求时服务器在响应头中返回Set-Cookie
+max-age expires
+Secure
+HttpOnly 无法通过js操作document.cookie
+
+node中设置cookie的方式：
+response.writeHead(200, {
+  'Content-Type': 'text/html',
+  'Set-Cookie': ['id=123;max-age=2', 'abc=456,HttpOnly']
+})
+id和abc将会存到客户端的cookie当中，且名为id的cookie有效期是2s，名为abc的cookie不可以通过js获取或设置
+
+如果二级域名a.test.com要访问一级域名test.com下的cookie，而b.test.com又不能访问test.com下的cookie：
+const host = request.headers.host
+if (request.url === '/') {
+  const html = fs.readFileSync('test.html', 'utf8')
+  if (host === 'a.test.com') {
+    response.writeHead(200, {
+      'Content-Type': 'text/html',
+      'Set-Cookie': ['id=123;max-age=2', 'abc=456,HttpOnly']
+    })
+  }
+  response.end(html)
+}
+
+如果希望test.com这个主域名下的所有二级域名都可以共享abc这个cookie，则可以如下设置：
+if (host === 'test.com') {
+  response.writeHead(200, {
+    'Content-Type': 'text/html',
+    'Set-Cookie': ['id=123;max-age=2', 'abc=456,domain=test.com']
+  })
+}
+response.end(html)
