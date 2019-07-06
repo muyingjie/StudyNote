@@ -1,0 +1,66 @@
+create table flower(
+  id int(10) primary key auto_increment comment '编号',
+  name varchar(30) not null comment '花名',
+  price float not null comment '价格',
+  production varchar(30) not null comment '原产地'
+);
+
+insert into flower values(default, '矮牵牛', 2.5, '南美阿根廷');
+insert into flower values(default, '白如草', 5.0, '墨西哥');
+insert into flower values(default, '半枝莲', 4.0, '巴西');
+
+create table account(
+  id int(10) primary key auto_increment,
+  accno varchar(18) unique,
+  password int(6),
+  balance double,
+  name varchar(20)
+);
+
+insert into account values(
+  default, '1', '2', 1000, '张三'
+);
+insert into account values(
+  default, '3', '4', 2000, '李四'
+);
+insert into account values(
+  default, '5', '6', 3000, '王五'
+);
+insert into account values(
+  default, '6', '7', 4000, 'wangwu'
+);
+
+create table log(
+  id int(10) primary key auto_increment,
+  account varchar(18),
+  accin varchar(18),
+  money double
+);
+
+============
+create table teacher(
+  id int(10) primary key auto_increment,
+  name varchar(20)
+);
+
+create table student(
+  id int(10) primary key auto_increment,
+  name varchar(20),
+  age int(3),
+  tid int(10),
+  constraint fk_teacher foreign key (tid) REFERENCES teacher(id)
+);
+
+insert into teacher values(default, '老师1');
+insert into teacher values(default, '老师2');
+insert into teacher values(default, '老师3');
+
+insert into student values(default, '学生1', 1, 1);
+insert into student values(default, '学生2', 2, 1);
+insert into student values(default, '学生3', 3, 1);
+insert into student values(default, '学生4', 4, 1);
+insert into student values(default, '学生5', 5, 1);
+insert into student values(default, '学生6', 6, 1);
+insert into student values(default, '学生7', 7, 2);
+insert into student values(default, '学生8', 8, 2);
+insert into student values(default, '学生9', 9, 2);

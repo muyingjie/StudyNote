@@ -1,0 +1,162 @@
+HTTP1中有的数据是以字符串形式传输的，HTTP2中所有数据都是以二进制形式传输
+HTTP2中将头信息做了压缩
+HTTP1将HTML页面返回后浏览器需要解析其中的css、js、image资源，然后再重新发起新的请求，请求这些资源，HTTP2中服务器可以解析HTML资源，再将css、js、image同时发给浏览器
+
+设计三次握手的理由：防止服务器创建一些无用的连接
+
+例如：
+有两个服务端脚本：
+// 其中test.html中会发出向8887端口的请求（如下面一个脚本所示）
+http.createServer(function (request, response) {
+    const html = fs.readFileSync('test.html', 'utf8')
+    response.writeHead(200, {
+        'Content-Type': 'text/html'
+    })
+    response.end('123')
+}).listen(8888)
+
+http.createServer(function (request, response) {
+    // 服务器端可以通过响应头设置跨域时允许哪些域的请求：
+    response.writeHead(200, {
+        'Access-Control-Allow-Origin': '*'
+    })
+    response.end('123')
+}).listen(8887)
+
+注：如果注释掉'Access-Control-Allow-Origin': '*'，浏览器向127.0.0.1:8887发送请求时，实际上请求已经成功发出去，而且也成功收到返回值，但是浏览器发现响应头允许解析返回数据的域名中没有127.0.0.1:8887
+
+除了在服务端配置Access-Control-Allow-Origin响应头之外，还可以在客户端使用jsonp来进行跨域，即在link、script、image等标签中返回一段代码
+
+但是，监听8887端口的服务器设置'Access-Control-Allow-Origin': '*'之后除了8888端口可以访问该服务，其他域也可以访问该服务了，所以可以将'Access-Control-Allow-Origin': 'http://localhost:8888'
+
+跨域请求时，如果要请求的服务器端没有做特殊限制，对于发起的请求是有限制的：
+1、请求类型只允许是GET HEAD POST
+2、请求头也只能是某些请求头
+3、Content-Type请求头也必须是text/plain multipart/form-data application/x-www-form-urlencoded
+CORS预请求
+如果在8888端口发起如下请求：
+fetch('http://localhost:8887/', {
+  method: 'POST',
+  headers: {
+    'X-Test-Cors': '123'
+  }
+})
+跨域请求之前，浏览器会先发起一个OPTIONS的预请求，返回值会通过如下responseHeaders告诉浏览器允许的头、方法，Access-Control-Max-Age是允许以上面设置的Access-Control-Allow-Origin、Access-Control-Allow-Headers、Access-Control-Allow-Methods的最长时间
+'Access-Control-Allow-Origin': '*'
+'Access-Control-Allow-Headers': 'X-Test-Cors'
+'Access-Control-Allow-Methods': 'POST, PUT, DELETE'
+'Access-Control-Max-Age': '1000'
+
+Cache-Control可缓存性，可以设置的值有：
+public    HTTP经过的任何地方（客户端、各层代理服务器）都可以缓存
+private   只有发起请求的客户端可以缓存
+no-cache  任何节点都不可以缓存
+max-age到期
+s-maxage 代理服务器中生效
+max-stale 发起请求的一方主动带的头
+must-revalidate
+proxy-revalidate
+no-cache
+no-store
+no-transform
+
+在服务器端，响应头做如下设置后：
+response.writeHead(200, {
+  "Content-Type": 'text/javascript',
+  // 最大缓存时间为20s 设置的是客户端缓存
+  "Cache-Control": 'max-age=20'
+})
+response.end('console.log("script loaded")')
+
+后期Nginx代理会用到Cache-Control的其他值
+
+
+ETag 数据签名，通常和请求内容相关，其生成的hash值常作为其签名，常与If-Match、If-Not-Match配合使用
+
+Cookie 浏览器首次请求时服务器在响应头中返回Set-Cookie
+max-age expires
+Secure
+HttpOnly 无法通过js操作document.cookie
+
+node中设置cookie的方式：
+response.writeHead(200, {
+  'Content-Type': 'text/html',
+  'Set-Cookie': ['id=123;max-age=2', 'abc=456,HttpOnly']
+})
+id和abc将会存到客户端的cookie当中，且名为id的cookie有效期是2s，名为abc的cookie不可以通过js获取或设置
+
+如果二级域名a.test.com要访问一级域名test.com下的cookie，而b.test.com又不能访问test.com下的cookie：
+const host = request.headers.host
+if (request.url === '/') {
+  const html = fs.readFileSync('test.html', 'utf8')
+  if (host === 'a.test.com') {
+    response.writeHead(200, {
+      'Content-Type': 'text/html',
+      'Set-Cookie': ['id=123;max-age=2', 'abc=456,HttpOnly']
+    })
+  }
+  response.end(html)
+}
+
+如果希望test.com这个主域名下的所有二级域名都可以共享abc这个cookie，则可以如下设置：
+if (host === 'test.com') {
+  response.writeHead(200, {
+    'Content-Type': 'text/html',
+    'Set-Cookie': ['id=123;max-age=2', 'abc=456,domain=test.com']
+  })
+}
+response.end(html)
+
+==============
+早期的浏览器会猜测返回的内容是什么格式，然后去解析，这样做有一定的安全问题，可以通过给response响应对象设置X-Content-Type-Options: nosniff来禁止
+
+在浏览器开发者工具-Network的Size那一列中，第一个数字是实际传输的数据量的大小，第二个数字是响应的body部分的大小，实际传输的数据大小可以通过压缩工具压缩，例如zlib：
+const zlib = require('zlib')
+http.createServer(function (request, response) {
+  const html = fs.readFileSync('test.html')
+  response.writeHead(200, {
+    // chrome可以接受的压缩算法有gzip deflate br
+    'Content-Encoding': 'gzip'
+  })
+  response.end(zlib.gzipSync(html))
+}).listen(8888)
+
+在内容很大时实际压缩后的体积可能比Size中第2个数字，即body部分的大小还要小
+
+Content-Type头用来协商浏览器和服务器之间以什么样的形式传递数据，例如文件上传时通常将该值设置为multipart/form-data;此时查看Network中的request头时发现浏览器还会给我们的multipart/form-data;再加上一个boundry字段，该字段作为分块传输时的边界
+
+redirect========================
+http.createServer(function (request, response) {
+  if (request.url === '/') {
+    // 使用302时，客户端会有两次请求，即第一次请求的path是/，第二次请求的path是/new
+    // 使用301时，客户端第一次访问localhost，即访问根路径，会发现有两次和上面302一样的请求，但第二次再访问时就只有一次/new的请求了，实际上，从第二次访问之后，浏览器就缓存下来这个请求了，再访问时直接从缓存中找到对应的请求，再走/new，因为301是永久重定向，而302是临时重定向，永久重定向就是地址不再会是老的了，所以浏览器直接用新的地址就可以了
+    // 使用301时需要格外注意，因为一旦用户接受了code为301的response，那在客户端缓存的这段时间内，即使把服务端的code改为200，也会重定向到redirect的地址，而不会走新改动的地址，直到客户端缓存过期
+    response.writeHead(302, {
+      'Location': '/new'
+    })
+    response.end('')
+  }
+  if (request.url === '/new') {
+    response.writeHead(200, {
+      'Content-Type': 'text/html'
+    })
+    response.end('<div>this is Content</div>')
+  }
+})
+
+限制资源获取
+Content-Security-Policy
+response.writeHead(200, {
+  // 禁止内嵌代码执行
+  'Content-Security-Policy': 'default-src http: https:',
+  // 禁止内嵌js代码执行
+  'Content-Security-Policy': 'script-src http: https:',
+  // 只允许加载在当前域下提供的资源
+  'Content-Security-Policy': 'default-src \'self\'',
+  // 只允许加载在当前域和https://cdn.bootcss.com/域下提供的资源
+  'Content-Security-Policy': 'default-src \'self\' https://cdn.bootcss.com/',
+  // 提交表单时只允许向当前域提交
+  'Content-Security-Policy': 'default-src \'self\'; form-action \'self\'',
+})
+
+csp出了可以在服务端设置response之外，还可以在客户端HTML中的meta标签中写

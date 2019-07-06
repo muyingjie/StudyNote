@@ -1,0 +1,162 @@
+一个文件中只能有一个public的类，而且该public类必须和文件名相同，因此不建议在一个文件中定义多个类
+
+子类继承的是父类中非private的属性和方法
+
+重写注意事项：
+1、子类方法权限必须大于或等于父类权限
+    Java中的4种权限：public protected default private
+2、重写时，子类中可以通过super来调用父类的方法
+    super.xxx 访问父类的成员变量
+    super.aaa() 访问父类的成员方法
+
+子类的构造函数中，无论是否显式调用父类构造函数，都会执行super()，即调用无参构造函数
+
+全参构造的调用及使用场合：
+首先需明确Java中类的一个原则：自己的属性，自己初始化
+父类的属性由父类自己初始化，子类的属性子类自己初始化
+例如如下案例：
+public class Fu {
+    private int age;
+    public Fu() {}
+    public Fu(age) {
+        this.age = age;
+    }
+}
+
+public class Zi extends Fu {
+    private String name;
+    private int id;
+    public Zi(String name, int id, int age) {
+        super(age);
+        this.id = id;
+        this.age = age;
+    }
+}
+
+上面的例子中子类显式的调用了父类的有参构造：super(age);
+因此就不会再调用无参构造了
+
+创建子类时实际上只创建了一个对象，而不是父类、子类各建一个对象
+
+多态的前提：
+    必须有父子类关系，必须有方法重写
+
+Java静态代理
+
+Java动态代理
+
+=================================
+数据库
+数据库本质上就是一个文件系统，该文件系统是二进制的，开发人员通常不会直接操作数据库文件，而是通过DBMS来操作，DBMS可以解析存储着的二进制文件
+
+2019-01-26T05:38:55.361144Z 1 [Note] A temporary password is generated for root@localhost: K1R*FrV0J%D4
+
+If you lose this password, please consult the section How to Reset the Root Password in the MySQL reference manual.
+
+root@localhost: K1R*FrV0J%D4
+
+SQL语句分类
+DDL 数据定义语言
+DML 数据操作语言
+DQL 数据查询语言
+DCL 数据控制语言
+
+查看正在使用的数据库
+select database
+
+JDBC
+int executeUpdate(String sql)
+ResultSet executeQuery(String sql)
+boolean execute(String sql)
+批处理：
+addBatch(String sql)
+clearBatch();
+executeBatch();
+==========================================================================
+create table category(
+  cid varchar(50) primary key,
+  cname varchar(100)
+);
+
+create table product(
+  pid varchar(50) primary key,
+  pname varchar(40),
+  price double,
+  category_id varchar(50)
+);
+
+alter table product add foreign key(category_id) references category(cid);
+alter table product add [constraint cate_fk] foreign key(category_id) references category(cid);
+
+alter table category change cname cname varchar(100) character set utf8;
+
+insert into category(cid, cname) values('c001', '家电');
+insert into category(cid, cname) values('c002', '服饰');
+insert into category(cid, cname) values('c003', '化妆品');
+
+alter table product change pname pname varchar(40) character set utf8;
+
+insert into product(pid, pname, price, category_id) values('p001', '联想', '5000', 'c001');
+insert into product(pid, pname, price, category_id) values('p002', '海尔', '5000', 'c001');
+insert into product(pid, pname, price, category_id) values('p003', '雷神', '5000', 'c001');
+
+insert into product(pid, pname, price, category_id) values('p004', 'JACK JONES', '800', 'c002');
+insert into product(pid, pname, price, category_id) values('p005', '真维斯', '200', 'c002');
+insert into product(pid, pname, price, category_id) values('p006', '花花公子', '440', 'c002');
+insert into product(pid, pname, price, category_id) values('p007', '劲霸', '2000', 'c002');
+
+insert into product(pid, pname, price, category_id) values('p008', '香奈儿', '800', 'c003');
+insert into product(pid, pname, price, category_id) values('p009', '相宜本草', '200', 'c003');
+
+create table orders(
+  oid varchar(50) primary key,
+  totalprice double
+);
+
+create table orderitem(
+  oid varchar(50),
+  pid varchar(50)
+);
+
+alter table orderitem add constraint orderitem_fk foreign key(oid) references orders(oid);
+alter table orderitem add foreign key(oid) references orders(oid);
+
+alter table orderitem add constraint orderitem1_fk foreign key(pid) references product(pid);
+alter table orderitem add foreign key(pid) references product(pid);
+
+servlet规范：包含三个技术
+1 servlet
+2 filter过滤器
+3 listener监听器
+
+servlet接口中的方法
+init(ServletConfig config) servlet 对象创建的时候执行
+
+设置response写到缓冲区中的编码格式：
+response.setCharacterEncoding("UTF-8")
+
+设置客户端解析response时使用的编码：
+response.setHeader("Content-Type", "text/html;charset=UTF-8")
+
+事实上，执行了
+response.setHeader("Content-Type", "text/html;charset=UTF-8")
+之后，Tomcat将会自动执行response.setCharacterEncoding("UTF-8")
+故只需要写response.setHeader("Content-Type", "text/html;charset=UTF-8")
+即可，或者简写成
+response.setContentType("text/html;charset=UTF-8")
+
+文件下载
+String filename = request.getParameter("filename");
+response.setContentType(this.getServletContext().getMimeType(filename));
+response.setHeader("Content-Disposition", "attachment;filename=" + filename);
+ServletOutputStream out = response.getOutputStream();
+// getRealPath参数是一个路径，该路径相对于web应用根目录
+String realPath = this.getServletContext().getRealPath("download/" + filename);
+InputStream in = new FileInputStream(realPath);
+int len = 0;
+byte[] buffer = new byte[1024];
+while((len = in.read(buffer)) > 0) {
+  out.write(buffer, 0, len)
+}
+in.close();
+out.close();
