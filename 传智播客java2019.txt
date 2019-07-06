@@ -123,3 +123,40 @@ alter table orderitem add foreign key(oid) references orders(oid);
 
 alter table orderitem add constraint orderitem1_fk foreign key(pid) references product(pid);
 alter table orderitem add foreign key(pid) references product(pid);
+
+servlet规范：包含三个技术
+1 servlet
+2 filter过滤器
+3 listener监听器
+
+servlet接口中的方法
+init(ServletConfig config) servlet 对象创建的时候执行
+
+设置response写到缓冲区中的编码格式：
+response.setCharacterEncoding("UTF-8")
+
+设置客户端解析response时使用的编码：
+response.setHeader("Content-Type", "text/html;charset=UTF-8")
+
+事实上，执行了
+response.setHeader("Content-Type", "text/html;charset=UTF-8")
+之后，Tomcat将会自动执行response.setCharacterEncoding("UTF-8")
+故只需要写response.setHeader("Content-Type", "text/html;charset=UTF-8")
+即可，或者简写成
+response.setContentType("text/html;charset=UTF-8")
+
+文件下载
+String filename = request.getParameter("filename");
+response.setContentType(this.getServletContext().getMimeType(filename));
+response.setHeader("Content-Disposition", "attachment;filename=" + filename);
+ServletOutputStream out = response.getOutputStream();
+// getRealPath参数是一个路径，该路径相对于web应用根目录
+String realPath = this.getServletContext().getRealPath("download/" + filename);
+InputStream in = new FileInputStream(realPath);
+int len = 0;
+byte[] buffer = new byte[1024];
+while((len = in.read(buffer)) > 0) {
+  out.write(buffer, 0, len)
+}
+in.close();
+out.close();

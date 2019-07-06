@@ -1,1 +1,537 @@
 code ./ 以命令行中所处目录打开vscode
+
+css模块化通常指的是css的设计模式
+SMACSS
+Atomic css
+MCSS
+AMCSS
+BEM block element modifier
+
+webpack2 特性：
+作用域提升，打包后的代码减少了闭包的使用量，使得性能得到提升
+
+术语：
+chunk：代码块
+bundle
+module
+
+最简单的打包方式：
+webpack entry output
+
+es6的编译需要借助babel
+使用babel需要安装babel-loader babel-core
+{
+    test: /\.js$/,
+    exclude: '/node_modules/',
+    use: 'babel-loader'
+}
+babel需要读取一个预设，也就是需要告诉babel按照什么样的标准、规范去编译js，目前的规范有：
+es2015
+es2016
+es2017
+env 最新发布的规范
+babel-preset-react  babel自定义的标准
+babel-preset-stage 0-3
+
+通常需要安装的是babel/preset-env
+以上提到的转换都是语法层面的转换，在编译期执行，所以只需要--save-dev:
+npm install --save-dev babel/core babel/cli babel/preset-env
+
+但是函数层面的转化就需要polyfill了，例如：
+arr.includes(8)
+new Set()
+在低版本的浏览器中，没有includes这个方法，没有Set这个构造函数，因此需要在数组原型上手动实现该方法，这些实现必须存在于可执行代码中，因此polyfill需要--save
+npm install --save babel/polyfill
+polyfill将会把自定义实现的这些方法挂在到全局，因此会污染全局环境
+
+如果是开发框架或组件库的时候，就不能再全局注册方法了，所以就不可以用polyfill，而需要用runtime transform
+npm install babel-plugin-transform-runtime --save-dev
+npm install babel-runtime --save
+
+将配置和babel预设整合起来时，需要改变一下webpack的babel-loader配置中的一个参数：
+{
+    test: /\.js$/,
+    exclude: '/node_modules/',
+    use: {
+      loader: 'babel-loader',
+      options: {
+        presets: ['@babel/preset-env']
+      }
+    }
+}
+
+presets预设除了执行什么标准这个参数之外，还有targets参数，用来指定编译的范围
+{
+    test: /\.js$/,
+    exclude: '/node_modules/',
+    use: {
+      loader: 'babel-loader',
+      options: {
+        presets: [
+          '@babel/preset-env',
+          {
+            target: {
+              // 编译时要兼容市场占有率超过1%的浏览器
+              browers: ['>1%']
+            }
+          }
+        ]
+      }
+    }
+}
+
+typescript相关的loader：
+npm i typescript ts-loader --save-dev
+
+提取公共代码=============
+提取公共代码需要用到一个内置插件：CommonsChunkPlugin
+webpack.optimize.CommonsChunkPlugin
+
+{
+  plugins: [
+    new webpack.optimize.CommonsChunkPlugin()
+  ]
+}
+
+提取公共代码的使用场景
+单页应用
+单页应用+第三方依赖
+多页应用+第三方依赖+webpack生成代码
+
+需要注意的是，CommonsChunkPlugin这个插件实际上是根据多个入口文件去进行分析，将其公共部分提取出来，因此使用时需要写多个entry：
+var webpack = require('webpack')
+var path = require('path')
+
+module.exports = {
+    entry: {
+        'pageA': './src/pageA',
+        'pageB': './src/pageB'
+    },
+
+    output: {
+        path: path.resolve(__dirname, './dist'),
+        filename: '[name].bundle.js',
+        chunkFilename: '[name].chunk.js'
+    },
+
+    plugins: [
+        new webpack.optimize.CommonsChunkPlugin({
+            // 制定chunk的名称
+            name: 'common',
+            // 出现两次以上的话就打包
+            minChunks: 2
+        })
+    ]
+}
+
+如果希望将第三方代码包打到公共代码中，就可以多加一个entry
+然后将minChunks的值设置为Infinity
+module.exports = {
+    entry: {
+        'pageA': './src/pageA',
+        'pageB': './src/pageB',
+        'vendor': ['lodash']
+    },
+
+    output: {
+        path: path.resolve(__dirname, './dist'),
+        filename: '[name].bundle.js',
+        chunkFilename: '[name].chunk.js'
+    },
+
+    plugins: [
+        new webpack.optimize.CommonsChunkPlugin({
+            name: 'vendor',
+            minChunks: Infinity
+        })
+    ]
+}
+
+如果将第三方代码和业务代码区分开来，可以再加一个CommonsChunkPlugin项，这样lodash就会被打包到vendor.bundle.js中，其他业务代码就会到manifest中
+module.exports = {
+    entry: {
+        'pageA': './src/pageA',
+        'pageB': './src/pageB',
+        'vendor': ['lodash']
+    },
+
+    output: {
+        path: path.resolve(__dirname, './dist'),
+        filename: '[name].bundle.js',
+        chunkFilename: '[name].chunk.js'
+    },
+
+    plugins: [
+        new webpack.optimize.CommonsChunkPlugin({
+            name: 'vendor',
+            minChunks: Infinity
+        }),
+        new webpack.optimize.CommonsChunkPlugin({
+            name: 'manifest',
+            minChunks: Infinity
+        })
+    ]
+}
+
+上述plugins数组里面，两项中只有name不一样，所以可以合并为
+new webpack.optimize.CommonsChunkPlugin({
+    name: ['manifest', 'vendor'],
+    minChunks: Infinity
+})
+
+代码分割和懒加载===========================
+三种形式
+分离业务代码 和 第三方依赖
+分离业务代码 和 业务公共代码 和 第三方依赖
+分离首次加载 和 访问后加载的代码
+
+懒加载：
+require.ensure(['lodash'], function () {
+  var _ = require('lodash')
+}, 'vendor')
+第一个require仅仅是将代码加载了进来，但并未执行
+第二个，即里面的require才会真正执行
+
+第一个require.ensure参数里面的数组也可以是空
+require.ensure的第3个参数vendor，指的是chunk的名字
+
+懒加载还可以加上各种条件判断
+if (page === 'subpageA') {
+  require.ensure(['./subPageA'], function () {
+    var subpageA = require('./subPageA')
+  }, 'subPageA')
+} else if (page === 'subPageB') {
+  require.ensure(['./subPageB'], function () {
+    var subpageB = require('./subPageB')
+  }, 'subPageB')
+}
+require.ensure(['lodash'], function () {
+  var _ = require('lodash')
+}, 'vendor')
+
+subPageA和subPageB中都包含有moduleA，但是这样打包出的代码中每个chunk里面都包含了moduleA，此时可以将moduleA include进来：
+require.include('./moduleA')
+if (page === 'subpageA') {
+  require.ensure(['./subPageA'], function () {
+    var subpageA = require('./subPageA')
+  }, 'subPageA')
+} else if (page === 'subPageB') {
+  require.ensure(['./subPageB'], function () {
+    var subpageB = require('./subPageB')
+  }, 'subPageB')
+}
+require.ensure(['lodash'], function () {
+  var _ = require('lodash')
+}, 'vendor')
+
+动态加载模块时，会插入script标签，标签的src属性值中的路径可以通过publicPath来指定，例如此处我们是将代码打包到了dist里面
+output: {
+  publicPath: './dist/'
+}
+
+动态import方式引入：
+if (page === 'subpageA') {
+  import('./subPageA').then(function(subPageA) {
+    console.log(subPageA)
+  })
+} else if (page === 'subPageB') {
+  import('./subPageB').then(function(subPageB) {
+    console.log(subPageB)
+  })
+}
+
+注：动态import会加载并执行模块，而require.ensure只是将代码打包进来，回调里面的require才是真正执行
+由于没有指定chunk的名称，因此加载进来的模块被命名为1.chunk.js、2.chunk.js
+这种情况下要指定chunk名时可以用魔法注释
+import(/* webpackChunkName: 'subPageA' */'./subPageA')
+如果将若干个webpackChunkName指定为同一个，那将会把这些chunk打包到一起
+
+如果想要将公共的模块作为异步模块打包，需要做如下配置：
+plugins: [
+    new webpack.optimize.CommonsChunkPlugin({
+        async: 'async-common',
+        children: true,
+        minChunks: 2
+    }),
+]
+
+引入css===================
+style-loader —— 可以在HTML中引入css
+css-loader —— 可以在js中引入样式文件进来
+
+app.js中可以直接引入css
+import './css/base.css'
+
+module.exports = {
+    entry: {
+        'app': './src/app'
+    },
+
+    output: {
+        path: path.resolve(__dirname, './dist'),
+        filename: '[name].bundle.js'
+    },
+
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                    // css文件将先被css-loader处理，再被style-loader处理
+                    {
+                        loader: 'style-loader'
+                    },
+                    {
+                        loader: 'css-loader'
+                    }
+                ]
+            }
+        ]
+    }
+}
+
+style-loader还可以添加“/useable”来控制样式是否插入页面中:
+use: [
+    {
+        loader: 'style-loader/useable'
+    },
+    {
+        loader: 'css-loader'
+    }
+]
+此时可以将css的引入方式改为：
+import base from './css/base.css'
+然后就可以调用
+base.use() base.unuse()来控制base模块的样式是否生效
+base.use会将style标签插入指定位置，base.unuse会从指定位置移除style标签
+
+style标签插入的位置可以通过参数来指定：
+insertAt
+insertInto
+singleton 是否只使用一个style标签
+transform
+
+use: [
+    {
+        loader: 'style-loader',
+        options: {
+          // 插入id为app的dom元素中
+          insertInto: '#app',
+          // 将多个style标签合成一个
+          singleton: true
+        }
+    },
+    {
+        loader: 'css-loader'
+    }
+]
+
+transform参数可以在浏览器运行时执行某一段脚本，而且import几个css就会执行几遍css.transform.js这个脚本
+use: [
+    {
+        loader: 'style-loader',
+        options: {
+          insertInto: '#app',
+          singleton: true,
+          transform: './css.transform.js'
+        }
+    },
+    {
+        loader: 'css-loader'
+    }
+]
+
+css.transform.js:
+module.exports = function (css) {
+  // 在这里可以拿到运行时环境的对象，例如document
+  // 而且，所有的css文件都会走这里
+  console.log(css)
+  console.log(document.width)
+  return css;
+};
+
+
+css-loader：
+参数：
+minimize: true css将被压缩，但只是去掉了一些空格
+module: true
+localIdentName: '[path][name]__[local]--[hash:base64:5]' css-loader默认会将css文件中我们自己写的类变成一段hash，可以通过localIdentName参数自定义类名生成规则
+
+use: [
+    {
+        loader: 'style-loader',
+        options: {
+          insertInto: '#app',
+          singleton: true,
+          transform: './css.transform.js'
+        }
+    },
+    {
+        loader: 'css-loader',
+        options: {
+          minimize: true,
+          module: true
+        }
+    }
+]
+
+base.css:
+.box {
+  composes: bigBox from './common.css';
+  height: 200px;
+  width: 200px;
+  border: 2px;
+}
+
+common.css:
+.bigBox {
+  border: 4px;
+}
+
+app.js：
+import base from './css/base.css'
+import common from './css/common.css'
+
+var app = document.getElementById('app')
+app.innerHTML = '<div class="' + base.box + '"></div>'
+
+提取css：
+npm install extract-text-webpack-plugin
+ExtractTextWebpackPlugin
+// ExtractTextWebpackPlugin.extract的作用是将ExtractTextWebpackPlugin和匹配规则整合在一起，不走提取逻辑时就执行fallback函数，use里面的逻辑是告诉webpack将文件提取出来后走怎么处理
+use: ExtractTextWebpackPlugin.extract({
+  fallback: {
+      loader: 'style-loader',
+      options: {
+        insertInto: '#app',
+        singleton: true,
+        transform: './css.transform.js'
+      }
+  },
+  use: [{
+      loader: 'css-loader',
+      options: {
+        minimize: true,
+        module: true
+      }
+  }, {
+      loader: 'less-loader'
+  }]
+}),
+plugins: [
+  new ExtractTextWebpackPlugin({
+    filename: '[name].min.css',
+    // 设置为true时代表所有的css模块都会提取
+    allChunks: false
+  })
+]
+
+ExtractTextWebpackPlugin并不会自动将打包后的css引入HTML模板中
+
+postcss====================
+需要安装的插件：
+postcss
+postcss-loader
+Autoprefixer: 添加各个浏览器的前缀 -webkit -moz -o
+postcss-cssnano: 压缩
+postcss-cssnext: 可以使用css变量 自定义选择器 动态计算
+use: ExtractTextWebpackPlugin.extract({
+  fallback: {
+      loader: 'style-loader',
+      options: {
+        insertInto: '#app',
+        singleton: true,
+        transform: './css.transform.js'
+      }
+  },
+  use: [{
+      loader: 'css-loader',
+      options: {
+        minimize: true,
+        module: true
+      }
+  }, {
+      loader: 'postcss-loader',
+      options: {
+        ident: 'postcss',
+        plugins: [
+          // 告诉postcss-loader使用以下插件
+          require('autoprefixer')()
+          require('postcss-next')()
+        ]
+      }
+  }, {
+      loader: 'less-loader'
+  }]
+}),
+
+可以在package.json中定义browserslist指定要兼容的浏览器的范围
+"browerslist": [
+  ">= 1%",
+  "last 2 versions"
+]
+
+除此之外，post-css还有其他插件
+postcss-import 用来处理@import的语法
+postcss-url 用来处理import过程中的路径转换
+postcss-assets
+
+tree-shaking====================
+使用场景：
+常规优化
+引入第三方库时并不是每个方法都需要，通过tree-shaking可将没有用到的方法自动过滤掉不打包到目标代码中
+
+从webpack2.0开始，通过借助Webpack.optimize.uglifyJS就可以将无用代码移除掉
+var Webpack = require('webpack')
+plugins: [
+  new Webpack.optimize.UglifyJsPlugin()
+]
+
+再例如：引入lodash的一个方法chunk
+import { chunk } from 'lodash'
+console.log(chunk[1,2,3,4,5,6], 2)
+
+打包之后发现最终生成的文件依然很大，原因是lodash这个包并没有按照模块化的方式书写，里面是一个匿名函数自执行的形式，因此我们需要重新下载、引入lodash的es版本：lodash-es，就可以实现tree-shaking
+import { chunk } from 'lodash-es'
+
+但是如此一来打包后发现包还是很大，这个问题在webpack官网也提到了
+所以我们平时在用一些第三方库的时候需要考虑到它是不是用es6模块化规范编写的，是否方便webpack的打包
+
+对于lodash，我们可以用babel-plugin-lodash来解决这个问题
+module: {
+  rules: [
+    {
+      test: /\.js$/,
+      use: [
+        {
+          loader: 'babel-loader',
+          options: {
+            presets: ['env'],
+            plugins: ['lodash']
+          }
+        }
+      ]
+    }
+  ]
+}
+
+css的tree-shaking
+安装purifycss-webpack
+安装npm install glob-all --save-dev
+
+var PurifyCSS = require('purify-css')
+var glob = require('glob-all')
+
+plugins: [
+  new ExtractTextWebpackPlugin({
+    filename: '[name].min.css',
+    allChunks: false
+  }),
+  // PurifyCSS必须和ExtractTextWebpackPlugin在一起使用，但必须放在ExtractTextWebpackPlugin后面
+  new PurifyCSS({
+    paths: glob.sync([
+      path.join(__dirname, './*.html'),
+      path.join(__dirname, './src/*.js')
+    ])
+  })
+]
