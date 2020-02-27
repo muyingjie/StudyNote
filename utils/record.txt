@@ -1,0 +1,40 @@
+<template>
+  <el-select v-model="couponId" placeholder="请选择">
+    <el-option label="11" value="11"></el-option>
+    <el-option label="22" value="22"></el-option>
+    <el-option label="33" value="33"></el-option>
+  </el-select>
+</template>
+
+<script>
+export default {
+  name: 'Test2',
+  data () {
+    return {
+      couponId: '22', // 实际使用的优惠券
+      isLock: false
+    }
+  },
+  watch: {
+    couponId: function (n, o) {
+      if (!this.isLock) {
+        this.checkPrice()
+      }
+    }
+  },
+  methods: {
+    checkPrice () {
+      new Promise((res, rej) => {
+        console.log(`请求参数: ${this.couponId}, 网络请求中...`)
+        window.setTimeout(res, 800, { '11': '22', '22': '33', '33': '11' }[this.couponId])
+      }).then(v => {
+        console.log(`接口返回数据: ${v}`)
+        this.couponId = v
+        this.isLock = true
+      }).then(_ => {
+        this.isLock = false
+      })
+    }
+  },
+}
+</script>
