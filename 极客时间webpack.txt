@@ -1,0 +1,115 @@
+任何loaders无法做的事情，plugins都可以做，plugins作用于整个构建过程，plugins用于文件优化，资源管理，环境变量注入
+常用plugins：
+CommonsChunkPlugin 将chunks相同的模块代码提取成公共js
+CleanWebpackPlugin 清理构建目录
+ExtractTextWebpackPlugin 将CSS从bundle文件里提取成一个独立的css文件
+CopyWebpackPlugin 将文件或文件夹拷贝到构建的输出目录
+HtmlWebpackPlugin 创建HTML文件去承载输出的bundle
+UglifyjsWebpackPlugin 压缩js
+ZipWebpackPlugin 将打包出的资源生成一个zip包
+
+mode 是webpack4新增的一个选项，有production development none
+
+在babelrc文件中，有presets和plugins两个概念，每个plugin可理解为一种功能，一个presets是多个plugin的集合
+
+要让webpack解析ES6语法，需执行如下安装命令：
+npm i @babel/core @babel-preset-env babel-loader -D
+.babelrc文件如下
+{
+  "presets": [
+    "@babel/preset-env"
+  ]
+}
+
+webpack module rules中增加
+{
+  test: /.js$/,
+  use: 'babel-loader'
+}
+
+添加解析jsx的包：
+npm i react react-dom @babel/preset-react -D
+{
+  "presets": [
+    "@babel/preset-env",
+    "@babel/preset-react"
+  ]
+}
+
+webpack中解析css：css-loader、style-loader
+
+图片和字体文件都可以用file-loader或url-loader来解析
+url-loader与file-loader不同的是，前者可以做小图片的base64转换
+
+热更新实现方式：
+1、webpack-dev-server配合webpack.HotModuleReplacementPlugin
+webpack-dev-server通常都会和webpack.HotModuleReplacementPlugin插件放在一起使用
+webpack-dev-server只在监听到变动后重新编译，但不刷新浏览器
+webpack-dev-server不输出文件，而是放在内存中，这一点是和webpack --watch的不同之处
+2、webpack-dev-middleware
+需要启一个独立的node服务器，webpack将输出的文件传输给这个服务器
+
+autoprefixer：自动给css3样式添加浏览器前缀，使用方式如下：
+{
+  test: /.less$/,
+  use: [
+    MinCssExtractPlugin.loader,
+    'css-loader',
+    'less-loader',
+    {
+      loader: 'postcss-loader',
+      options: {
+        plugins: _ => [
+          require('autoprefixer')({
+            // ios 7以上的版本
+            browsers: ['last 2 version', '>1%', 'ios 7']
+          })
+        ]
+      }
+    }
+  ]
+}
+
+px自动转换成rem——px2rem-loader
+
+raw-loader：将外部资源引入到当前位置：
+<head>
+  <title>xxx</title>
+  <!-- 将当前目录下的meta文件放到此处，${}是ejs模板 -->
+  ${ require('raw-loader!./meta.html') }
+</head>
+如果使用了es6，需要加上babel-loader：
+<script>${ require('raw-loader!babel-loader../../node_modules/lib-flexible/flexible.js') }</script>
+
+多页面打包，需要设置html-webpack-plugin数量：
+可以通过glob.sync来动态获取所有入口，而不必写多个入口到entry，需要安装glob库
+entry: glob.sync(path.join(__dirname, './src/*/index.js'))
+
+const setMPA = _ => {
+  const entry = {}
+  const htmlWebpackPlugin = []
+  const entryFiles = glob.sync(path.join(__dirname))
+
+  entryFiles.map((f, i) => {
+    const match = f.match(/src\/(.*)\/index\.js/)
+    const pageName = match && match[1]
+    entry[pageName] = f
+    htmlWebpackPlugin.push(new HtmlWebpackPlugin(
+      xxxxxx
+    ))
+  })
+
+  return { entry, htmlWebpackPlugin }
+}
+
+webpack4中使用内置的SplitChunksPlugin来进行公共脚本分离，用来替代CommonsChunkPlugin插件
+
+
+node_modules下的.bin目录中存在的可执行文件是从各个包的package.json中的bin下暴露出来的
+
+
+
+
+为什么要搞一个.bin目录，没有这个目录的话有哪些不便？
+
+全局安装的npm包会装到全局的node_modules中，全局的node_modules中各包下.bin目录里的命令是否可以直接执行？

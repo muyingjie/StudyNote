@@ -1,0 +1,241 @@
+箭头函数里面不可以用arguments，通常用...args代替
+Function.prototype.before = function (beforeFn) {
+  return (...args) => {}
+}
+
+柯里化
+const checkType = type => {
+  return content => Object.prototype.toString.call(content) === `[object ${type}]`
+}
+
+const isString = checkType('String')
+
+isString('123')
+
+通用柯里化（优化checkType）
+函数的length就是参数个数
+const add = (a, b, c, d, e) => {
+  return a + b + c + d + e
+}
+const curring = (fn, arr = []) => {
+  let len = fn.length
+  return (...args) => {
+    arr = arr.concat(args)
+    if (arr.length < len) {
+      return curring(fn, arr)
+    }
+    return fn(...arr)
+  }
+}
+let r = curring(add)(1)(2)(3,4,5)
+
+// ==============================
+const checkType = type => {
+  return content => Object.prototype.toString.call(content) === `[object ${type}]`
+}
+let types = ['Number', 'String', 'Boolean']
+let utils = {}
+types.forEach(type => {
+  utils['is' + type] = curring(checkType)(type)
+})
+
+code-runner 插件，选中后执行
+
+// =============================
+调用3次后执行
+const after = (times, fn) => {
+  return _ => {
+    if (--times === 0) {
+      fn()
+    }
+  }
+}
+let newAfter = after(3, _ => {
+  console.log('3次后执行')
+})
+newAfter()
+newAfter()
+newAfter()
+
+案例：
+fs.readFile('name.txt', 'utf8', (err, data) => {
+  school['name'] = data
+  newAfter()
+})
+fs.readFile('age.txt', 'utf8', (err, data) => {
+  school['age'] = data
+  newAfter()
+})
+let newAfter = after(2, () => {
+  console.log(school)
+})
+
+Promise原理分析
+class Promise {
+  constructor (executor) {
+    let resolve = successInfo => {}
+    let reject = failInfo => {}
+    executor(resolve, reject)
+  }
+}
+
+module.exports = Promise
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Vuex源码
+let Vue
+class ModuleCollection {
+  constructor (options) {
+    this.register()
+  }
+  register(path,rootModule){
+
+  }
+}
+class Store {
+  constructor (options) {
+    this._vm = new Vue({
+      data: {
+        state: options.state
+      }
+    })
+    // ================getters================
+    let getters = options.getters || {}
+    this.getters = {}
+    Object.keys(getters).forEach(getterName => {
+      Object.defineProperty(this.getters, getterName, {
+        get: _ => {
+          return getters[getterName](this.state)
+        }
+      })
+    })
+    // ================mutations================
+    let mutations = options.mutations || {}
+    this.mutations = {}
+    Object.keys(mutations).forEach(mutationName => {
+      this.mutations[mutationName] = _ => {
+        mutations[mutationName](this.state, _)
+      }
+    })
+    // ================actions================
+    let actions = options.actions || {}
+    this.actions = {}
+    // 下面的forEach是源码中封装好的一个方法
+    forEach(actions, (actionName, v) => {
+      this.actions[actionName] = iv => {
+        v(this, iv)
+      }
+    })
+    // let {dispatch, commit} = this
+    // this.dispatch = _ => {
+    //   dispatch.call(this)
+    // }
+    // this.commit = _ => {}
+
+    // 收集模块
+    this.modules = new ModuleCollection(options)
+
+    /*
+    let root = {
+      state: {age: 10},
+      _raw: rootModule,
+      _children: {
+        a: {
+          state: {x: 10},
+          _raw: aModule,
+          _children: {}
+        },
+        b: {
+          state: {y: 10},
+          _raw: bModule,
+          _children: {}
+        },
+      }
+    }
+    */
+  }
+  dispatch = (type, v) => {
+    this.actions[type](v)
+  }
+  commit = (type, v) => {
+    this.mutations[type](v)
+  },
+  get state () {
+    return this._vm.state;
+  }
+}
+
+const install = _Vue => {
+  Vue = _Vue
+  Vue.mixin({
+    beforeCreate () {
+      if (this.$options && this.$options.store) {
+        this.$store = this.$options.store
+      } else {
+        this.$store = this.$parent && this.$parent.$store
+      }
+    }
+  })
+}
+
+export default {
+  install, Store
+}
+
+
+// 使用
+import Vuex from 'Vuex'
+Vue.use(Vuex)
+
+const store = new Vuex.Store({
+  state: {age: 10},
+  getters: {
+    myAge (state) {
+      return state.age + 10
+    }
+  },
+  // 同步更新
+  mutations: {
+    syncAdd (state, v) {
+      state.age += v
+    },
+    asyncMinus (state, v) {
+      state.age -= v
+    }
+  },
+  // 异步更新
+  dispatch: {
+    asyncMinus ({commit, dispatch}, v) {
+      setTimeout(_ => {
+        commit('asyncMinus', v)
+      }, 1000)
+    }
+  }
+})
+
+new Vue({
+  store,
+  methods: {
+    add () {
+      this.$store.commit('syncAdd', 10)
+    },
+    minus () {
+      this.$store.dispatch('asyncMinus', 10)
+    }
+  },
+})

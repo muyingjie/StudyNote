@@ -1,0 +1,12 @@
+每一条汇编执行时所占用的时钟周期都不同，如果某条指令执行时占用10个时钟周期，那当每次时钟中断到来时要如何处理这些多时钟周期的指令？
+
+
+function checkComplete(buffer) {
+    if (buffer.length < 6) {
+        return 0;
+    }
+    const bodyLength = buffer.readInt32BE(2);
+    return 6 + bodyLength
+}
+
+包的长度占header中的后4个字节，这里readInt32BE的时候怎么保证只读取4个字节呢？

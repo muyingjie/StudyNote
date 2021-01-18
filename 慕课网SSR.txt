@@ -1,0 +1,31 @@
+客户端通常用ReactDOM.render来渲染组件
+但服务端要使用react-dom中的renderToString来将组件转换为字符串
+import Home from './containers/Home'
+import { renderToString } from 'react-dom/server'
+
+const content = renderToString(<Home />)
+
+app.get('/', function (req, res) {
+  res.send(`
+    <html>
+      ${content}
+    </html>
+  `)
+})
+
+var server = app.listen(3000)
+
+scripts: {
+  // nodemon就是node monitor，监控node代码的改动，如果改动的话，就执行node ./build/build.js
+  start: "nodemon --watch build --exec node \"./build/build.js",
+  // webpack开启一个服务，webpack.server.js脚本起到的作用是每当源代码改动时会重新编译，之后再将编译完的文件放到build目录，build目录的变化会触发上面的start脚本
+  build: "webpack --config webpack.server.js --watch"
+}
+
+如果我们希望一条指令执行上面两条指令，可以通过npm-run-all
+scripts: {
+  dev: "npm-run-all --parallel dev:**",
+  dev:start: "nodemon --watch build --exec node \"./build/build.js",
+  dev:build:server: "webpack --config webpack.server.js --watch"
+  dev:build:client: "webpack --config webpack.client.js --watch"
+}

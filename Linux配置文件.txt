@@ -1,0 +1,42 @@
+=============================/etc/profile================================
+
+# System-wide .profile for sh(1)
+  
+if [ -x /usr/libexec/path_helper ]; then
+        eval `/usr/libexec/path_helper -s`
+fi
+
+if [ "${BASH-no}" != "no" ]; then
+        [ -r /etc/bashrc ] && . /etc/bashrc
+fi
+
+export GOROOT=$HOME/gitProject/go_dev/go
+export PATH=$PATH:$GOROOT/bin
+export GOPATH=$HOME/gitProject/goproject
+
+JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-11.0.2.jdk/Contents/Home"
+export JAVA_HOME
+CLASS_PATH="$JAVA_HOME/lib"
+PATH=".$PATH:$JAVA_HOME/bin"
+
+
+=============================/etc/paths================================
+
+/usr/local/bin
+/usr/bin
+/bin
+/usr/sbin
+/sbin
+
+
+
+=============================~/.bash_profile================================
+
+export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/mysql/bin:/Users/muyingjie/.npm-global/bin
+
+
+
+
+=============================~/.profile================================
+
+source ~/.bash_profile
