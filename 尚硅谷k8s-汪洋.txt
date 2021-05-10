@@ -1,0 +1,86 @@
+7、Pod概念===========================
+Pod分为自主式Pod和控制器管理的Pod
+
+每个Pod 里面都会有一个pause容器，提供该Pod里所有容器的网络共享和存储卷共享，因此所有Pod里面的进程的端口号不可以重复
+Pod里面的容器可以通过localhost:xxxx来互相访问
+
+控制器的种类：
+ReplicationController 简称RC
+ReplicaSet 简称RS
+Deployment
+
+StatefullSet
+DaemonSet
+Job Cronjob
+
+ReplicationController 简称RC
+ReplicaSet 简称RS
+Deployment
+上述3种控制器类似
+RC 用来确保容器应用的副本数始终保持在用户定义的副本数，即如果有容器异常退出，会自动创建新的Pod来替代；而如果异常多出来的容器也会自动回收。在新版k8s中建议使用ReplicaSet来代替ReplicationController
+ReplicaSet和ReplicationController没有本质的不同，ReplicaSet支持集合式的selector
+
+这个集合式的selector可以这样理解：
+创建Pod的时候，可以给Pod打一系列标记例如：
+app: apache
+version: v1
+ReplicaSet支持通过标签（选中app为Apache、version为v1的Pod）对Pod进行集合式管理，但RC不支持
+
+虽然ReplicaSet可以独立使用，但一般还是建议使用Deployment来自动管理ReplicaSet，这样就无需担心根其他机制的不兼容问题（比如ReplicaSet不支持rolling-update但Deployment支持）
+关系：deployment创建RS，RS创建pod
+
+Horizontal Pod Autoscaling（简称HPA）的功能是水平自动扩展
+但HPA仅适用于Deployment和ReplicaSet，在V1版本中仅支持根据Pod的CPU利用率扩缩容，在vlapha版本中，支持根据内存和用户自定义的metric扩缩容
+
+StatefullSet 是为了解决有状态服务的问题（对应Deployment和ReplicaSets是为无状态服务而设计），其应用场景包括：
+1、稳定的持久化存储，即Pod重新调度后还是能访问到相同的持久化数据，基于PVC来实现
+2、稳定的网络标志，即Pod重新调度后其PodName和HostName不变，基于Headless Service（即没有Cluster IP的Service）来实现
+3、有序部署，有序扩展，即Pod是有顺序的，在部署或者扩展时要根据定义的顺序依次进行（即从0到N-1，在下一个Pod运行之前所有之前的Pod必须都是Running和Ready状态），基于init containers来实现
+4、有序收缩，有序删除（即从N-1到0）
+有序部署和有序回收的案例：nginx将请求打到Apache，Apache再请求mysql中的数据，启动服务时，需要先启mysql、再启Apache、最后启nginx，删除服务时顺序正好相反
+
+docker主要面对无状态服务，所谓无状态服务，就是没有对应的存储需要实时保留，或将其摘除之后过一段时间再放回去，它依然能正常工作，例如Apache、LVS负载均衡调度器
+与之对应的，有状态服务的例子是：mysql、MongoDB，将其从集群中抽离出去之后再放回来就没法正常工作了
+
+8、Pod概念===========================
+DaemonSet确保全部（或者一些，可以给Node打一个污点，打了污点的Node不会被调度）Node上运行一个Pod的副本。当有Node加入集群时，也会为他们新增一个Pod。当有Node从集群移除时，这些Pod也会被回收。删除DaemonSet将会删除它创建的所有Pod
+使用DaemonSet的一些典型用法：
+运行集群存储Daemon，例如在每个Node上运行glusterd、ceph
+在每个Node上运行日志收集Daemon，例如fluentd、logstash
+在每个Node上运行监控Daemon，例如Prometheus Node Exporter
+
+Job负责批处理处理，即仅执行一次的任务，它保证批处理任务的一个或多个Pod成功结束
+Cronjob管理基于时间的Job，即：
+在给定时间点只运行一次
+周期性地在给定时间点运行
+
+Service收集Pod是通过上面提到的给Pod打的标签作为条件收集的，我们把Service收集Pod的过程称为服务发现
+
+例如我们有如下集群：
+LVS 负载均衡
+SQUID 3台
+Apache 3台
+MySQL 1台
+在k8s上部署时，MySQL需要一个Pod
+Apache 3台，可以通过创建一个Deployment，设置其副本数为3
+SQUID 3台同理
+LVS靠集群本身
+
+9、网络通信
+k8s的网络模型假定了所有的Pod都在一个可以直接连通的扁平的网络空间中，这在GCE（Google Compute Engine）里面是现成的网络模型，k8s假定这个网络已存在，而在私有云里搭建k8s集群，就不能假定这个网络已经存在了。我们需要自己实现这个网络假设，将不同节点上的Docker容器之间的互相访问先打通，然后运行k8s
+
+几个通信层次：
+同一个Pod内的多个容器之间，第7节已经介绍过，通过localhost:xxxx来通信
+各Pod之间的通信：Overlay Network
+Pod与Service之间的通信：各节点的Iptables规则
+
+各Pod之间通信分为：
+Pod1与Pod2不在同一台机器，Pod的地址时与docker0在同一个网段的，但docker0网段与宿主机网卡是两个完全不同的IP网段，并且不同Node之间的通信只能通过宿主机物理网卡进行。将Pod的IP和所在Node的IP关联起来，通过这个关联让Pod之间互相访问，Flannel就是实现该功能的技术
+Pod1与Pod2在同一台机器，由docker0网桥直接转发请求至Pod2，不需要经过Flannel
+
+Flannel是CoreOS团队针对k8s设计的一个网络规划服务，简单来说，它的功能是让集群中的不同节点主机创建的Docker容器都具有全集群唯一的虚拟IP地址，而且它还能在这些IP地址之间建立一个覆盖网络（Overlay Network），通过这个覆盖网络，将数据包原封不动地传递到目标容器内
+
+Pod至Service的网络：目前基于性能考虑，全部为iptables维护和转发，新版的是基于LVS转发的
+Pod到外网：Pod向外网发送请求，查找路由表，转发数据包到宿主机的网卡，宿主机网卡完成路由选择后，iptables执行Masquerade，把源IP更改为宿主机网卡的IP，然后向外网服务器发送请求
+
+外网访问Pod：Service

@@ -1,0 +1,176 @@
+MiniCssExtractPlugin
+
+SourceMap：
+// 单独生成一个sourcemap文件，映射到源码出错的行和列
+devtool: 'source-map'
+
+// 不会产生单独的文件，但可以显示错误所在的行和列
+devtool: 'eval-source-map'
+
+// 有单独的映射文件，但不会与源文件关联起来，而是与打包后代码关联起来、不会产生列
+devtool: 'cheap-module-source-map'
+
+// 不会产生文件，集成在打包后的文件中，而且也不会产生列
+devtool: 'cheap-module-eval-source-map'
+
+resolve: {
+  // 在当前目录的node_modules下寻找依赖，不要去其他地方找
+  modules: [path.resolve('node_modules')]
+}
+
+webpack.DefinePlugin 可以定义环境变量
+
+
+
+webpack优化：
+module.exports = {
+  mode,
+  entry,
+  module: {
+    // noParse意思是不去解析jQuery中的依赖关系
+    // 当我们知道某些包确实没有其他依赖项时，就可以用noParse处理这些包
+    noParse: /jquery/,
+  },
+  plugins: [
+    // 如果从moment库中引入了locale语言包文件，就将其忽略，以减小打包体积
+    // 可以自己手动引入locale语言包：
+    // import 'moment/locale/zh-cn'
+    new webpack.IgnorePlugin(/\.\/locale/, /moment/)
+  ]
+}
+
+
+动态链接库
+output中的library和libraryTarget
+
+react和react-dom是非常通用的两个文件，通常也不会更改，可以抽离出去，避免打包到文件中去
+所以可以单独建一个webpack.config.react.js
+
+output: {
+  filename: '[name].js',
+  path: path.resolve(__dirname, 'dist'),
+  // webpack打包好后的文件是一个匿名函数自执行的形式，但自执行之后的返回值赋给了module.exports，外部并没有变量接收该值
+  // library的目的就是建一个名为ab的变量，接收这个返回值
+  library: 'ab',
+  // 如果不设置libraryTarget，则默认将ab这个变量挂到window上，如果此处设置了commonjs，形式就变成：exports['ab']
+  libraryTarget: 'commonjs'
+}
+
+所以react、react-dom也可以以library的形式导出：
+
+同时我们还需要借助一个插件DllPlugin，用来存放动态库的名字、路径的映射清单
+
+webpack.config.react.js
+module.exports = {
+  mode: 'development',
+  entry: {
+    react: ['react', 'react-dom']
+  },
+  output: {
+    filename: '_dll_[name].js',
+    path: path.resolve(__dirname, 'dist'),
+    library: '_dll_[name]',
+  },
+  plugins: [
+    new webpack.DllPlugin({
+      name: '_dll_[name]', // 规定这里的name必须和library同名
+      path: path.resolve(__dirname, 'dist', 'manifest.json')
+    })
+  ]
+}
+
+在webpack.config.js中要引用DllReferencePlugin插件告诉webpack如果遇到import react，要引用动态链接库
+module.exports = {
+  plugins: [
+    new webpack.DllReferencePlugin({
+      manifest: path.resolve(__dirname, 'dist', 'manifest.json')
+    })
+  ]
+}
+
+多线程打包：happypack
+let Happypack = require('happypack')
+module.exports = {
+  module: {
+    noParse: /jquery/,
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        include: path.resolve('src'),
+        use: 'Happypack/loader?id=js'
+      },
+      {
+        test: /\.css$/,
+        use: 'Happypack/loader?id=css'
+      }
+    ]
+  },
+  plugins: [
+    new Happypack({
+      id: 'js',
+      use: [
+        {
+          loader: 'babel-loader',
+          options: {
+            presets: [
+              '@babel/preset-env',
+              '@babel/preset-react'
+            ]
+          }
+        }
+      ]
+    }),
+    new Happypack({
+      id: 'css',
+      use: ['style-loader', 'css-loader']
+    })
+  ]
+}
+
+33、手写webpack
+在项目目录下执行
+npm link
+就可以将当前项目中bin目录下的可执行文件链接到全局node_modules下，从而可以在命令行中直接执行这个命令
+
+34、
+let path = require('path')
+let config = require(path.resolve(__dirname))
+let Compiler = require('../lib/Compiler')
+let compiler = new Compiler(config)
+compiler.run()
+
+// Compiler类
+class Compiler {
+  constructor (config) {
+    this.config = config
+  }
+  run () {
+    
+  }
+}
+
+
+
+腾讯 从零开始：Webpack 优化实践
+webpack耗时的几个地方：
+loader解析
+搜索依赖文件
+打包生成chunk
+
+speed-measure-webpack-plugin
+
+happypack已不再维护，作者建议使用thread-loader
+
+添加缓存 cache-loader
+
+缩短搜索时间
+配置resolve.module resolve.alias resolve.extension
+
+多页面中使用SplitChunksPlugin
+通过webpack-bundle-analyser来分析公用的情况
+
+其他：
+dll webpack4已经做的比较好，基本可以不用考虑
+noParse 不需要webpack解析的包
+IgnorePlugin 

@@ -12,6 +12,32 @@
 swap分区是给内核用的，普通用户无法访问，因此swap前没有/，即/swap是不对的，swap和/不是包含关系，swap分区和/根分区是处于并列地位的
 
 
+防火墙：数据过滤（IP、MAC地址、端口号、协议类型、数据包中的数据）
+
+ls命令所在路径是 /bin/ls
+
+extundelete 可以实现rm -rf误删除文件的恢复
+
+查看文件信息：stat命令
+
+more 命令 分屏显示文件内容
+less 命令 分行显示文件内容 上下键可以控制滚动
+tail -f 监听文件内容 ctrl + c 可强制退出
+
+软链接类似快捷方式
+创建软链接文件：ln -s 源文件 软链接文件
+注意：源文件必须要写绝对路径，不能用相对路径
+
+cp命令使用 -a参数后，拷贝出来的文件和原来文件一模一样，包括最近修改时间都一模一样
+
+可以通过man、info查看命令的帮助文档
+man ls
+info ls
+
+
+u：所有者
+g：所属组
+o：其他人
 给bcd文件的所有者添加执行权限
 chmod u+x bcd
 
@@ -23,6 +49,33 @@ chmod g+w,o+w bcd
 减去权限
 chmod u-x,g-w,o-w bcd
 
+创建用户：
+useradd user1
+创建用户的时候，同时会生成一个同名的用户组
+
+给用户密码：
+passwd user1
+
+修改所属组：
+chgrp
+
+修改所有者和所属组：
+把bcd文件的所有者改为user1
+chown user1 bcd
+
+把bcd文件的所有者和所属组改为root
+chown root:root bcd
+
+权限对文件的作用：
+读：可以对文件执行cat more less head tail
+写：可以对文件执行vim echo
+注：对文件有写权限，并不意味着可以删除文件，必须对上一级目录有写权限时，才可以删除该文件
+
+权限对目录的作用：
+读：ls
+写：可以在目录下执行touch rm cp mv等
+执行：可以进入目录
+
 普通用户不能修改文件的所有者，即使属于他的文件也不可以修改，只有root用户才可以
 
 对一个文件拥有写权限，并不代表可以删除这个文件
@@ -30,7 +83,99 @@ chmod u-x,g-w,o-w bcd
 
 以此类推，根目录也有自己的iNode，也有block块，它的block块中也存着子目录的iNode-文件或目录名的映射，那根目录的iNode-文件名映射在哪存呢？答案是根目录的iNode是固定的，永远都是2
 
-Linux中的6种权限：基本权限（rwx）、umask默认权限
+Linux中的6种权限：
+1、基本权限（rwx）
+2、umask默认权限
+还有4种以后再说
+
+每新建一个文件，都会有默认的权限，这个权限叫umask默认权限
+umask 指令：查询当前系统的umask默认权限
+umask的结果有4个数：
+0022 // 第1个数字可以先忽略
+
+需要先了解一下新建文件和目录的默认最大权限：
+对文件来讲，新建文件的默认最大权限是666，没有执行权限，因为Linux认为执行权限对文件来说比较危险，必须用户手工赋予
+对目录来讲，新建目录的默认最大权限是777，执行权限对于目录来讲只是进入，没啥风险
+
+普通用户的UID > 500
+
+/etc/profile 中可以修改配置
+待看：29-39
+
+40、网络命令
+配置IP地址：
+vi /etc/sysconfig/network-scripts/ifcfg-eth0
+重启网络服务
+service network restart
+
+alias 命令查看所有别名
+
+linux如果打了快照，可能会导致uuid冲突的问题（/etc/sysconfig/network-scripts/ifcfg-eth0中的UUID配置）
+解决方案：
+1、删除MAC地址行 vi /etc/sysconfig/network-scripts/ifcfg-eth0
+2、删除MAC地址和UUID的绑定文件 rm -rf /etc/udev/rules.d/70-persistent-net.rules
+3、重启Linux reboot
+
+ping 10.2.2.122 -c 3 // 发3个包后，就停
+ping -b -c 3 192.168.103.255 // 探测103网段中有多少可以通信的主机
+
+netstat -tuln // 网络状态查看命令，既可以查看本机开启端口，也可以查看有哪些客户端连接
+Proto 网络连接协议
+Recv-Q 接收数据队列
+netstat -tulnp // p参数可以查看是哪个进程开了这个端口
+
+netstat -rn 查看路由表 路由表的最后一条就是网关
+
+41、网络命令
+w命令 查看当前登录的系统有哪些人
+TTY一列的意义：值为tty的是本机终端，值为pts/2、pts/3... 的是远程终端
+
+write 命令给用户发信息
+write user1 pts/1 回车输入若干信息之后 ctrl + d 确认发送
+
+wall 命令给所有用户发信息
+wall "要发送的信息"
+
+42、系统痕迹命令
+Linux中有一些痕迹文件：
+/var/log/wtmp
+/var/run/utmp
+/var/log/btmp
+/var/log/lastlog
+这些文件无法直接查看，但可以通过下面一些方式查看：
+who命令和w作用一样，但信息比w更简单
+last命令，查看系统所有登录过的用户的信息，包括正在登录的用户和之前登录的用户
+lastlog 查看所有用户的登录信息，会有大量用户显示从未登录过，这些用户是Linux中的伪用户，这些伪用户对应Linux中特定的服务，不可以随便操作
+lastb 查看错误的登录信息，哪些人登录了，但没登进来
+
+43、挂载命令
+挂载的本质：将已存在的设备名（类似/dev/hda1 /dev/sda1等，在Linux装完之后就会存在，这类已经存在的空目录叫挂载点）和空目录建立连接
+mount命令不加任何参数：查看当前挂载信息
+光盘挂载：
+mount -t iso9660 /dev/cdrom /mnt/cdrom/
+光盘卸载：
+umount /dev/sr0
+umount /mnt/cdrom
+
+44、挂载U盘
+mount -t vfat -o iocharset=utf8 /dev/sdb1 /mnt/usb
+其中 -o是指定额外参数，它的值iocharset代表手工指定挂载后显示的字符编码为中文
+
+45、自动挂载
+# 查询系统中已经挂载的设备，-l会显示卷标名称
+mount -l
+Linux启动时，会依据配置文件/etc/fstab的内容，自动挂载
+由于该文件非常重要，所以系统提供了mount -a 这个命令来检测/etc/fstab格式是否正确
+
+46、挂载NTFS分区
+Linux和Unix对NTFS分区的识别很差，例如Mac无法识别NTFS分区的移动硬盘，即使能识别也是只读的
+
+Linux驱动加载顺序：
+1、驱动直接放入系统内核中，这种驱动主要是系统启动加载必须的驱动，数量很少
+2、驱动以模块的形式放入硬盘，大多数驱动都以这种方式保存，保存位置在：
+/lib/modules/3.10.0-xxxxxxxxxxxxxxx/kernel/中
+3、驱动可以被Linux识别，但系统认为这种驱动一般不常用，默认不加载，如果需要加载这种驱动，需要重新编译内核，NTFS文件系统的驱动属于这种情况
+4、硬件不能被Linux内核识别
 
 Linux中只有两种包：源码包和二进制包
 centos中二进制包有两种安装方式——手工安装（通过rpm命令）、yum安装
@@ -45,12 +190,28 @@ service httpd start 启动时默认寻找/etc/in.d/init.d/httpd 或/etc/init.d/h
 导入数字证书很重要 视频第59节，文档在“软件包管理”一章中
 
 用户及权限管理===========================
+68、用户管理介绍
 /etc/passwd 用户文件，每行代表一个用户
 root:x:0:0:root:/root:/bin/bash
+以冒号分隔
 
+69、
 passwd中只有表示密码的标志，真正的密码在/etc/shadow中，/etc/shadow的权限是000
+/etc/group是组信息文件
+
+root:x:0:0:root:/root:/bin/bash
+以冒号分隔，各列代表的含义分别是：
+用户名:密码位:用户ID:组ID:用户说明:用户家目录:登录shell
+
+其中用户ID一列：
+0：超级用户UID，如果用户UID是0，代表这个账号是管理员账号，Linux中可以将其他用户的UID改成0将其提升为管理员
+1-499：系统用户（伪用户）UID，这些UID是系统保留给系统用户的UID，即UID是1-499范围的用户是不能登录系统的，而是用来运行系统或服务的，其中1-99是系统保留的账号，系统自动创建。100-499是预留给用户创建系统账号的
+500-65535：普通用户UID
+注：NFS比较特殊，它也是系统用户，但它占用的UID是65534
 
 理论上，所有服务都需要有自己的伪用户，例如Apache装完后，在它的配置文件中，会有User和Group两个配置，这两个配置就是Apache这个用户的用户名和所属组
+
+GID添加用户时，如果不指定用户所属的初始组，那么会建立和用户名相同的组
 
 用户组分为初始组和附加组
 每添加一个用户，都会同时添加一个和用户名同名的初始组
@@ -64,12 +225,296 @@ user1:x:500:500::/home/user1:/bin/bash
 正常情况下每添加一个用户（useradd），就需要给用户设置密码，否则用户无法登陆
 但安装服务（例如MySQL）时生成的用户通常不添加密码，因为我们不需要让这个用户登陆
 
+1-499的用户家目录不起作用
+
+===========================
+
 分配权限时，首先要搞明白要赋予权限的所有者、所属组是谁
 例如某公司给员工分配权限，所有人将日报提交至/www/这一目录下
 假设/www/的所有者属于某一领导a，有u1、u2、u3...u50，50位员工
 每位员工应该给770权限，这样就可以在这个目录中新建、修改、删除文件了
 但问题是u1也可以修改u2、删除u2的文件了，我们之后会有其他权限机制阻止这种操作
 
+70、用户和权限 /etc/shadow
+shadow文件中，各列的意义：
+用户名:sha512算法加密过后的密码:更新密码的时间戳:两次密码修改的最小时间间隔（和第3列字段相比）:密码有效期（和第3列字段相比）:到期前的警告天数（和第5列字段相比）:密码到期后的宽限天数（和第5列字段相比）:密码失效时间（强制到期时间）:保留字段
+
+有些用户的密码一列是双感叹号或*，这些用户没有密码，无法登录
+
+71、用户和权限 /etc/group
+组名:组密码位:GID:此组中支持的其他用户，附加组是此组的用户
+组密码文件 /etc/gshadow
+用户模板目录 /etc/skel
+每添加一个用户，就会在home目录下生成该用户的家目录，家目录下默认会有一些隐藏文件，这些隐藏文件通常以skel为模板生成
+
+添加用户命令：useradd，实际上就是往上面的几个/etc下的用户、组相关的目录中添加内容
+
+72、添加用户
+useradd
+参数：
+g 指定初始组，用的很少
+G 指定附加组：
+# 创建p2用户，它的初始组是p2，并把p2加到附加组t1中
+useradd -G t1 p2
+
+useradd控制默认值的文件: /etc/default/useradd
+/etc/login.defs: 
+MAIL_DIR: 指定新建用户的默认邮箱位置
+PASS_MAX_DAYS: 指定密码的有效期
+PASS_MIN_DAYS: 两次密码修改的间隔时间
+PASS_MIN_LEN
+PASS_WARN_AGE 密码修改到期前的警告天数
+UID_MIN
+UID_MAX
+GID_MIN
+GID_MAX
+CREATE_HOME
+UMASK
+USERGROUPS_ENAB
+ENCRYPT_METHOD
+
+设置密码
+passwd
+
+73、passwd
+passwd命令不加参数就是修改当前用户的密码
+
+passwd -l user 锁定user用户
+passwd -u user 解锁user用户
+
+更改用户lamp的密码
+echo "123" | passwd --stdin lamp
+
+将密码修改日期归零（shadow的第3字段）
+chage -d 0 lamp
+
+用户信息修改usermod
+将user2加入到user1组里
+usermod -G user1 user2
+
+74、userdel su
+-r参数代表删除用户的同时，删除用户的家目录
+userdel user1 -r
+
+切换用户，注意中间的“-”必须要有，否则的话env里面的环境变量USER不会改变
+su - user1
+
+75、groupadd groupdel
+组的添加和删除：groupadd groupdel
+将user1加入到组group1中
+gpasswd -a user1 group1
+将user1从组group1中删除
+gpasswd -d user1 group1
+
+76、newgrp
+如果user2存在于两个组中（user2 user1），默认情况下user2建的文件，所有者和所属组都是user2
+如果希望默认新建的文件的所属组改为user1，可以使用newgrp user1来更改
+
+77、acl权限
+每个文件只能有1个所有者，1个所属组，剩下的都是其他人
+但有时候需要在其他人这个大的身份中做更细粒度的区分
+
+78、acl权限
+acl权限默认情况下是开启的
+可以通过dumpe2fs -h /dev/sda3 来查看指定分区详细文件系统信息的命令，从输出中可以看到是否开启
+如果没有开启，可以通过：
+方法一：mount -o remount,acl / 来开启（临时生效）
+方法二：vi /etc/fstab 永久开启
+
+acl的使用
+setfacl -m u:st:5 /www/ 给st用户的www目录权限设置为5
+-R 参数，作用是递归
+但递归只是对当前已存在的文件的权限生效，如果希望对之后创建的文件也生效可以在-m参数的值前面加上d：
+setfacl -m d:u:st:5 /www/
+
+可以通过getfacl /www/ 查看acl权限
+
+79、acl权限
+给目录acl权限之后，ll看到的权限就不太准确了，需要通过getfacl来查看比较准确的权限
+
+acl权限的缺陷：权限溢出，如果给了用户5的权限，那目录下的所有文件都有执行权限，比较危险
+
+80、sudo权限 给普通用户赋予部分管理员权限
+/sbin/和/usr/sbin/目录下的命令只有超级用户才能使用
+
+visudo命令 赋予普通用户权限命令，执行之后和vi打开一个文件的效果一样，支持通过vi对文件进行操作
+
+授权普通用户user1有重启服务器的权限
+visudo之后，在文件中添加：
+user1   ALL=/sbin/shutdown -r now
+这一行代表允许user1以root身份在输入指令的时候重启
+
+这样设置之后，普通用户登录之后，可以通过sudo -l查看自己有权限操作哪些指令
+可以通过sudo /sbin/shutdown/ -h now来重启服务器
+
+81、sudo权限
+user1   ALL=/etc/rc.d/init.d/httpd configtest
+允许通过vim修改httpd.conf配置文件
+user1   ALL=/usr/bin/vim /etc/httpd/conf/httpd.conf
+
+82、sudo权限
+允许user1添加用户
+user1   ALL=/usr/sbin/useradd
+允许user1修改密码，但不可以修改root的密码，这个写法很复杂，遇到这种复杂的写法一定要看官方给的例子
+user1   ALL=/usr/bin/passwd [A-Za-z]*,  !/usr/bin/passwd "",  !/usr/bin/passwd/ root
+
+83、SetUID、SetGID、Sticky BIT 不建议用户使用
+
+89、文件系统管理
+每个扇区大小都是512Byte
+CPU数据处理的速度在TB级别每秒，而硬盘只有MB级别每秒
+
+90、Linux文件系统特性
+超级块：记录整个文件系统的信息，包括block和iNode的总量，已经使用的、未使用的iNode和block的数量，block和iNode的大小，文件系统的挂载时间，最近一次的写入时间，最近一次磁盘检验时间等
+dumpe2fs -h /dev/sda1 只查看sda1分区信息
+dumpe2fs /dev/sda1 查看块组信息
+
+数据块(data block)：存储具体的文件内容的结构
+
+iNode号：每个文件都占用一个iNode号
+
+Linux文件系统：
+ext4
+xfs
+
+91、常用的硬盘管理命令
+查看分区占用空间信息（会包含临时文件、删除产生的没有释放的垃圾文件等，所以有时会和du -sh看到的结果差距很大，重启服务器后二者的数据就会保持一致）：
+df -ahT
+统计文件和目录大小
+du -sh
+h参数是人性化显示
+s参数是sum的意思
+注：ll -h不可以看到目录下所有文件的总大小，那个大小记录的是iNode所占用的空间
+du统计的文件大小是准确的，df统计的剩余空间是准确的
+
+可以通过lsof | grep deleted查询被删除的文件，然后挨个手动kill掉（不推荐）
+
+92、
+fsck -y /dev/sdb1 文件系统修复命令 几乎不用
+stat test.sh 查看test.sh这个文件的详细时间 几乎不用
+
+file xxx.cfg 查看文件类型
+type mkdir 查看命令的类型
+
+93、
+fdisk命令手工分区
+fdisk -l 查看系统所有硬盘及分区
+复制镜像时，可能需要重置UUID（唯一标识符）
+
+手动分区命令：fdisk /dev/sdb 注意sdb后面没有1 2 3这些数字，因为我们的目的就是要分区，如果有了数字，是分好后的结果
+
+格式化：
+mkfs -t ext4 /dev/sdb1
+mkfs -t ext4 /dev/sdb5
+注意，sdb2是扩展分区，扩展分区不能写入数据也不能格式化，只能包含逻辑分区
+
+建立挂载点：
+mkdir /disk1
+mkdir /disk5
+
+挂载:
+mount /dev/sdb1 /disk1
+mount /dev/sdb5 /disk5
+
+94、硬盘自动挂载
+上一集中讲的分区分好之后，理论上来讲，大小不可以调整
+硬盘自动挂载主要依赖/etc/fstab文件
+fstab文件中的UUID就代表诸如/dev/sdb1 /dev/sdb2这样的一个个分区
+可以通过dumpe2fs /dev/sdb5 或者 ls -l /dev/disk/by-uuid/ 来查看UUID
+挂载完成后，需要将上面查看到的UUID添加到/etc/fstab文件中：
+UUID=xxxxxxxxxxxxxx /disk1 ext4 defaults 1 2
+各列含义：设备文件名 挂载点 文件系统 挂载选项 是否可以备份 是否检测磁盘fsck
+注：设备文件名除了写成UUID=xxxxxxxxxxxxxx这样的形式，也可以写成/dev/sdb1这样的形式
+0 不备份 1 每天备份 2 不定期备份
+0 不检测 1 启动时检测 2 启动后检测 通常根分区设置为1 其他分区设置为2
+
+95、
+96、parted命令
+Linux系统中有两种常见的分区表：MBR分区表和GPT分区表（GUID分区表），其中：
+MBR分区表：支持的最大分区是2TB，最多支持4个主分区，或3个主分区1个扩展分区
+GPT分区表：最大支持18EB的分区，最多支持128个分区，其中1个系统保留分区，127个用户自定义分区
+
+parted /dev/sdb 进入分区交互界面，可以通过约定的指令进行分区，注意sdb后面没有1 2 3等数字
+
+两种分区方法：fdisk、parted
+如果要分比较大的容量的分区，只能用parted
+
+
+97、swap分区
+free -h 查看内存使用情况和总量
+free的结果中：
+buffers列（缓冲） 加快硬盘写速度
+cached列（缓存）  加快硬盘读速度
+
+mkswap /dev/sdb1 格式化为swap文件系统
+
+98、磁盘配额
+查看Linux内核是否支持磁盘配额
+grep CONFIG_QUOTA /boot/config-2.6.32-642.e16.x86_64
+
+概念：
+用户配额和组配额 组配额基本不用
+限制用户和用户组使用磁盘空间和文件个数
+软限制和硬限制 软限制是警告 硬限制是强制
+宽限时间 如果在宽限时间内一直处于软限制范围内，则会自动升级为硬限制，换句话说，不可以长时间一直处于软限制和硬限制之间的状态
+
+99、
+磁盘配额主要用来限制普通用户的分区使用情况的，把握住两点：普通用户、分区
+在分区上开启磁盘配额功能
+mount -o remount,usrquota,grpquota /disk 重新挂载/disk分区，并加入用户和用户组的磁盘配额功能，临时生效
+
+如果想要永久生效，需要修改/etc/fstab文件：
+vi /etc/fstab
+/dev/sdb1 /disk ext4 defaults,usrquota,grpquota 0 0
+改完配置文件后如果想要生效，必须重启系统，否则也需要把分区重新挂载一遍
+
+建立磁盘配额配置文件（必须先关闭SELinux）
+quotacheck -avug
+
+关闭SELinux：
+getenforce 查看SELinux是否生效，结果为Enforcing的话就是生效，Permissive是不生效，但会发出警告
+setenforce 0 关闭SELinux，临时生效
+
+永久关闭SELinux，需要修改/etc/selinux/config，将里面的SELINUX=enforcing改为disabled
+
+检测是否生效：ls /disk/，如果能找到aquota.user文件，就代表生效了，如果同时开启了组配额，也会生成aquota.group文件
+
+设置用户和组的配额限制
+edquota -u user1 给用户设定配额
+注意：该命令会打开一个文件，这个文件中的blocks和inodes两列不可以修改，这是系统默认检测出来的，只能修改blocks和inodes后面的soft、hard这些列，soft、hard就是对应的软限制、硬限制
+
+quotaon -avu 启动或关闭配额
+-a 依据/etc/mtab 文件启动所有的配额分区。如果不加-a，后面就一定要指定分区名
+-u 启动用户配额
+-g 启动组配额
+-v 显示启动过程信息
+
+quota -uvs 查询用户或用户组配额
+-u 用户名
+-g 组名
+-v 显示详细信息
+-s 以习惯单位显示容量大小
+
+repquota -avus [分区名] 查询分区的配额
+
+测试
+dd if=/dev/zero of=/disk/testfile bs=1M count=60 往testfile里写60MB
+
+100、
+复制配额：
+edquota -p user1 -u user2
+-p 原用户
+-u 目标用户
+
+修改宽限时间：
+edquota -t
+
+非交互式设定用户磁盘配额
+setquota -u 用户名 容量软限制 容量硬限制 个数软限制 个数硬限制 分区名
+setquota -u user4 10000 20000 5 8 /disk
+
+
+104、
 shell
 echo打印时，如果想要输出!，后面必须加空格
 echo "1111! "
