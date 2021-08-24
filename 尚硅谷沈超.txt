@@ -189,6 +189,9 @@ service httpd start 启动时默认寻找/etc/in.d/init.d/httpd 或/etc/init.d/h
 
 导入数字证书很重要 视频第59节，文档在“软件包管理”一章中
 
+添加yum源：
+sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+
 用户及权限管理===========================
 68、用户管理介绍
 /etc/passwd 用户文件，每行代表一个用户
@@ -513,32 +516,665 @@ edquota -t
 setquota -u 用户名 容量软限制 容量硬限制 个数软限制 个数硬限制 分区名
 setquota -u user4 10000 20000 5 8 /disk
 
+101、LVM逻辑卷
+Logical Volume Management
+物理卷（Physical Volume 简称PV）是真正的物理硬盘或分区
+卷组（Volume Group 简称VG）将多个物理卷合起来就组成了卷组，组成同一个卷组的物理卷可以是同一个硬盘的不同分区，也可以是不同硬盘的不同分区。可以把卷组想象成一个逻辑硬盘
+逻辑卷（LV logical Volume）卷组是一个逻辑硬盘，硬盘必须分区之后才可以使用，这个分区我们称之为逻辑卷，逻辑卷可以格式化和写入数据，可以把逻辑卷想象成分区
+
+常规操作：先把物理硬盘或分区变成物理卷，再把物理卷组装成卷组（卷组可以动态调整大小，当卷组不够时可以再来一块硬盘，将硬盘做成物理卷加到卷组中），在卷组中分成一个个逻辑卷，每个逻辑卷就可以作为我们实际使用的分区，所以也可以对逻辑卷格式化和挂载
+
+逻辑卷中有个概念叫物理扩展（PE Physical Extend）PE是用来保存数据的最小单元，我们的数据实际上都是写入PE当中，PE大小是可以配置的，默认是4MB
+普通分区的大小，单位是柱面
+逻辑卷的大小，单位是PE
+
+102、
+boot分区不可以是逻辑卷分区，必须是/dev/sda1这种形式的普通目录
+剩余的空间可以变成逻辑卷
+
+103、通过命令行进行LVM逻辑卷分区
+第1步：准备分区，需要注意分区的系统ID不再是Linux默认的分区ID号83了，而要改成LVM的ID号8e
+fdisk /dev/sdb
+第2步 建立物理卷
+pvcreate /dev/sdb 将整块硬盘建立为物理卷
+pvcreate /dev/sdb5 将sdb5分区建立为物理卷
+pvscan 查看物理卷
+pvdisplay 查看到物理卷更详细的信息
+pvremove 删除物理卷
+第3步 创建卷组
+vgcreate -s 8MB myjvg /dev/sdb5 /dev/sdb6
+-s 选项是PE指定大小，通常无需设置，之后跟着的是卷组名，后面可以再跟若干物理卷名
+vgscan
+vgdisplay 查看卷组信息
+vgextend myjvg /dev/sdb7 将sdb7这个物理卷加到myjvg这个卷组，对myjvg卷组扩容
+vgremove myjvg 删除卷组
+第4步 建立逻辑卷
+lvcreate -L 1.5G -n myjlv myjvg -L参数指定容量 -n参数指定逻辑卷名 -l参数指定个数（-l是按照PE个数指定容量大小，比较麻烦，需要换算，很少用）
+mkfs -t ext4 /dev/myjvg/myjlv 格式化
+mkdir /testlv && mount /dev/myjvg/myjlv /testlv 挂载
+df -h
+lvscan
+lvdisplay 就可以查看到逻辑卷信息
+上述操作是临时生效的，永久生效需要修改/fstab文件
+lvresize -L +1G /dev/myjvg/myjlv 给myjlv这个逻辑卷增加1G容量
+-L 也可以不写+或-，直接写数字，就代表扩容到这个数字大小的容量
+执行完lvresize之后，再执行以下resize2fs /dev/myjvg/myjlv 才可以 在df -h中看到最新的容量信息
 
 104、
+linux用的shell是bash
+
+105、
+如果输出没有空格的一串符号，直接echo 11111111111 即可
+如果输出有空格的一串符号，要加引号：echo "1111111   1111"
+
+echo -e "\\" 加上-e参数，可以输出转义字符
+echo -e "\a" 可以输出提示音
+
+106、
+#!/bin/bash bash中的第1行，叫bash bang，用于指示操作系统使用哪个解释器来解析文件的其余部分
+
+执行shell文件的步骤：
+1、赋予执行权限 chmod 755 hello.sh
+2、/root/hello.sh 或 ./hello.sh 以绝对路径或相对路径方式执行
+
+通过bash命令也可以执行shell脚本，而且不用给文件赋执行权限
+bash hello.sh
+
 shell
 echo打印时，如果想要输出!，后面必须加空格
 echo "1111! "
 
-在.bashrc中可以定义别名
-执行source .bashrc命令，不需要重启，可以直接生效
+107、
+history命令会把历史命令被记录在~/.bash_history文件中，写入时机是用户退出，也就是说，在用户logout退出Linux时，会自动将使用过的命令保存在~/.bash_history中，下次登录的时候还可以用
+如果是强制关机，或意外关机导致的用户退出，history是不会往~/.bash_history里写入命令的
+如果想要马上将历史命令更新到~/.bash_history中，可以通过history -w强制同步
+注意：~/.bash_history是用户的家目录，所以这个操作是和用户相关的，用户做该操作之后保存的是自己使用过的历史命令
+history -c 将内存和~/.bash_history中的历史命令全部清空
 
-dizhi566@gmail.com
+输入 !39 执行history列表中第39条命令
+!! 执行上一条命令，和摁上箭头键是一个效果
+!字符串 重复最后以该字符串开头的命令
+!$ 重复上一条命令最后一个参数
 
-批量解压，写法1
+alias命令查看别名
+
+在~/.bashrc中可以定义别名
+执行source ~/.bashrc命令，不需要重启，可以直接生效
+如果希望永久生效，需要将别名写入环境变量配置文件 ~/.bashrc中
+
+. 点命令，就是source命令，即 . ~/.bashrc 和 source ~/.bashrc是一样的
+
+108、
+Ctrl + U 删除或剪切光标之前的命令
+Ctrl + K 删除或捡钱光标之后的命令
+
+输入输出重定向
+bash的标准输入输出
+设备 设备文件名   文件描述符  类型
+键盘 /dev/stdin 0         标准输入
+显示器 /dev/stdout 2         标准输出
+显示器 /dev/stderr 2         标准错误输出
+
+输出重定向：
+命令 > 文件 // 直接覆盖
+命令 >> 文件 // 追加
+错误命令 2> 文件
+错误命令 2>> 文件
+
+使用2> 和 2>> 的前提是我们知道自己输入的指令是错误的，意义不大
+
+所以，更常用的是：
+命令 >> 文件 2>&1
+命令 &>> 文件
+
+命令 > 文件 2>&1
+命令 &> 文件
+
+命令 >> 文件1 2>> 文件2 正确的输出写到文件1，错误的输出写到文件2
+
+输入重定向 很少使用
+
+109、
+多命令执行可以用 ; && || 连接
+; 连接的多条命令，没有逻辑关系，即使第1条命令报错，后面的命令也会执行，但&&要求前面的命令正确执行之后才执行
+
+ls || echo no && echo yes
+lsdsdsdf || echo no && echo yes
+注意：|| echo no 必须写在前面 && echo yes 必须写在后面
+
+grep [选项] "搜索内容" 文件名
+-A 数字 列出符合条件的行，并列出后续的n行
+-B 数字 列出符合条件的行，并列出前面的n行
+-c 统计找到的符合条件的字符串的次数
+-i 忽略大小写
+-n 输出行号
+-v 反向查找
+--color=auto 搜索出的关键字用颜色表示
+
+110、
+定义并初始化变量：name=sc
+输出name变量的值：echo name
+
+a=`date` 运行date命令之后，将其输出赋值给a
+
+bash中特殊符号
+单引号 '' 单引号中的所有特殊符号，如 $ 和 `，都没有特殊含义
+双引号 "" 双引号中，$ ` \有特殊含义（调用变量的值、引用命令、转义符），其余特殊符号都无特殊含义
+反引号 `` 反引号括起来的内容是系统命令，在bash中会先执行它，和$()作用一样，但推荐使用$()，看起来更清晰一些
+
+111、
+pstree可以查看进程树
+
+依次执行如下命令：
+name=sc
+(name=lm;echo $name)  该命令输出lm
+echo $name            该命令输出sc
+小括号括起来的命令，会重新开一个子shell执行，子shell执行完后，会立刻退出，回到父shell，所以第3条命令输出的是sc
+
+如果把命令放在大括号{}里面执行，那改的就是当前shell中的变量了，不会存在子shell
+注：{}的第一个命令和左括号之间必须要有一个空格，最后一个命令必须要有分号，例如：
+{ name=lm;echo $name;}
+实际上写大括号和不写大括号都是一个效果，都是在当前shell执行，所以用的很少
+
+112、
+shell变量的默认类型时字符串型，如果要进行数值运算，则必须指定变量为数值型
+shell中变量名和值之间不可以有空格 name=myj 如果加了空格：name = myj shell会认为name是一个命令，后面跟一个空格后就会继续寻找它的参数
+
+基于旧变量赋值新变量：
+test=123
+test="$test"456
+echo $test // 得到123456
+test=${test}789
+echo ${test} // 得到123456789
+
+113、
+环境变量分为系统环境变量、用户自定义的环境变量
+除此之外，地位等同于环境变量的变量类型有位置参数变量、预定义变量
+环境变量主要写在 /etc/profile中
+
+114、
+shell中变量定义时，变量名前面不需要加$，但调用的时候变量名前必须加$
+set -u // 执行该命令后，调用没有初始化的变量，会报错，但该命令只是临时生效，重启机器后就不生效了
+永久生效需要将set -u写到上面的配置文件中
+set不加任何参数用来查看系统的环境变量，可以看到自定义的环境变量
+env也能看到一部分环境变量，不能看到自定义的环境变量
+unset 变量名 删除变量名，注意变量名前面不需要加$
+
+115、
+变量类型：
+  用户自定义变量： 名称、作用、内容都是自定义
+  环境变量：
+    用户自定义环境变量：名称、作用、内容都是自定义
+    系统自带环境变量：名称、作用都是确定的，内容是自定义
+  位置参数变量：名称、作用都是确定的，内容是自定义
+  预定义变量：名称、作用都是确定的，内容是自定义
+
+用户自定义变量 和 用户自定义环境变量 的区别：
+环境变量在一系列shell中，父、子shell中都能看到
+但用户自定义变量，在子shell中看不到，只能在它被定义的那个shell中看到
+
+声明环境变量时前面要加上export，用来和声明普通变量作区分
+export age="18"
+或者：
+age="18"
+export age
+
+116、
+PATH也是变量，只不过它是系统自带的环境变量，所以可以通过echo $PATH输出
+PATH="$PATH":/root/sh 将sh脚本所在目录加到PATH环境变量中
+
+117、
+echo $PS1 // PS1变量表示当前命令提示符的展示内容
+直接修改PS1的值只是临时生效，如果想要永久生效，需要修改/etc/bashrc文件
+
+/etc/sysconfig/i18n 定义系统默认语系
+
+118、
+位置参数变量：
+#!/bin/bash
+# 变量a接收第1个参数
+a=$1
+# 变量b接收第2个参数
+b=$2
+# shell中的表达式要用双小括号括起来
+sum=$(( $a + $b ))
+echo $sum
+echo $0
+
+在终端执行：
+sh count.sh 22 33
+之后，就可以得到结果55
+$0代表命令本身，例如这里就输出了./count.sh
+
+119、
+位置参数变量：
+para.sh文件：
+#!/bin/bash
+
+echo "\$* is $*"
+echo "\$@ is $@"
+echo "\$# is $#"
+
+执行./para.sh 11 22 33 44之后，会输出
+$* is 11 22 33 44 # 输出所有参数，但把所有参数看成一个整体，即$*可以看成一个变量，这个变量的值是 11 22 33 44
+$@ is 11 22 33 44 # 输出所有参数，但会把每个参数单独赋给$@
+$# is 4 # 参数个数
+
+para2.sh文件：
+#!/bin/bash
+
+for i in "$*":
+  do
+    echo $i
+  done
+echo "========="
+for y in "$@":
+  do
+    echo $y
+  done
+
+输出结果：
+11 22 33 44
+=========
+11
+22
+33
+44
+
+120、预定义变量
+$? 最后一次执行命令的返回状态，如果这个变量的值为0，证明上一条命令正确执行，如果这个变量的值为非0，则为错误
+$$ 当前进程进程号pid
+$! 后台运行的最后一个进程的进程号
+
+121、
+# 接受键盘输入，并将输入保存到变量num1中
+# t参数，意思是等待30s
+read -t 30 -p "please input a num1: " num1
+
+122、
+shell中的变量类型只有：字符串、数字、数组
+a=1
+b=2
+c=$a+$b
+echo $c # 会得到1+2
+
+declare -i c=$a+$b
+echo $c # 会得到3
+
+# 声明name变量，并给第0项赋值aa
+declare -a name[0]="aa"
+# 也可以省略掉declare -a
+name[1]="bb"
+# 查看数组中所有的值
+echo ${name}
+
+export命令和declare -x原理一样，都是声明环境变量
+
+declare - 给变量设定类型属性
+declare + 给变量取消类型属性
+
+123、
+shell中的数值运算
+方法一：通过declare将变量声明为数值型
+a=11
+b=22
+declare -i c=$a+$b # 通过-i参数声明为数值型
+echo $c
+
+方法二：
+a=11
+b=22
+d=$(expr $a + $b) # 加号两侧必须都有空格
+echo $d
+
+let e=$a+$b
+echo e
+
+方法三：推荐
+gg=$(( $aa+$bb ))
+echo $gg
+双小括号也可以用[]来代替，但不推荐
+ff=$[ $aa+$bb ]
+
+124、
+# 中括号代表条件测试
+# exit代表脚本退出执行
+[ "$oper" == "+" ] && echo "$(( $num1 + $num2 ))" && exit
+
+125、
+变量测试：
+# 通过x的值来测试z的值到底是没有定义、是空字符串、还是有定义？
+x=${z-new}
+# 如果echo $x输出的是new，证明z没有定义过
+# 如果echo $x输出的是空，证明z是空字符串
+# 如果echo $x输出的是其他值，例如123，证明z已经定义过，且值为123
+echo $x
+
+126、
+source 配置文件 或 . 配置文件，用来加载环境变量配置文件，以避免重新登录生效
+
+Linux中的环境变量配置文件：
+/etc/profile
+/etc/profile.d/*.sh
+~/.bash_profile
+~/.bashrc
+/etc/bashrc
+
+放在etc目录下的，对所有用户生效，放在家目录的，对当前登录用户生效
+环境变量配置文件调用过程：
+/etc/profile -> ~/.bash_profile -> ~/.bashrc -> /etc/bashrc -> 命令提示符
+  ↓                                                   |
+/etc/profile.d/*.sh ←---------------------------------|
+  ↓
+/etc/profile.d/lang.sh
+  ↓
+/etc/sysconfig/i18n
+
+用户正常登录情况下，会从/etc/profile开始（上图左上角），分别沿着右边和下边两个方向加载配置文件（下方的路线加载完之后就会和上方的配置一起做合并，共同在终端生效），最终到达命令提示符
+
+当通过su root切到root账户下，或父shell开启子shell的时候，会以/etc/bashrc这个文件为入口加载（即上图中右侧那条路径）
+
+127、
+用户退出时如果通过执行logout命令退出（注意必须是通过logout命令退出，直接关掉终端不会调用配置文件），会调用一个环境变量配置文件（只有这一个） ~/.bash_logout
+
+~/.bash_history 保存了历史命令
+
+/etc/issue /etc/issue.net 用户登录之前显示欢迎信息 issue文件支持转义符 issue.net不支持 其次，ssh远程登录是否显示/etc/issue.net文件中的欢迎信息，是由ssh的配置文件（/etc/ssh/sshd_config）决定的，需要在/etc/ssh/sshd_config文件中添加Banner /etc/issue.net
+/etc/motd 是用户正确登录之后显示欢迎信息
+/etc/motd文件中的欢迎信息，不论是本地登录，还是远程登录都可以显示
+
+stty -a 查询系统中定义的快捷键
+stty intr ^p 修改intr的快捷键为^p
+
+128、
+注意正则和通配符的区别：
+正则：用来在文件中匹配符合条件的字符串
+通配符：用来匹配符合条件的文件名
+所以在文件中搜索字符串的命令，如grep awk sed支持正则
+而搜索字符串的命令，如ls find cp不支持正则，只能使用通配符去匹配
+
+shell中正则分为基础正则和扩展正则，grep只可以使用基础正则，egrep才可以匹配扩展正则
+
+grep a* test.txt # 会匹配所有行，因为每一行一定匹配a*（0个a或多个a）
+.* 匹配任意内容
+grep -v "^$" test.txt 筛选出非空白行，-v用来取反
+
+129、
+grep "a\{3,\}" test.txt # 在test.txt找3个a或3个以上a的行
+
+# 先过滤不是root的用户行，然后再筛选出passwd最后一列是/bin/bash的用户
+grep -v "root" /etc/passwd | grep "/bin/bash"
+
+130、扩展正则
++ ? | () 在shell中是扩展正则
+扩展正则必须使用egrep或者grep -E
+
+131、
+grep -E [0-9A-Za-z_]+@[0-9A-Za-z_]+\.[a-z] a.txt
+
+132、
+提取所有普通用户
+-v 代表先获取没有root的行
+grep -v "root" /etc/passwd | grep "/bin/bash"
+
+cut用来提取列
+提取student.txt中的第2、4列
+cut -f 2,4 student.txt
+cut命令不识别空格，只识别tab
+先通过grep去掉包含Name的行，再用cut提取列
+grep -v "Name" student.txt | cut -f 2,4 student.txt
+
+提取所有用户的用户名和id号
+cut -d ":" -f 1,3 /etc/passwd
+
+提取所有普通用户的用户名和id号
+grep "/bin/bash" /etc/passwd | grep -v "root" | cut -d ":" -f 1
+
+133、
+如果student.txt中有3列，则会按printf参数中的格式输出
+printf '%s\t %s\t %s\t \n' $(cat student.txt)
+也可以把字符串按照一定格式输出
+printf '%i\t %i\t %i\t \n' $(cat student.txt)
+不输出包含Name的行
+printf '%i\t %i\t %i\t \n' $(cat student.txt | grep -v Name)
+
+134、
+输出第2列和第6列
+awk '{printf $2 "\t" $6 "\n"}' student.txt
+awk '{print $2 "\t" $6 ""}' student.txt
+printf必须手动加换行符才可以实现换行
+
+先提取包含dev/sda3的行的第5列（第5列是一个百分比，例如12%），之后再以%作为分隔符，提取第1列，就得到了dev/sda3分区的占比
+df -h | grep "dev/sda3" | awk '{printf $5}' | cut -d "%" -f 1
+
+135、
+在打印数据前，BEGIN后面的printf "begin\n"会执行，END同理
+awk 'BEGIN{printf "begin\n"} {printf $2 "\t" $6 "\n"}' student.txt
+
+如果第6列大于86，再打印
+grep -v "Name" student.txt | awk '$6 >= 86 {print $2}'
+
+awk中$0代表整行，$1代表第1列，以此类推
+
+如果第2列包含Sc这个字符串，则打印第6列，注意这里的/Sc/和正则没关系
+awk '$2 ~ /Sc/ {printf $6 "\n"}' student.txt
+
+~代表包含，!~代表不包含
+
+136、
+grep "/bin/bash"可以得到能登录的用户，即超级用户和普通用户
+FS是awk的内置变量，用来指定分隔符
+cat /etc/passwd | grep "/bin/bash" | awk 'BEGIN{FS=":"} {print $1}'
+
+如果整行中包含Liming这个字符串，则打印
+awk '/Liming/ {print}' student.txt
+
+137、
+打印student.txt文件中的第2行，默认sed会把所有数据都打印出来，再把命令选中的内容（此处就是第二行的内容）打印出来
+sed '2p' student.txt
+如果只想打印命令选中的内容，需要加-n参数
+sed -n '2p' student.txt
+删除2 3 4行
+sed '2,4d' student.txt
+删除真实文件中的2 3 4行
+sed -i '2,4d' student.txt
+在第2行后追加一行，内容是1111111111
+sed '2a 1111111111' student.txt
+将1111111111加到真实文件中
+sed -i '2a 1111111111' student.txt
+和Linux的vi编辑器进入输入模式一样的道理，a是在行后添加，i就是在行前添加：
+sed -i '2i 1111111111' student.txt
+c的作用是替换，例如如下命令将把第3行内容替换为4444444
+sed -i '3c 4444444' student.txt
+
+138、
+sort /etc/passwd 将passwd文件中所有行排序之后输出，默认按照第1个字母来排
+
+sort -r /etc/passwd 反向排序
+
+-t指定分隔符，-k指定起始终止列，按照选中的这些列来排，此处就是按照第3列来排
+sort -t ":" -k 3,3 /etc/passwd
+
+添加参数-n，按数字来排，而不是按字母顺序来排
+sort -n -t ":" -k 3,3 /etc/passwd
+
+uniq命令，取消重复行，参数和sort一样
+
+wc统计文件信息
+
+139、140、
+test命令，可以判断文件是否存在、文件类型、文件权限，还可以判断两个文件之间的比较，例如比较修改时间
+test -b ip.txt 判断ip.txt是否存在且为块设备文件
+test命令还有一种格式 [ -b ip.txt ]
+
+141、
+test做数字判断：
+# 如果50小于等于40，输出yes，否则输出no
+[ 50 -le 40 ] && echo yes || echo no
+
+test做字符串判断：
+判断变量name是不是为空
+[ -z "$name" ] && echo yes || echo no
+
+aa=11
+-a代表逻辑与，如果变量aa不为空，且aa大于23，输出yes，否则输出no
+[ -n "$aa" -a "$aa" -gt 23 ] && echo yes || echo no
+
+142、
+/dev/sda3分区占比超过80%时报警
+#!/bin/bash
+aa=$( df -h | grep /dev/sda3 | awk '${print $5}' | cut -d "%" -f 1 )
+if [ "$aa" -ge 80 ]
+  then
+    echo "11111111"
+fi
+
+143、双分支if
+备份数据库
+#!/bin/bash
+# 同步系统时间
+ntpdate asia.pool.ntp.org &>/dev/null
+# 把当前系统时间按照 年月日 格式赋予变量date
+date=$(date +%y%m%d)
+# 统计mysql数据库大小，并把大小赋予size变量
+size=$(du -sh /var/bin/mysql)
+
+if [ -d /tmp/dbbak ]
+  then
+    echo "Date : $date!" > /tmp/dbbak/dbinfo.txt
+    echo "Data size : $size" >> /tmp/dbbak/dbinfo.txt
+    cd /tmp/dbbak
+    # /dev/null 是系统自带的类似回收站的目录，用来屏蔽命令执行时的输出
+    # 由于命令放在脚本中执行，所以不需要输出，所以需要屏蔽掉
+    tar -zcf mysql-lib-$date.tar.gz /var/lib/mysql_dbinfo.txt &>/dev/null
+    rm -rf /tmp/dbbak/dbinfo.txt
+  else
+    mkdir /tmp/dbbak
+    echo "Date : $date!" > /tmp/dbbak/dbinfo.txt
+    echo "Data size : $size" >> /tmp/dbbak/dbinfo.txt
+    cd /tmp/dbbak
+    tar -zcf mysql-lib-$date.tar.gz /var/lib/mysql_dbinfo.txt &>/dev/null
+    rm -rf /tmp/dbbak/dbinfo.txt
+fi
+
+该脚本目前存在的问题：
+1、只能将文件备份到本机，无法实现网络备份
+2、只能完全备份，不能增量备份（需要mysqldump工具）
+
+144、双分支if
+监听Apache是否正常运行，如果异常就重启的脚本：
+aa=$( netstat -tuln | awk '{print $4}' | grep ":80$" )
+if [ "$aa" == "" ]
+  then
+    echo "http is down, must restart"
+    /etc/rc.d/init.d/http start &>/dev/null
+  else
+    echo "http is ok"
+fi
+
+有时只判断服务是否存在不准确，需要判断80端口是否应答：
+port=$(nmap -sT 192.168.4.210 | grep tcp | grep http | awk '${print $2}')
+if [ "$port" == "open" ]
+
+145、多分支if
+#!/bin/bash
+read -t 30 -p "please input a filename: " file
+if [ -z $filename ]
+  then
+    echo "you don't input a file"
+    # 定义返回值，且退出程序，执行该shell之后，通过echo $?就可以得到这个值
+    exit 1
+elif [ ! -e $filename ]
+  then
+    echo "the file you input doesn't exist"
+    exit 2
+elif [ -f $filename ]
+  then
+    echo "you have inputed a file"
+elif
+  then
+    echo "you have inputed a directory"
+else
+  echo "$filename is other file"
+fi
+
+146、计算器案例
+if [ -n "$num1" -a -n "$num2" -a -n "$ope" ]
+  then
+    test1=$(echo $num1 | sed 's/[0-9]//g')
+    test2=$(echo $num2 | sed 's/[0-9]//g')
+    # 判断test1和test2是不是空，如果是空，证明是数字
+    if [ -z "$test1" -a -z "$test2" ]
+      then
+        if [ "$ope" === '+' ]
+          then
+          value=$(( $num1 + $num2 ))
+        elif [ "$ope" === '-' ]
+          then
+          value=$(( $num1 - $num2 ))
+        else
+          echo "Please enter a valid symbol"
+          exit 10
+        fi
+    else
+      echo "Please enter a valid value"
+      exit 11
+    fi
+else
+  echo "qing shu ru nei rong"
+  exit 12
+fi
+echo " $num1 $ope $num2 : $value "
+
+147、case语句
+read -t 30 -p "please input your choice: " cho
+case $cho in
+  "1")
+    echo "beijing"
+    ;;
+  "2")
+    echo "shanghai"
+    ;;
+  *)
+    echo "error"
+    ;;
+esac
+
+148、for循环
+shell中的for循环的do、done可以类比其他语言的大括号{}
+第一种语法：
+for i in  2 3 4
+  do
+    echo $i
+  done
+
+第二种语法：
+s=0
+# shell中进行运算要用双小括号
+for (( i=1;i<=100;i=i+1 ))
+  do
+    s=$(( $s+$i ))
+  done
+echo $s
+
+dizhi566@gmail.com 加速度
+
+149、批量解压，写法1
 #!/bin/bash
 
 cd /root/sh/tar
 
-ls *.tar.gz tar.log
+ls *.tar.gz > tar.log
 # 多种扩展名的压缩文件，需要用>>追加写入tar.log中，而不能用>，>是会覆盖整个文件的
 # &>/dev/null 可以去掉所有打印信息
 ls *.tgz >> tar.log &>/dev/null
 # 统计有多少行，并写入aa变量中
-aa=$(cat tar.log|wc -l)
+aa=$(cat /root/sh/tar/tar.log|wc -l)
 
 for (( i=1;i<"$aa";i=i+1 ))
 do
-  bb=$(cat tar.log | awk 'NR==='$i' {print $1}')
+  # NR是awk当前正在处理的行
+  bb=$(cat tar.log | awk 'NR=='$i' {print $1}')
   tar -zxvf $bb -C /root/sh/tar
 done
 
@@ -555,6 +1191,43 @@ do
 done
 
 rm -rf tar.log
+
+150、判断合法ip
+
+151、批量添加指定数量的用户
+#!/bin/bash
+
+read -p "Please input user name: " -t 30 name
+read -p "Please input the number of users: " -t 30 num
+read -p "Please input the password of users: " -t 30 pass
+
+if [ ! -z "$name" -a ! -z "$num" -a ! -z "$pass" ]
+  then
+    y=$(echo $num | sed 's/[0-9]//g')
+
+  if [ -z "$y" ]
+    then
+    for (( i=1;i<=$num;i=i+1 ))
+      do
+        /usr/sbin/useradd $name$i &>/dev/null
+        echo $pass | /usr/bin/passwd --sdtin $name$i &>/dev/null
+        # 强制用户登录之后改密码
+        chage -d 0 $name$i &>/dev/null
+      done
+  fi
+fi
+
+152、批量删除伪用户
+#!/bin/bash
+# 过滤出所有伪用户，再把root用户去掉，再通过cut拿到所有用户名
+name=$( cat /etc/passwd | grep "/bin/bash" | grep -v root | cut -d ":" -f 1 )
+for i in $name
+do
+  userdel -r $i &>/dev/null
+done
+
+
+=========================================================
 
 Windows的服务管理中有自动、手动、禁用状态，手动状态是当系统需要的时候不会询问管理员是否同意，而自动开启的意思，并不是需要用户手动开启的意思
 

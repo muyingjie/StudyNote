@@ -1,0 +1,15 @@
+配置拉取镜像的源为国内阿里云镜像源地址
+需要注意registry-mirrors的域名需要去阿里云官方申请
+
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+  "registry-mirrors": ["https://fwvjnv59.mirror.aliyuncs.com"]
+}
+EOF
+
+kubectl是k8s的客户端服务，可以向kubelet服务发送指令
+类似于mysql服务接受sql语句再将sql语句发送给mysqld服务
+kubeadm也类似于mysqladmin，是一个管理员工具
+
+pod是一个工作单元，或者叫部署单元
