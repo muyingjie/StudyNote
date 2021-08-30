@@ -30,3 +30,14 @@ HTTP1.1默认支持长连接，所以Connection: Keep-Alive这个头意义不大
 Connection除了上述的作用之外，还有一个作用，这个作用和代理服务器相关，Connection用于告诉代理服务器，不要转发Connection列出的头部
 
 客户端如何知道发Connection头还是Proxy-Connection头？
+
+同源策略：限制了从同一个源加载的文档或脚本如何与来自另一个源的资源进行交互，在可用性和安全性下寻找一个平衡点
+可用性：
+script、img、link、iframe、video、audio是允许跨域的
+表单提交、可以提交到另外一个站点
+安全性：
+浏览器要防止站点A的脚本向站点B发起危险动作，因此A站点无法读取B站点的cookie
+
+CSRF防攻击方式：
+1、服务器通过Referer头来判断请求是不是来自自己的站点
+2、服务器给客户端一个临时的token，攻击者无法伪造这个token时可以防攻击

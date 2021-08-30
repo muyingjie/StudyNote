@@ -63,9 +63,9 @@ Deferred.prototype.reject = function (reason) {
 function scheduleProcessQueue(state) {
   var pending = state.pending
   delete state.pending
-  _.forEach(pending, function (hanlers) {
+  _.forEach(pending, function (handlers) {
     var deferred = handlers[0]
-    var fn = hanlers[state.status]
+    var fn = handlers[state.status]
     try {
       if (_.isFunction(fn)) {
         deferred.resolve(fn(state.value))
@@ -79,5 +79,3 @@ function scheduleProcessQueue(state) {
     }
   })
 }
-
-let defer = new Deferred()

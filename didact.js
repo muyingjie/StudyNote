@@ -315,6 +315,9 @@ const Didact = {
 //   )
 // }
 // const element = <Counter />
-const element = Didact.createElement('div', { id: 'app' }, 'child')
+const element = Didact.createElement('div', { id: 'A' },
+  Didact.createElement('div', { id: 'A1' }, Didact.createElement('div', { id: 'A1-1' }), Didact.createElement('div', { id: 'A1-2' })),
+  Didact.createElement('div', { id: 'A2' }, Didact.createElement('div', { id: 'A2-1' }), Didact.createElement('div', { id: 'A2-2' }))
+)
 const container = document.getElementById("root")
 Didact.render(element, container)
