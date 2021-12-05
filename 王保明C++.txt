@@ -214,10 +214,11 @@ char *p;
 //¾²Ì¬´æ´¢ÇøÀí½â
 char* getStr1(){
 	char* p="abcdefg1";
-	return p1;
+	return p;
 }
 char* getStr2(){
 	char* p="abcdefg2";
+  return p;
 }
 void main(){
 	char* p1=NULL;
@@ -483,7 +484,7 @@ void main(){
 	char to[128]={0};
 	char *p1=from;
 	char *p2=to;
-	strcpy(buf,"12345678");
+	strcpy(from,"12345678");
 	while(*p1!='\0'){
 		*p2=*p1;
 		p2++;

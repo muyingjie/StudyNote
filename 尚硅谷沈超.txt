@@ -1226,6 +1226,297 @@ do
   userdel -r $i &>/dev/null
 done
 
+154、
+i=1
+s=0
+
+until [ $i -gt 100 ]
+do
+  s=$(( $s+$i ))
+  i=$(( $i+1 ))
+done
+echo $s
+
+155、
+read -t 30 -p "input a number: " num
+y=$( echo $num | sed 's/[0-9]//g' )
+if [ -n "$y" ]
+then
+  echo "error: please input number"
+  exit 19
+else
+  echo $num
+fi
+
+157、启动引导与修复
+Linux有7个运行级别
+0 关机
+1 单用户模式，可以理解为windows中的安全模式，主要用于系统修复
+2 不完全的命令行模式，不含NFS服务
+3 完全的命令行模式
+4 系统保留
+5 图形模式
+6 重启动
+
+正常进入的命令行界面是第3个运行级别
+runlevel指令可以查看当前运行级别
+开机运行runlevel后，得到N 3这样的结果，第一个N代表上一个运行级别
+手动切换当前的运行级别：
+init 5 切换运行级别为5
+但不要通过init 0和init 6关机和重启，这样做可能会导致数据丢失
+
+系统默认运行级别，保存在：
+/etc/inittab中
+
+会在用户登录之前读取，这个文件中写入什么命令，开机启动时就会执行什么命令
+/etc/rc.d/rc.local文件
+默认情况下，这个文件中放了touch /var/lock/subsys/local 这样一条命令，通过touch来记录系统开机的时间
+
+158、
+开机时，看到的供用户选择从哪个操作系统启动的界面叫做grub界面
+grub启动引导程序
+在/boot/symvers-2.6.xxxxxxxx 中存放的是内核的可执行代码包
+内核的源代码在/usr/src/kernel目录中
+grub目录就在/boot下 grub.conf是grub的配置文件
+/boot/grub/grub.conf还有两个软链接
+
+159、
+Linux有几个操作系统，grub.conf中就会有几项对应的配置
+default=0默认启动第0个操作系统
+timeout=5默认等待时间，5秒钟，也就是供用户选择双系统的时间是5秒钟
+
+接下来的title、root、kernel等等的内容就是选择系统时画面上的内容
+
+160、
+grub-md5-crypt 非重点
+
+161、
+系统修复（例如Linux密码忘了，要重置）模式：
+1、单用户模式
+2、光盘安全模式，选择从光盘启动而不从硬盘启动
+运行级别1是单用户模式
+
+162、
+光盘修复模式，利用光盘启动系统，再把硬盘作为数据盘挂载上去，再去对硬盘中的数据进行改动
+举例来说，如果我们的系统中没有了/etc/inittab这个文件（这个文件是定义系统默认运行级别的），系统就无法正常启动
+这时进入光盘修复模式后，利用chroot命令“改变系统根目录”：
+chroot /mnt/sysimage
+什么叫改变系统根目录？
+我们是通过光盘启动的光盘修复模式，所以我们现在所在的根目录不是真正的系统根目录，而是光盘的模拟根目录，系统根目录被当成外来设备放在/mnt/sysimage/目录中，这时需要chroot命令把我们现在的所在目录移动成真正的系统根目录
+所以chroot /mnt/sysimage这条命令执行完，我们访问的才是系统盘，否则就不是
+
+163、服务管理-服务分类
+查看所有服务
+chkconfig --list
+
+RPM包安装的服务
+  独立的服务
+    启动方式：
+      方法一：/etc/rc.d/init.d/httpd start
+      方法二：service httpd start
+    开机自启动方式：
+      方法一：
+      # 2345这几种运行模式下开机自启动
+      chkconfig -level 2345 httpd on
+      方法二（推荐）：
+      vi /etc/rc.local
+      添加以下命令：
+      /etc/rc.d/init.d/httpd start
+      方法三：
+      ntsysv
+  基于xinetd服务 基本不用，用的越来越少
+    启动方式：
+      vi /etc/xinetd.d/telnet 把里面的disable改为no
+      service xinetd restart
+    开机自启动方式：
+      chkconfig xinetd on
+      ntsysv
+源码包安装的服务
+  启动方式：
+    通过绝对路径，找到可执行文件进行启动
+    /usr/local/apache2/bin/apachectl start|stop|restart
+  开机自启动方式：
+    vi /etc/rc.d/rc.local
+    在上述文件中添加/usr/local/apache2/bin/apachectl start这条命令
+
+164、
+165、
+166、学习Apache的/etc/rc.d/init.d/httpd的具体内容
+167、
+168、
+源码包安装的服务默认不会被service chkconfig ntsysv这些命令识别，因为它们并没有安装到/etc/rc.d/init.d
+这也是区分源码包安装的服务和rpm包安装的服务的一种方式
+也可以通过如下方式让Linux的service chkconfig ntsysv这些命令识别源码包服务，但并不推荐：
+将可执行文件软链接到/etc/rc.d/init.d即可：
+ln -s /usr/local/apache2/bin/apachectl /etc/rc.d/init.d
+对于chkconfig，还需要再修改vi /etc/init.d/apahce文件
+chkconfig: 35 86 76
+# 三个数字分别是运行级别 启动顺序 关闭顺序
+description: 随便写
+
+然后再手动执行chkconfig --add apachectl
+
+170、
+173、
+kill -l查看所有信号
+kill -1重新读取配置文件之后重启
+kill -9 pid 立即结束程序运行，用于强制中止进程
+
+killall -9 httpd 杀死所有进程名为httpd的进程
+pkill类似于killall
+pkill -9 -t pts/1 强制杀死从pts/1虚拟终端登录的进程，-t参数意思是指定终端号，这里我们的终端号是pts/1
+174、
+将命令放入后台执行的方法：
+1、命令后添加&
+2、命令执行后，ctrl+z，可以先将程序暂停，然后再放入后台
+
+jobs命令可以看后台运行了哪些程序
+
+注：vi命令和top无论使用哪种方式放入后台，都是暂停运行的，通常也不会将这些程序放入后台，这些操作也没有意义
+
+将后台运行的程序恢复到前台执行：fg %工作号 工作号就是jobs命令执行后前面的序号
+bg %工作号 又可以将其放到后台执行
+
+以上方式在用户登录的终端退出时都会自动终止，但很多时候我们希望终端关闭后，程序还依然在后台执行，这时有以下方法：
+1、将需要后台执行的命令加入/etc/rc.local文件里，但这种方式的缺点是：服务器不能随便重启，所以想要让其生效比较费劲
+2、使用定时任务
+3、用nohup命令 nohup [命令] &
+
+175、
+vmstat 1 3
+dmesg命令显示开机时内核检测信息
+free -h命令查看内存使用状态
+
+176、
+/proc/cpuinfo这个文件可以查看CPU相关的信息
+/proc下面放着一组文件，存储对应的设备信息
+w命令和who命令，之前已经讲过
+uptime命令是top命令的第1行
+uname命令查看内核相关信息
+lsb_release -a命令查看当前Linux的发行版
+
+177、
+定时任务有两种：at cron
+at的定时任务只能执行一次
+at命令需要atd服务的支持，需要开启atd服务：
+service atd start
+atd服务默认是开启的
+同理，cron也需要cron服务的启动
+
+at的访问控制：
+/etc/at.allow 用户的白名单
+/etc/at.deny 用户的黑名单
+如果系统中有（注意是‘有’，而不是‘只有’，即allow的优先级比deny高）/etc/at.allow文件，那么只有写入这个文件的用户可以使用at命令
+如果系统中没有/etc/at.allow文件，只有/etc/at.deny文件，那么写入这个文件的用户不可以使用at命令，而其他用户可以使用，但这个规则对root不生效
+如果两个文件都没有，那只有root用户可以使用at命令
+两个文件中写入用户的格式是每行一个用户名
+
+178、
+at命令格式：
+at [选项] 时间
+时间的格式为：
+HH:MM[am|pm] + [minutes|hours|days|weeks]
+HH:MM[am|pm] [month] [date]
+HH:MM YYYY-MM-DD
+HH:MM
+
+at命令的使用方式是先敲at命令指定执行时间，再输入在这个时机要执行的脚本，再摁Ctrl+D 保存at任务，再等待执行
+Linux中摁退格键出现乱码，再摁Ctrl+退格键就可以将乱码删除
+举例：
+at now +10 minutes
+at> /root/sh/hello.sh >> /root/hello.log // 将执行结果保存在hello.log中
+at> <EOT> // ctrl+d退出
+
+at -c 8 查询第8个at任务的内容
+atq也可以快速查询，但atq查不到任务执行的具体内容
+
+atrm 8 删除第8个任务
+
+179、
+cron定时任务默认有黑名单文件：/etc/cron.deny
+黑白名单的机制和at定时任务是一样的
+cron定时任务，有两种执行方式：
+1、用命令来执行cron定时任务
+2、用配置文件来执行cron定时任务
+
+// -e参数代表编辑
+crontab -e
+命令执行后，就会进入crontab的编辑页面，格式为：* * * * * 执行的任务
+第1个*：一个小时的第几分钟
+第2个*：一天中的第几个小时
+第3个*：一月中的第几天
+第4个*：一年中的第几月
+第5个*：一周中的星期几
+*/10 每隔10分钟执行一次
+0 8,12,16 * * * 命令 在8点0分、12点0分、16点0分执行任务
+0 5 * * 1-6 命令 在周一到周六的5点0分执行
+
+0 0 1,15 * 1 命令 每个月1号、15号，每个星期一的0点0分执行，注意天和星期是或的关系，而不是与的关系
+使用时应该尽量避免把星期和天放到一起使用，容易混乱
+
+crontab -l 查看定时任务
+
+crontab -e这种方式的缺点是不能指定用户身份
+
+180、
+crontab最小有效时间是分钟，最大时间范围是月
+定时任务中写的路径最好都是绝对路径
+通过配置文件配定时任务的方法：
+1、手工修改 vi /etc/crontab
+
+2、可以把要执行的脚本直接写到/etc/cron.{daily,weekly,monthly}这些目录下
+
+181、
+anacron
+如果定时任务由于机器关机等原因未能执行，如开机时让这些任务自动执行就需要用到anacron
+/var/spool/anacron目录下有
+cron.daily cron.monthly cron.weekly
+这些文件记录了anacron上次执行时的时间
+anacron会去读这些文件中的时间，然后和当前时间做比较，如果两个时间差值超过了anacron的指定时间差，就说明有定时任务漏掉了没有执行
+这时anacron会介入执行漏掉的任务
+在centos6以前，/etc/cron.{daily,weekly,monthly}这些目录中的定时任务会同时被cron和anacron调用
+在centos6（包含）之后，/etc/cron.{daily,weekly,monthly}中的任务只会被anacron调用
+
+/etc/anacron是anacron的配置文件
+
+182、日志
+/var/log是存放日志的目录
+/var/log/dmesg 记录开机自检的信息
+/var/log/btmp 记录错误登录日志
+考虑到安全问题，/var/log/btmp lastlog等一些文件不可以直接通过vi编辑查看，而必须使用lastb命令查看
+
+除了系统默认的日志之外，采用rpm包装的系统服务也会默认把日志记录在/var/log目录下
+而源码安装的服务会在源码目录的logs目录下
+
+183、日志服务rsyslogd
+rsyslogd服务的配置文件：/etc/rsyslogd.conf
+该配置文件中的内容格式为：
+mail.*    /var/log/mailog   mail服务相关的日志记录到/var/log/mailog文件中
+mail后面的点，和点后面的*，都有特殊的含义
+.代表只要比后面的等级高（包含该等级）日志就都记录下来，这里的*代表所有等级，所以就是记录所有日志
+.=代表只记录所需等级的日志
+.!与.=相反
+
+常见等级：
+debug
+info
+notice
+warning
+err
+crit
+alert
+emerg
+*
+
+184、/etc/rsyslogd.conf
+
+185、日志切割
+不推荐使用Apache的日志切割工具，因为它不支持轮替（即保留一定天数的日志，生成日志时如果超过这个天数，最早的那个日志就会被删掉）
+这个天数在/etc/logrotate.conf配置文件中配置，参数是dateext
+
+187、
+把自己的日志加入日志轮替
+在/etc/logrotate.d目录下建立此日志的轮替文件
 
 =========================================================
 
@@ -1327,7 +1618,9 @@ DR：负载均衡服务器和应用服务器处在一个广播域中
 ESXI是VMWare公司的一款软件
 
 
-
+272：
+size命令：
+size test：获取二进制文件test的信息
 
 
 
