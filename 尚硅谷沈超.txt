@@ -1,3 +1,15 @@
+/bin /usr/bin 所有用户都可以执行 /bin是/usr/bin的软连接
+/sbin /usr/sbin 只有root用户可以执行
+/lib /lib64是系统调用函数库目录 /usr/lib是 /lib的软连接 里面都以.so 版本号结尾
+/usr/local 源码安装的软件位置
+/usr/share 应用程序的资源文件保存位置
+重要：/usr/src 源码包保存位置 不过习惯放在/usr/local/src下
+/usr/src/kernels 内核源码保存位置
+
+数据库默认保存在/var/lib/mysql下
+/var/spool/mail 新收到的邮件队列保存位置
+/var/spool/cron 系统的定时任务队列保存为止
+
 分区表和操作系统无关，无论Windows还是Linux，都是建立在MBR分区表或GPT分区表的
 
 只有MBR分区表才存在扩展分区、逻辑分区的概念，GPT分区表最大可支持128个分区，无需这些东西
